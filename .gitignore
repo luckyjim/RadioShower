@@ -1,6 +1,5 @@
-/.pydevproject
-/ecl.txt
-/.project
+.pydevproject
+.project
 
 # Ignore Python bytecode
 __pycache__
