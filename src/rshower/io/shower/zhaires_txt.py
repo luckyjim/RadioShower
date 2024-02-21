@@ -21,7 +21,7 @@ import tempfile
 import numpy as np
 
 from rshower.basis.efield_event import HandlingEfield
-from rshower import ZhairesSingleEventBase
+from .zhaires_base import ZhairesSingleEventBase
 
 logger = getLogger(__name__)
 
@@ -61,7 +61,7 @@ class ZhairesSummaryFileVers28:
             "t_sample_ns": rf"Time bin size:\s+(?P<t_sample_ns>{REAL})ns",
             "x_max": rf"Location of max\.\((?P<unit>\w+)\):\s+(?P<alt>{REAL})\s+(?P<dist>{REAL})\s+(?P<x>{REAL})\s+(?P<y>{REAL})\s+(?P<z>{REAL})",
             "sl_depth_of_max": rf"Sl\. depth of max\. \((?P<unit>[\w/]+)\):\s+(?P<mean>{REAL})",
-            "ground_altitude" : rf"Ground altitude:\s+(?P<alt>{REAL})\s+(?P<unit>\w+)\s+",
+            "ground_altitude": rf"Ground altitude:\s+(?P<alt>{REAL})\s+(?P<unit>\w+)\s+",
             "vers_aires": r"This is AIRES version\s+(?P<vers_aires>\w+\.\w+\.\w+)\s+\(",
             "vers_zhaires": r"With ZHAireS version (?P<vers_zhaires>\w+\.\w+\.\w+) \(",
             "primary": r"Primary particle:\s+(?P<primary>[\w^0-9]*)\s+",
@@ -210,7 +210,7 @@ class ZhairesSingleEventText(ZhairesSingleEventBase):
         return self.d_info
 
     def get_object_3dtraces(self):
-        o_tevent = HandlingEfield("File: "+self.dir_simu)
+        o_tevent = HandlingEfield("File: " + self.dir_simu)
         du_id = [str(iddu, "UTF-8") for iddu in self.ants["name"].tolist()]
         #  MHz/ns: 1e-6/1e-9 = 1e3
         sampling_freq_mhz = 1e3 / self.d_info["t_sample_ns"]
@@ -226,6 +226,7 @@ class ZhairesSingleEventText(ZhairesSingleEventBase):
         ants[:, 2] = self.ants["z"]
         o_tevent.init_network(ants)
         i_sim = self.get_simu_info()
-        o_tevent.network.name = f"Xmax dist {int(np.round(i_sim['x_max']['dist']))}km, (azi, zenith): {i_sim['shower_azimuth']:.1f}, {i_sim['shower_zenith']:.1f} deg"
-        o_tevent.set_unit_axis(r"$\mu$V/m", "cart","E field")
+        o_tevent.network.name = i_sim["site"]["name"]
+        o_tevent.info_shower = f"Xmax dist {i_sim['x_max']['dist']:.1f}km, (azi, zenith): {i_sim['shower_azimuth']:.1f}, {i_sim['shower_zenith']:.1f}deg"
+        o_tevent.set_unit_axis(r"$\mu$V/m", "cart", "EField")
         return o_tevent

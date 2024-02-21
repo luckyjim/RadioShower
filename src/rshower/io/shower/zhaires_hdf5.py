@@ -5,8 +5,8 @@ import h5py
 import numpy as np
 
 from rshower.basis.efield_event import HandlingEfield
-from rshower import ZhairesSingleEventBase
-from rshower import ZhairesSingleEventText
+from .zhaires_base import ZhairesSingleEventBase
+from .zhaires_txt import ZhairesSingleEventText
 
 logger = getLogger(__name__)
 
@@ -78,6 +78,7 @@ class ZhairesSingleEventHdf5(ZhairesSingleEventBase):
         )
         o_tevent.init_network(self.ants_pos)
         i_sim = self.get_simu_info()
-        o_tevent.network.name = f"Xmax dist {i_sim['x_max']['dist']:.1f}km, (azi, zenith): {i_sim['shower_azimuth']:.1f}, {i_sim['shower_zenith']:.1f}deg"
-        o_tevent.set_unit_axis(r"$\mu$V/m", "cart", "E field")
+        o_tevent.network.name = i_sim['site']["name"]
+        o_tevent.info_shower = f"Xmax dist {i_sim['x_max']['dist']:.1f}km, (azi, zenith): {i_sim['shower_azimuth']:.1f}, {i_sim['shower_zenith']:.1f}deg"
+        o_tevent.set_unit_axis(r"$\mu$V/m", "cart", "EField")
         return o_tevent

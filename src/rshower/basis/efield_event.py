@@ -6,7 +6,7 @@ from logging import getLogger
 import numpy as np
 import matplotlib.pyplot as plt
 
-from rshower import Handling3dTraces
+from rshower.basis.traces_event import Handling3dTraces
 import rshower.num.signal as sns
 from rshower.basis.frame import FrameDuFrameTan
 import rshower.basis.coord as coord
