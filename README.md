@@ -1,1 +1,5 @@
-# ShowerRadio
+# RadioShower
+
+```python
+import rshower
+```

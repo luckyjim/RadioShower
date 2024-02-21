@@ -11,8 +11,8 @@ import matplotlib.pyplot as plt
 from pathlib import Path
 import pprint
 
-import sradio.manage_log as mlg
-from sradio.io.shower.zhaires_master import ZhairesMaster
+import rshower.manage_log as mlg
+from rshower.io.shower.zhaires_master import ZhairesMaster
 
 
 # specific logger definition for script because __mane__ is "__main__" !

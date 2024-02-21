@@ -4,9 +4,9 @@ import os.path
 import h5py
 import numpy as np
 
-from sradio.basis.efield_event import HandlingEfieldOfEvent
-from .zhaires_base import ZhairesSingleEventBase
-from .zhaires_txt import ZhairesSingleEventText
+from rshower.basis.efield_event import HandlingEfield
+from rshower import ZhairesSingleEventBase
+from rshower import ZhairesSingleEventText
 
 logger = getLogger(__name__)
 
@@ -67,7 +67,7 @@ class ZhairesSingleEventHdf5(ZhairesSingleEventBase):
         """
         self._get_traces()
         self._get_antspos()
-        o_tevent = HandlingEfieldOfEvent("File: "+self.dir_simu)
+        o_tevent = HandlingEfield("File: "+self.dir_simu)
         #  MHz/ns: 1e-6/1e-9 = 1e3
         sampling_freq_mhz = 1e3 / self.t_sample_ns
         o_tevent.init_traces(

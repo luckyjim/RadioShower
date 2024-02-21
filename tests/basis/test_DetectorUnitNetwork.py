@@ -1,6 +1,6 @@
 import numpy as np
 
-from sradio.basis.du_network import DetectorUnitNetwork
+from rshower.basis.du_network import DetectorUnitNetwork
 
 
 def test_init_pos_id():

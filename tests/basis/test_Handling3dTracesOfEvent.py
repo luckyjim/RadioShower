@@ -4,10 +4,10 @@
 
 import numpy as np
 
-from sradio.basis.traces_event import Handling3dTracesOfEvent
+from rshower.basis.traces_event import Handling3dTraces
 
 def get_tr3d():
-    tr3d = Handling3dTracesOfEvent()
+    tr3d = Handling3dTraces()
     size_tot = 3 * 3 * 4
     traces = np.arange(size_tot, dtype=np.float32).reshape((3, 3, 4))
     du_id = np.arange(3)
@@ -18,7 +18,7 @@ def get_tr3d():
 
 
 def test_init_traces():
-    tr3d = Handling3dTracesOfEvent()
+    tr3d = Handling3dTraces()
     size_tot = 3 * 3 * 4
     traces = np.arange(size_tot, dtype=np.float32).reshape((3, 3, 4))
     du_id = np.arange(3)
@@ -32,7 +32,7 @@ def test_init_traces():
 
 
 def test_define_t_samples():
-    tr3d = Handling3dTracesOfEvent()
+    tr3d = Handling3dTraces()
     size_tot = 3 * 3 * 4
     traces = np.arange(size_tot, dtype=np.float32).reshape((3, 3, 4))
     du_id = np.arange(3)
@@ -48,5 +48,5 @@ def test_define_t_samples():
 
 def test_get_delta_t_ns():
     tr3d = get_tr3d()
-    assert tr3d.get_delta_t_ns() == 1.0
+    assert tr3d.get_delta_t_ns()[0] == 1.0
 

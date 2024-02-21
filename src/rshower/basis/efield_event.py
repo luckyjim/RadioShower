@@ -6,10 +6,10 @@ from logging import getLogger
 import numpy as np
 import matplotlib.pyplot as plt
 
-from .traces_event import Handling3dTracesOfEvent
-import sradio.num.signal as sns
-from sradio.basis.frame import FrameDuFrameTan
-import sradio.basis.coord as coord
+from rshower import Handling3dTraces
+import rshower.num.signal as sns
+from rshower.basis.frame import FrameDuFrameTan
+import rshower.basis.coord as coord
 
 logger = getLogger(__name__)
 
@@ -274,7 +274,7 @@ def efield_in_polar_frame(efield3d, threshold=40):
     return efield1d, pol_est
 
 
-class HandlingEfieldOfEvent(Handling3dTracesOfEvent):
+class HandlingEfield(Handling3dTraces):
     """
     Handling a set of E field traces associated to one event observed on Detector Unit network
 

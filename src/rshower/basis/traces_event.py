@@ -10,8 +10,8 @@ import matplotlib.pyplot as plt
 from matplotlib import colors
 from matplotlib.backend_bases import MouseButton
 
-from sradio.basis.du_network import DetectorUnitNetwork
-import sradio.num.signal as sns
+from rshower.basis.du_network import DetectorUnitNetwork
+import rshower.num.signal as rss
 
 
 logger = getLogger(__name__)
@@ -354,7 +354,7 @@ class Handling3dTraces:
         :rtype: float(nb_du,) , float(nb_du,)
         """
         if hilbert:
-            tmax, vmax, idx_max, tr_norm = gds.get_peakamptime_norm_hilbert(
+            tmax, vmax, idx_max, tr_norm = rss.get_peakamptime_norm_hilbert(
                 self.t_samples, self.traces
             )
         else:
@@ -374,11 +374,11 @@ class Handling3dTraces:
         for idx in range(self.get_nb_trace()):
             logger.debug(f"{idx} {self.idx2idt[idx]} {idx_max[idx]}")
             if interpol == "parab":
-                t_max[idx], v_max[idx] = gds.find_max_with_parabola_interp_3pt(
+                t_max[idx], v_max[idx] = rss.find_max_with_parabola_interp_3pt(
                     self.t_samples[idx], tr_norm[idx], int(idx_max[idx])
                 )
             else:
-                t_max[idx], v_max[idx] = gds.find_max_with_parabola_interp(
+                t_max[idx], v_max[idx] = rss.find_max_with_parabola_interp(
                     self.t_samples[idx], tr_norm[idx], int(idx_max[idx])
                 )
             logger.debug(f"{t_max[idx]} ; {v_max[idx]}")

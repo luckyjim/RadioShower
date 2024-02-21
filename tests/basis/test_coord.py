@@ -5,7 +5,7 @@ Created on 20 avr. 2023
 """
 
 
-from sradio.basis.coord import *
+from rshower.basis.coord import *
 
 
 def test_du_cart_to_sph():

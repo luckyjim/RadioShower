@@ -10,11 +10,11 @@ from logging import getLogger
 import numpy as np
 import scipy.fft as sf
 
-from sradio.basis.traces_event import Handling3dTracesOfEvent
-from sradio.num.signal import get_fastest_size_rfft
-from sradio.model.ant_resp import DetectorUnitAntenna3Axis, get_leff_from_files
-from sradio.model.galaxy import GalaxySignalGp300
-from sradio.model.rf_chain import RfChainGP300
+from rshower.basis.traces_event import Handling3dTraces
+from rshower.num.signal import get_fastest_size_rfft
+from rshower.model.ant_resp import DetectorUnitAntenna3Axis, get_leff_from_files
+from rshower.model.galaxy import GalaxySignalGp300
+from rshower.model.rf_chain import RfChainGP300
 
 
 logger = getLogger(__name__)
@@ -68,7 +68,7 @@ class SimuDetectorUnitResponse:
             "lst": 18.0,
         }
         # object contents Efield and network information
-        self.o_efield = Handling3dTracesOfEvent()
+        self.o_efield = Handling3dTraces()
         self.o_rfchain = RfChainGP300()
         self.o_ant3d = DetectorUnitAntenna3Axis(get_leff_from_files())
         self.o_gal = GalaxySignalGp300()
@@ -90,9 +90,9 @@ class SimuDetectorUnitResponse:
         """
 
         :param tr_evt: object contents Efield and network information
-        :type tr_evt: Handling3dTracesOfEvent
+        :type tr_evt: Handling3dTraces
         """
-        assert isinstance(tr_evt, Handling3dTracesOfEvent)
+        assert isinstance(tr_evt, Handling3dTraces)
         self.o_efield = tr_evt
         self.v_out = np.zeros_like(self.o_efield.traces)
         logger.debug(self.v_out.shape)

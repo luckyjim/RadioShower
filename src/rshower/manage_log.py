@@ -73,7 +73,7 @@ import time
 
 # value to customize for each project
 NAME_PKG_GIT = "NUTRIG1"
-NAME_ROOT_LIB = "sradio"
+NAME_ROOT_LIB = "rshower"
 
 # constant value to manage logger and its features
 TPL_FMT_LOGGER = "%(asctime)s %(levelname)5s [%(name)s %(lineno)d] %(message)s"

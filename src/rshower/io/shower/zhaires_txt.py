@@ -20,8 +20,8 @@ import tempfile
 
 import numpy as np
 
-from sradio.basis.efield_event import HandlingEfieldOfEvent
-from .zhaires_base import ZhairesSingleEventBase
+from rshower.basis.efield_event import HandlingEfield
+from rshower import ZhairesSingleEventBase
 
 logger = getLogger(__name__)
 
@@ -210,7 +210,7 @@ class ZhairesSingleEventText(ZhairesSingleEventBase):
         return self.d_info
 
     def get_object_3dtraces(self):
-        o_tevent = HandlingEfieldOfEvent("File: "+self.dir_simu)
+        o_tevent = HandlingEfield("File: "+self.dir_simu)
         du_id = [str(iddu, "UTF-8") for iddu in self.ants["name"].tolist()]
         #  MHz/ns: 1e-6/1e-9 = 1e3
         sampling_freq_mhz = 1e3 / self.d_info["t_sample_ns"]

@@ -13,14 +13,14 @@ import numpy as np
 import asdf
 
 
-from sradio.basis.traces_event import Handling3dTracesOfEvent
+from rshower.basis.traces_event import Handling3dTraces
 
 
 logger = getLogger(__name__)
 
 
 def save_asdf_single_event(n_file, event, info_sim, type_file="simu_event"):
-    assert isinstance(event, Handling3dTracesOfEvent)
+    assert isinstance(event, Handling3dTraces)
     d_gen = {"type_file": type_file}
     d_gen["simu_pars"] = info_sim
     #
@@ -62,7 +62,7 @@ def load_asdf(n_file):
 
 def load_asdf_simu_single_event(f_asdf):
     info_sim = f_asdf["simu_pars"]
-    event = Handling3dTracesOfEvent(f_asdf["event"]["name"])
+    event = Handling3dTraces(f_asdf["event"]["name"])
     print(type(f_asdf["event"]["traces"]))
     event.init_traces(
         np.array(f_asdf["event"]["traces"]),

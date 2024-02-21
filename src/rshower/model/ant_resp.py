@@ -5,7 +5,7 @@ Created on 4 avr. 2023
 
 Hypothesis: small network  (20-30km ) so => [XCS]~[DU] for vector/direction
 
-see sradio.basis.frame for frame definition [XXX]
+see rshower.basis.frame for frame definition [XXX]
 """
 
 import os.path
@@ -14,9 +14,9 @@ from logging import getLogger
 import matplotlib.pyplot as plt
 import numpy as np
 
-import sradio.basis.coord as coord
-from sradio.io.leff_fmt import AntennaLeffStorage
-from sradio import get_path_model_du
+import rshower.basis.coord as coord
+from rshower.io.leff_fmt import AntennaLeffStorage
+from rshower import get_path_model_du
 
 logger = getLogger(__name__)
 

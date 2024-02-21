@@ -4,8 +4,8 @@ Created on 26 avr. 2023
 @author: jcolley
 """
 
-from sradio.basis.frame import *
-from sradio.basis import coord
+from rshower.basis.frame import *
+from rshower.basis import coord
 
 
 def test_du_tan():
