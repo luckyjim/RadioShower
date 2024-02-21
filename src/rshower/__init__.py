@@ -1,10 +1,9 @@
 """
-Mega Hertz radio
+Radio shower package
 """
-__version__ = "1.0.0"
+__version__ = "0.1.0"
 __author__= "Colley Jean-Marc"
 
-#PATH_MODEL = "/home/jcolley/projet/grand_wk/data/model"
 PATH_MODEL = ""
 
 
