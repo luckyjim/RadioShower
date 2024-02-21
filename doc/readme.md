@@ -1,1 +1,1 @@
-# Documentation for MHz radio
+# Documentation of RadioShower package
