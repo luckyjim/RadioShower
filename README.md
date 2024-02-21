@@ -1,5 +1,9 @@
 # RadioShower
 
+** Prelimary version **
+
+** Work in progress **
+
 ## Installation
 
 ```bash
