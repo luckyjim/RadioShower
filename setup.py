@@ -19,8 +19,8 @@ def parse_requirements(filename):
 setup(
     name="RadioShower",
     description="Tools for radio traces from air shower",
-    version=sradio.__version__,
-    author=sradio.__author__,
+    version=rshower.__version__,
+    author=rshower.__author__,
     classifiers=[
         "Topic :: Scientific/Engineering :: Astronomy",
         "Topic :: Scientific/Engineering :: Physics",
