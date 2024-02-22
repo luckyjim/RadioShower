@@ -18,6 +18,19 @@ import rshower
 
 ## Script 
 
+### zhaires_view.py
+
+Read [ZHAireS](http://aires.fisica.unlp.edu.ar/zhaires/) simulation in HDF5 or text file format.
+
+Interactive footprint plot:  
+* traces, power spectrum density
+* name of station, max EField value
+* information on simulation : site, Xmax distance, direction
+
+![ZHAireS footprint](doc/image/footprint.png)
+
+#### help 
+
 ```bash
 $ zhaires_view.py -h
 usage: zhaires_view.py [-h] [-f] [--time_val] [-t TRACE] [--trace_image] [--list_du] [--dump DUMP] [-i] path
@@ -38,3 +51,4 @@ options:
   --dump DUMP           dump trace of DU
   -i, --info            some information about the contents of the file
 ```
+
