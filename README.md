@@ -7,7 +7,7 @@
 ## Installation
 
 ```bash
-$ pip install git+https://github.com/luckyjim/RadioShower.git
+pip install git+https://github.com/luckyjim/RadioShower.git
 ```
 
 ## Python library
