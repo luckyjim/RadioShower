@@ -23,25 +23,25 @@ mlg.create_output_for_logger("error", log_stdout=True)
 
 
 def manage_args():
-    parser = argparse.ArgumentParser(description="Information and plot event/traces for ROOT file")
+    parser = argparse.ArgumentParser(description="Information and plot event/traces")
     parser.add_argument("path", help="path of ZHAireS single event simulation ", type=Path)
     parser.add_argument(
         "-f",
         "--footprint",
-        help="interactive plot (double click) of footprint, time max value and value for each DU",
+        help="interactive plot (double click) of footprint, time max value and value for each station",
         action="store_true",
         required=False,
     )
     parser.add_argument(
         "--time_val",
-        help="interactive plot, value of each DU at time t defined by a slider",
+        help="interactive plot, value of each station at time t defined by a slider",
         action="store_true",
         required=False,
     )
     parser.add_argument(
         "-t",
         "--trace",
-        help="plot trace x,y,z and power spectrum of detector unit (DU)",
+        help="plot trace x,y,z and power spectrum of detector unit (station)",
         default="",
     )
     parser.add_argument(
@@ -54,12 +54,12 @@ def manage_args():
         "--list_du",
         action="store_true",
         required=False,
-        help="list of identifier of DU",
+        help="list of identifier of station",
     )
     parser.add_argument(
         "--dump",
         default="",
-        help="dump trace of DU",
+        help="dump trace of station",
     )  # retrieve argument
     parser.add_argument(
         "-i",
@@ -77,11 +77,11 @@ def main():
     d_event = ZhairesMaster(str(args.path))
     o_tevent = d_event.get_object_3dtraces()
     if args.info:
-        print(f"Nb DU         : {o_tevent.get_nb_du()}")
+        print(f"Nb station         : {o_tevent.get_nb_du()}")
         print(f"Size trace    : {o_tevent.get_size_trace()}")
         pprint.pprint(d_event.get_simu_info())
     if args.list_du:
-        print(f"\nIdentifier DU : ")
+        print(f"\nIdentifier station : ")
         s_id = ""
         for id_du in o_tevent.idt2idx.keys():
             s_id += f" {id_du} ," 
@@ -95,13 +95,13 @@ def main():
         o_tevent.plot_footprint_time_max()
     if args.trace != "":
         if not args.trace in o_tevent.idt2idx.keys():
-            logger.error(f"ERROR: unknown DU identifer")
+            logger.error(f"ERROR: unknown station identifer")
             return
         o_tevent.plot_trace_du(args.trace)
         o_tevent.plot_ps_trace_du(args.trace)
     if args.dump != "":
         if not args.dump in o_tevent.idt2idx.keys():
-            logger.error(f"ERROR: unknown DU identifer")
+            logger.error(f"ERROR: unknown station identifer")
             return
         idx_du = o_tevent.idt2idx[args.dump]
         tr_du = o_tevent.traces[idx_du]
