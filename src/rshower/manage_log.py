@@ -266,7 +266,7 @@ class _MyFormatter(logging.Formatter):
         if datefmt:
             str_date = my_convert.strftime(datefmt)
         else:
-            #str_time = my_convert.strftime("%H:%M:%S")
+            # str_time = my_convert.strftime("%H:%M:%S")
             str_time = my_convert.strftime("%M:%S")
             str_date = f"{str_time}.{int(record.msecs):03d}"
         return str_date

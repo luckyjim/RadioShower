@@ -18,6 +18,7 @@ logger = getLogger(__name__)
 # Some functions to extract data from raw SRY dictionary
 #
 
+
 def get_simu_magnetic_vector(d_simu):
     d_inc = d_simu["geo_mag2"]["inc"]
     r_inc = np.deg2rad(d_inc)
@@ -30,9 +31,11 @@ def get_simu_xmax(d_simu):
     xmax = 1000.0 * np.array([d_simu["x_max"]["x"], d_simu["x_max"]["y"], d_simu["x_max"]["z"]])
     return xmax
 
+
 #
 # Mother class for ZhairesSingleEventXXXX
 #
+
 
 class ZhairesSingleEventBase:
     def __init__(self, path_zhaires):
@@ -56,7 +59,7 @@ class ZhairesSingleEventBase:
 
     def write_asdf_file(self, p_file):
         """
-        
+
         :param p_file:
         :type p_file:
         """

@@ -62,14 +62,14 @@ class PreComputeInterpolFreq:
         # c_inf + c_sup = 1
         self.c_sup = None
         self.size_out = 0
-    
-    def get_idx_range(self, r_mhz=[55,185]):
+
+    def get_idx_range(self, r_mhz=[55, 185]):
         d_freq_out = self.freq_out_mhz[1]
         idx_first = int(r_mhz[0] / d_freq_out) + 1
         # index of freq in last plus one, + 1 to have first out band
         idx_lastp1 = int(r_mhz[1] / d_freq_out) + 1
         return range(idx_first, idx_lastp1)
-     
+
     def init_linear_interpol(self, freq_in_mhz, freq_out_mhz):
         """
         Precompute coefficient of linear interpolation for freq_out_mhz with reference defined at freq_in_mhz
@@ -97,15 +97,15 @@ class PreComputeInterpolFreq:
         # logger.debug(f"{self.idx_itp}")
         # define coefficient of linear interpolation
         self.c_sup = (freq_in_band - freq_in_mhz[self.idx_itp]) / d_freq_in
-        if self.idx_itp[-1]+1 == freq_in_mhz.shape[0]:
+        if self.idx_itp[-1] + 1 == freq_in_mhz.shape[0]:
             # https://github.com/grand-mother/collaboration-issues/issues/30
             logger.info(f" ** Specfic processing when f_in = k * f_out else IndexError **")
             self.idx_itp[-1] -= 1
             # in this case last c_sup must be zero
             # check it !
-            assert np.allclose(self.c_sup[-1], 0)        
+            assert np.allclose(self.c_sup[-1], 0)
         self.c_inf = 1 - self.c_sup
-        self.range_itp = range(self.idx_first,self.idx_lastp1)
+        self.range_itp = range(self.idx_first, self.idx_lastp1)
 
     def get_linear_interpol(self, a_val):
         """
@@ -122,11 +122,12 @@ class LengthEffectiveInterpolation:
     """
     From AntennaProcessing class of https://github.com/grand-mother/grand
     """
+
     def __init__(self):
         self.o_pre = PreComputeInterpolFreq()
 
     def _update_idx_interpol_sph(self):
-        #logger.debug(f"New direction {self.dir_src_deg}")
+        # logger.debug(f"New direction {self.dir_src_deg}")
         # delta theta in degree
         phi_efield = self.dir_src_deg[0]
         theta_efield = self.dir_src_deg[1]
@@ -217,7 +218,7 @@ class LengthEffectiveInterpolation:
         return np.array([l_x, l_y, l_z])
 
     def get_fft_leff_pol(self, leff):
-        #logger.debug(f"{self.dir_src_deg} {np.rad2deg(self.angle_pol)}")
+        # logger.debug(f"{self.dir_src_deg} {np.rad2deg(self.angle_pol)}")
         l_p, l_t = self.get_fft_leff_tan(leff)
         # TAN order is (e_theta, e_phi, e_normal_out)
         return self.cos_pol * l_t + self.sin_pol * l_p
@@ -262,7 +263,7 @@ class LengthEffectiveInterpolation:
         plt.grid()
         plt.xlabel("MHz")
         plt.legend()
-    
+
     def plot_leff_xyz(self):
         plt.figure()
         plt.title(
@@ -271,7 +272,7 @@ class LengthEffectiveInterpolation:
         plt.plot(self.o_pre.freq_out_mhz, np.abs(self.l_x), label="abs(Leff_x)")
         plt.plot(self.o_pre.freq_out_mhz, np.abs(self.l_y), label="abs(Leff_y)")
         plt.plot(self.o_pre.freq_out_mhz, np.abs(self.l_z), label="abs(Leff_z)")
-        plt.xlim([0,300])
+        plt.xlim([0, 300])
         plt.grid()
         plt.xlabel("MHz")
         plt.legend()
@@ -326,7 +327,7 @@ class DetectorUnitAntenna3Axis:
     def set_dir_source(self, dir_du):
         self.dir_src_du = dir_du
         self.interp_leff.set_dir_source(self.dir_src_du)
-        
+
     def _update_dir_source(self):
         """
         return direction of source in [DU] frame
@@ -349,7 +350,7 @@ class DetectorUnitAntenna3Axis:
         itp = self.interp_leff
         resp[0] = np.sum(itp.get_fft_leff_du(self.sn_leff) * fft_efield_du, axis=0)
         resp[1] = np.sum(itp.get_fft_leff_du(self.ew_leff) * fft_efield_du, axis=0)
-        #itp.plot_leff_xyz()
+        # itp.plot_leff_xyz()
         resp[2] = np.sum(itp.get_fft_leff_du(self.up_leff) * fft_efield_du, axis=0)
         return resp
 

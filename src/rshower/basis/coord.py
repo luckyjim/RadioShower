@@ -78,8 +78,10 @@ def du_sph_to_cart(sph):
 # [TAN] see convention of this frame in module frame.py
 #
 
+
 def tan_cart_to_angle_e_theta(xyz):
     return np.arctan2(xyz[1], xyz[0])
+
 
 def tan_cart_to_polar_angle(xyz):
     return tan_cart_to_angle_e_theta(xyz)

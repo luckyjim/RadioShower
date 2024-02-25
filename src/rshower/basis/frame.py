@@ -140,7 +140,7 @@ class FrameDuFrameTan(FrameAFrameB):
       * M2 is rotation around y for angle d_zen in positive way
 
     So with euler notation and scipy API M ie rot_b2a) is Rot.from_euler('YZ', [d_zen, azi_w])
-    with upper case X,Y,Z and not lower case x,y,z (see documentation ) 
+    with upper case X,Y,Z and not lower case x,y,z (see documentation )
 
     ..note:
         [DU]       <->   [TAN]
@@ -153,7 +153,7 @@ class FrameDuFrameTan(FrameAFrameB):
 
     def __init__(self, vec_dir_du):
         """
-        
+
         :param vec_dir_du: angle azi, dist zen
         :type vec_dir_du:
         """

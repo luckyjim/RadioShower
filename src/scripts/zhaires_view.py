@@ -84,8 +84,8 @@ def main():
         print(f"\nIdentifier station : ")
         s_id = ""
         for id_du in o_tevent.idt2idx.keys():
-            s_id += f" {id_du} ," 
-        print(s_id[1:-1]) 
+            s_id += f" {id_du} ,"
+        print(s_id[1:-1])
     if args.trace_image:
         o_tevent.plot_all_traces_as_image()
     if args.footprint:

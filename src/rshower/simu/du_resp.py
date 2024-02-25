@@ -99,9 +99,7 @@ class SimuDetectorUnitResponse:
         self.sig_size = self.o_efield.get_size_trace()
         # common frequencies for all processing in Fourier domain
         self.size_with_pad, self.freqs_out_mhz = get_fastest_size_rfft(
-            self.sig_size,
-            self.o_efield.f_samp_mhz,
-            self.params["fact_padding"]
+            self.sig_size, self.o_efield.f_samp_mhz, self.params["fact_padding"]
         )
         logger.debug(self.size_with_pad)
         logger.debug(self.sig_size)

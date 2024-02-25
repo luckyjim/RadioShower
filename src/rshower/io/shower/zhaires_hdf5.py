@@ -48,7 +48,7 @@ class ZhairesSingleEventHdf5(ZhairesSingleEventBase):
     def get_simu_info(self):
         """
         UGLY PATCH: I use sry file to extract simulation parameters ...
-        
+
         #TODO: extract simu info from HDF5 file
         :param self:
         """
@@ -56,7 +56,7 @@ class ZhairesSingleEventHdf5(ZhairesSingleEventBase):
         zha.read_summary_file()
         self.status = zha.status
         self.d_info = zha.d_info
-        return self.d_info 
+        return self.d_info
 
     def get_object_3dtraces(self):
         """
@@ -67,7 +67,7 @@ class ZhairesSingleEventHdf5(ZhairesSingleEventBase):
         """
         self._get_traces()
         self._get_antspos()
-        o_tevent = HandlingEfield("File: "+self.dir_simu)
+        o_tevent = HandlingEfield("File: " + self.dir_simu)
         #  MHz/ns: 1e-6/1e-9 = 1e3
         sampling_freq_mhz = 1e3 / self.t_sample_ns
         o_tevent.init_traces(
@@ -78,7 +78,7 @@ class ZhairesSingleEventHdf5(ZhairesSingleEventBase):
         )
         o_tevent.init_network(self.ants_pos)
         i_sim = self.get_simu_info()
-        o_tevent.network.name = i_sim['site']["name"]
+        o_tevent.network.name = i_sim["site"]["name"]
         o_tevent.info_shower = f"Xmax dist {i_sim['x_max']['dist']:.1f}km, (azi, zenith): {i_sim['shower_azimuth']:.1f}, {i_sim['shower_zenith']:.1f}deg"
         o_tevent.set_unit_axis(r"$\mu$V/m", "cart", "EField")
         return o_tevent

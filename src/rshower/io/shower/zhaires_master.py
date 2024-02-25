@@ -22,7 +22,7 @@ class ZhairesMaster:
 
     def __init__(self, path_zhaires):
         """
-        
+
         :param path_zhaires:
         :type path_zhaires:
         """
