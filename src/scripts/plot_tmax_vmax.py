@@ -1,4 +1,4 @@
-import grand.dataio.root_files as froot
+from rshower.io.shower.zhaires_master import ZhairesMaster
 import matplotlib.pyplot as plt
 import numpy as np
 import sys
@@ -6,7 +6,9 @@ import sys
 f_event = sys.argv[1]
 print(f_event)
 
-ef3d=froot.get_handling3dtraces(f_event)
+
+d_event = ZhairesMaster(f_event)
+ef3d = d_event.get_object_3dtraces()
 t_max , v_max =ef3d.get_tmax_vmax()
 
 plt.figure()
