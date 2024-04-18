@@ -13,7 +13,34 @@ pip install git+https://github.com/luckyjim/RadioShower.git
 ## Python library
 
 ```python
-import rshower
+In [1]: import rshower.io.shower.zhaires_master as zm
+
+In [2]: zhsim=zm.ZhairesMaster('/path/to/zhaires/sim/xxxx_Iron_0.0318_75.2_322.7_12881')
+
+In [3]: zhsim.get_simu_info()
+Out[3]: 
+{'t_sample_ns': 0.5,
+ 'x_max': {'alt': 14.71636,
+  'dist': 51.7913,
+  'x': 39.81567,
+  'y': -30.35338,
+  'z': 14.52008},
+ 'sl_depth_of_max': {'unit': 'g/cm2', 'mean': 556.502},
+ 'ground_altitude': {'alt': 1.264, 'unit': 'km'},
+ 'vers_aires': '19.04.08',
+ 'vers_zhaires': '1.0.30a',
+ 'primary': 'Fe^56',
+ 'site': {'name': 'Xiaodushan', 'lat': 40.99, 'lon': 93.94},
+ 'geo_mag1': {'norm': 56.482, 'unit': 'uT'},
+ 'geo_mag2': {'inc': 61.6, 'dec': 0.13},
+ 'energy': {'value': 31.81, 'unit': 'PeV'},
+ 'shower_zenith': 75.17,
+ 'shower_azimuth': 322.68}
+
+In [4]: tr3d = zhsim.get_object_3dtraces()
+
+In [5]: tr3d.network.get_surface()
+Out[5]: 32.9
 ```
 
 ## Script 
