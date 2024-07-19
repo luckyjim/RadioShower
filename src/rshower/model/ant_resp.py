@@ -21,6 +21,42 @@ from rshower import get_path_model_du
 logger = getLogger(__name__)
 
 
+def patch_leff(fft_leff_hc, f_hz):
+    """
+    ringing and causality
+
+    :param fft_leff_hc:
+    :type fft_leff_hc:
+    :param f_hz:
+    :type f_hz:
+    """
+    print(f_hz)
+    coeff_b, coeff_a = butter(6, [60 * 1e6, 220 * 1e6], btype="bandpass", fs=f_hz)
+    size_fc = 2 * (fft_leff_hc.shape[0] - 1)
+    print(fft_leff_hc.shape, size_fc)
+    w, h = freqz(coeff_b, coeff_a, fs=f_hz, worN=fft_leff_hc.shape[0], include_nyquist=True)
+    if False:
+        print("w : ", w, w.shape)
+        size_h = w.shape[0]
+        h_hc = h[: size_h // 2 + 1]
+        fft_leff_hc_cor = fft_leff_hc * h
+    else:
+        # add causality
+        fc_leff = np.concatenate((fft_leff_hc, np.flip(np.conj(fft_leff_hc[1:-1]))))
+        fc_leff.imag = -hilbert(np.real(fc_leff)).imag
+        size_l = fc_leff.shape[0]
+        fft_leff_hc_cor = fc_leff[: size_l // 2 + 1]
+    if True:
+        plt.figure()
+        plt.title("Leff correction")
+        plt.plot(w * 1e-6, abs(fft_leff_hc), label="leff")
+        plt.plot(w * 1e-6, abs(fft_leff_hc_cor), "-.", label="leff cor")
+        plt.plot(w * 1e-6, abs(h), label="Butterworth")
+        plt.grid()
+        plt.legend()
+    return fft_leff_hc_cor
+
+
 def get_leff_from_files():
     """Return dictionary with 3 antenna Leff
 
