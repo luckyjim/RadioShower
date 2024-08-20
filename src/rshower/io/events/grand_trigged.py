@@ -4,10 +4,10 @@ Created on 20 août 2024
 @author: jcolley
 """
 from logging import getLogger
+
 import numpy as np
 
 from rshower.basis.traces_event import Handling3dTraces
-from numba.core.types import none
 
 logger = getLogger(__name__)
 
