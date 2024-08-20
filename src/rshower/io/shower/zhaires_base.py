@@ -9,7 +9,7 @@ from logging import getLogger
 
 import numpy as np
 
-from rshower.io import sradio_asdf as srfmt
+from rshower.io.events import sradio_asdf as srfmt
 
 
 logger = getLogger(__name__)
