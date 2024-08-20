@@ -3,12 +3,27 @@
 ** Prelimary version **
 
 ** Work in progress **
-
 ## Installation
 
-```bash
-pip install git+https://github.com/luckyjim/RadioShower.git
+
+upgrading pip and setuptools packages can help
+
 ```
+pip install --upgrade setuptools pip
+```
+
+then with pip install
+
+```
+python -m pip install git+https://github.com/luckyjim/RadioShower.git 
+```
+
+## Update version
+
+```
+python -m pip uninstall RadioShower
+python -m pip install git+https://github.com/luckyjim/RadioShower.git 
+ ```
 
 ## Python library
 
@@ -78,29 +93,4 @@ options:
   --dump DUMP           dump trace of station
   -i, --info            some information about the contents of the file
 ```
-
-# Installation
-
-
-upgrading pip and setuptools packages can help
-
-```
-pip install --upgrade setuptools pip
-```
-
-then RadioShower installs very simply with pip install
-
-```
-python -m pip install git+https://github.com/luckyjim/RadioShower.git 
-```
-
-
-
-
-# Update version
-
-```
-python -m pip uninstall RadioShower
-python -m pip install git+https://github.com/luckyjim/RadioShower.git 
- ```
  
