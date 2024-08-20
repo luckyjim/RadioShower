@@ -7,6 +7,7 @@ from logging import getLogger
 import numpy as np
 
 from rshower.basis.traces_event import Handling3dTraces
+from numba.core.types import none
 
 logger = getLogger(__name__)
 
@@ -14,7 +15,7 @@ logger = getLogger(__name__)
 class EventsTriggedFormat1:
     """
     Format done by Xishui Tian
-    
+
     In [3]: tr3d.files
     Out[3]: ['du_id', 'du_coord', 'traces', 'zenith', 'azimuth', 'event_id']
 
@@ -66,6 +67,10 @@ class EventsTriggedFormat1:
         self.traces = d_file["traces"]
         self.du_id = d_file["du_id"]
         self.du_coord = d_file["du_coord"]
+        try:
+            self.trigger_time = d_file["trigger_time"]
+        except:
+            self.trigger_time = None
         assert self.zenith.size == self.azimuth.size
         idx_start_events = [0]
         nb_du_events = []
@@ -101,13 +106,24 @@ class EventsTriggedFormat1:
         idx_start = self.idx_start_events[idx_evt]
         event = Handling3dTraces(f"Event {self.event_id[idx_start]}")
         m_slice = np.arange(idx_start, idx_start + self.nb_du_in_evt[idx_evt])
-        event.init_traces(self.traces[m_slice, 1:], self.du_id[m_slice], f_samp_mhz=500)
+        if self.trigger_time is None:
+            trigger_time = None
+        else:
+            trigger_time = self.trigger_time[m_slice]
+            trigger_time -= np.min(trigger_time)
+            trigger_time *= 10e9
+            print("Use relative trigger time (first DU is origin of time) in ns.")
+        event.init_traces(
+            self.traces[m_slice, 1:],
+            self.du_id[m_slice],
+            trigger_time,
+            f_samp_mhz=500,
+        )
         event.init_network(self.du_coord[m_slice, 1:])
         event.network.name = "GP13"
         event.set_unit_axis("ADU", "dir", "Trace")
         print(event.traces.shape)
         return event
-    
 
     def get_azi_elev(self, idx_evt):
         assert idx_evt < self.nb_events
