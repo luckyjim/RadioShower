@@ -9,6 +9,8 @@ import scipy.fft as sf
 from scipy import interpolate
 import matplotlib.pyplot as plt
 
+from .signal import interpol_at_new_x
+
 logger = getLogger(__name__)
 
 
