@@ -12,7 +12,7 @@ from rshower.basis.traces_event import Handling3dTraces
 logger = getLogger(__name__)
 
 
-class EventsTriggedFormat1:
+class GrandEventsSelectedFmt01:
     """
     Format done by Xishui Tian
 
@@ -101,7 +101,7 @@ class EventsTriggedFormat1:
         str_info += f" has {self.nb_du_in_evt[idx]} DUs"
         return str_info
 
-    def get_3dtraces(self, idx_evt):
+    def get_3dtraces(self, idx_evt, adu2volt=False):
         assert idx_evt < self.nb_events
         idx_start = self.idx_start_events[idx_evt]
         event = Handling3dTraces(f"Event {self.event_id[idx_start]}")
@@ -119,12 +119,21 @@ class EventsTriggedFormat1:
             trigger_time,
             f_samp_mhz=500,
         )
+        unit = "ADU"
+        if adu2volt:
+            fact = np.float64(0.9 / 2 ** 13)
+            print(type(fact))
+            event.traces = event.traces.astype(np.float64)
+            unit = "Volt"
         event.init_network(self.du_coord[m_slice, 1:])
         event.network.name = "GP13"
-        event.set_unit_axis("ADU", "dir", "Trace")
+        event.set_unit_axis(unit, "dir", "Trace")
         print(event.traces.shape)
         return event
 
     def get_azi_elev(self, idx_evt):
         assert idx_evt < self.nb_events
-        return self.azimuth[idx_evt], self.zenith[idx_evt]
+        pars = {}
+        pars["azi"] = self.azimuth[idx_evt]
+        pars["d_zen"] = self.zenith[idx_evt]
+        return pars
