@@ -6,6 +6,7 @@ Created on 20 août 2024
 from logging import getLogger
 
 import numpy as np
+import matplotlib.pyplot as plt
 
 from rshower.basis.traces_event import Handling3dTraces
 
@@ -90,6 +91,31 @@ class GrandEventsSelectedFmt01:
         assert self.zenith.size == self.nb_events
         self.idx_start_events = idx_start_events
 
+    def plot_stats_events(self):
+        l_vmax = []
+        for idx in range(self.nb_events):
+            evt = self.get_3dtraces(idx)
+            l_vmax.append(evt.get_max_norm())
+        plt.figure()
+        plt.plot(self.nb_du_in_evt,"*")
+        plt.title("Number of DU trigged in events")
+        plt.xlabel("idx event")
+        plt.grid()
+        plt.figure()
+        plt.title("Max distribution by event")
+        labels = range(self.nb_events)
+        plt.boxplot(l_vmax,labels=labels)
+        plt.grid()
+        plt.ylabel("ADU")
+        plt.xlabel("idx event")
+        plt.figure()
+        plt.plot(self.azimuth,"*", label="Azimuth")
+        plt.plot(np.mod(self.azimuth,45),'d', label="Modulo 45°")
+        plt.xlabel("idx event")
+        plt.ylabel("Degree")
+        plt.legend()
+        plt.grid()
+        
     def get_info(self):
         str_info = f"nb events in file {self.nb_events}"
         return str_info

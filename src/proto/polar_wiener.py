@@ -116,7 +116,7 @@ def loss_func_polar_2du(angle_pol, data):
     return loss_func
 
 
-def deconv_main(pn_fevents, pn_fmodel, idx_evt=0):
+def deconv_main(pn_fevents, pn_fmodel, idx_evt=4):
     """
     Deal with format and event selection
 
@@ -124,8 +124,11 @@ def deconv_main(pn_fevents, pn_fmodel, idx_evt=0):
     :param pn_fmodel:  Path, name of file models
     """
     df_events = GrandEventsSelectedFmt01(pn_fevents)
+    df_events.plot_stats_events()
     evt = df_events.get_3dtraces(idx_evt, adu2volt=True)
+    #evt.set_periodogram(80)
     pars_evt = df_events.get_azi_elev(idx_evt)
+    pprint.pprint(pars_evt)
     evt.plot_footprint_val_max()
 
 def deconv_all_du():
