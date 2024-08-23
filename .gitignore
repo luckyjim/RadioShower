@@ -9,3 +9,5 @@ __pycache__
 /.pytest_cache/
 /ecl.txt
 /.coverage
+
+quality/html_coverage
