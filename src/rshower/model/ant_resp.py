@@ -92,10 +92,12 @@ class PreComputeInterpolFreq:
         """
         # TODO: debbug when freq_in_mhz, freq_out_mhz are equal "index 221 is out of bounds "
         # logger.debug(f"freq_in_mhz: {freq_in_mhz}")
+        # logger.debug(f"freq_out_mhz: {freq_out_mhz}")
         self.freq_out_mhz = freq_out_mhz
         self.size_out = freq_out_mhz.shape[0]
+        # freq_out_mhz must start be 0 and first element is the delta frequency
+        assert freq_out_mhz[0] == 0.0 
         d_freq_out = freq_out_mhz[1]
-        logger.debug(d_freq_out)
         # index of freq in first in band, + 1 to have first in band
         idx_first = int(freq_in_mhz[0] / d_freq_out) + 1
         # index of freq in last plus one, + 1 to have first out band
@@ -202,11 +204,9 @@ class LengthEffectiveInterpolation:
             + rp0 * rt1 * leff[ip0, it1, :]
             + rp1 * rt1 * leff[ip1, it1, :]
         )
-        #leff_itp_sph = np.array([leff_itp_t, leff_itp_p])
-        leff_itp_sph = np.array([leff_tp.leff_theta[ip0, it0], leff_tp.leff_phi[ip0, it0]])
+        leff_itp_sph = np.array([leff_itp_t, leff_itp_p])
+        #leff_itp_sph = np.array([leff_tp.leff_theta[ip0, it0], leff_tp.leff_phi[ip0, it0]])
         pre = self.o_pre
-        pre.c_inf = 1
-        pre.c_sup = 0
         leff_itp = (
             pre.c_inf * leff_itp_sph[:, pre.idx_itp] + pre.c_sup * leff_itp_sph[:, pre.idx_itp + 1]
         )
@@ -245,12 +245,25 @@ class LengthEffectiveInterpolation:
         plt.title(
             f"Interpolated Leff {self.leff.name} at (phi={self.dir_src_deg[0]:.1f}, theta={self.dir_src_deg[1]:.1f})"
         )
-        plt.plot(self.o_pre.freq_out_mhz, self.l_phi.real, label="Leff phi real")
+        plt.plot(self.o_pre.freq_out_mhz, self.l_phi.real,".-.", label="Leff phi real")
         plt.plot(self.o_pre.freq_out_mhz, self.l_phi.imag, label="Leff phi imag")
         plt.plot(self.o_pre.freq_out_mhz, self.l_theta.real, ".-.", label="Leff theta real")
         plt.plot(self.o_pre.freq_out_mhz, self.l_theta.imag, label="Leff theta imag")
         idx_phi = int(self.dir_src_deg[0])
         idx_theta = int(self.dir_src_deg[1])
+        plt.plot(
+            self.leff.freq_mhz,
+            self.leff.leff_phi.real[idx_phi, idx_theta],
+            "*",
+            label=f"RAW Leff phi real idx={idx_phi}",
+        )
+        idx_phi_p1 = (idx_phi + 1) % 360
+        plt.plot(
+            self.leff.freq_mhz,
+            self.leff.leff_phi.real[idx_phi_p1, idx_theta],
+            "*",
+            label=f"RAW Leff phi real idx={idx_phi_p1}",
+        )
         plt.plot(
             self.leff.freq_mhz,
             self.leff.leff_theta.real[idx_phi, idx_theta],
