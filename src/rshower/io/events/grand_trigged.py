@@ -96,21 +96,25 @@ class GrandEventsSelectedFmt01:
         for idx in range(self.nb_events):
             evt = self.get_3dtraces(idx)
             l_vmax.append(evt.get_max_norm())
+        # nunber DU in event
         plt.figure()
         plt.plot(self.nb_du_in_evt,"*")
-        plt.title("Number of DU trigged in events")
+        plt.title(f"Number of DU trigged in events\n{self.np_file}")
         plt.xlabel("idx event")
         plt.grid()
+        # Max distribution
         plt.figure()
-        plt.title("Max distribution by event")
+        plt.title(f"Max distribution by event\n{self.np_file}")
         labels = range(self.nb_events)
         plt.boxplot(l_vmax,labels=labels)
         plt.grid()
         plt.ylabel("ADU")
         plt.xlabel("idx event")
+        # Azimuth
         plt.figure()
+        plt.title(f"Estimated azimuth of source events\n{self.np_file}")
         plt.plot(self.azimuth,"*", label="Azimuth")
-        plt.plot(np.mod(self.azimuth,45),'d', label="Modulo 45°")
+        plt.plot(np.mod(self.azimuth,90),'d', label="Modulo 90°")
         plt.xlabel("idx event")
         plt.ylabel("Degree")
         plt.legend()
@@ -138,7 +142,7 @@ class GrandEventsSelectedFmt01:
             trigger_time = self.trigger_time[m_slice]
             trigger_time -= np.min(trigger_time)
             trigger_time *= 10e9
-            print("Use relative trigger time (first DU is origin of time) in ns.")
+            logger.info("Use relative trigger time (first DU is origin of time) in ns.")
         event.init_traces(
             self.traces[m_slice, 1:],
             self.du_id[m_slice],
@@ -148,13 +152,12 @@ class GrandEventsSelectedFmt01:
         unit = "ADU"
         if adu2volt:
             fact = np.float64(0.9 / 2 ** 13)
-            print(type(fact))
             event.traces = event.traces.astype(np.float64)
             unit = "Volt"
         event.init_network(self.du_coord[m_slice, 1:])
         event.network.name = "GP13"
         event.set_unit_axis(unit, "dir", "Trace")
-        print(event.traces.shape)
+        logger.debug(event.traces.shape)
         return event
 
     def get_azi_elev(self, idx_evt):
