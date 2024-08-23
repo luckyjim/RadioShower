@@ -10,9 +10,7 @@ logger = getLogger(__name__)
 
 
 def _get_leff(path_leff, l_files):
-    """Return dictionary with 3 antenna Leff
-
-    """
+    """Return dictionary with 3 antenna Leff"""
     path_ant = os.path.join(path_leff, l_files[0])
     leff_ew = AntennaLeffStorage()
     leff_ew.name = "EW"
@@ -60,8 +58,11 @@ def get_leff_nec(path_leff):
 class AntennaLeffStorage:
     """
     Angle convention
-        phi : 0 for north, 90 for west
-        theta :O for up, 90 for ground
+        phi : 0 for north, 90 for west, like azimuth => absolute
+        theta :O for up, 90 for ground, like  polar angle, inclinaison, zenith distance
+
+        shape leff_phi (361, 91, 221) (phi, theta, freq)
+        shape leff_theta (361, 91, 221)
     """
 
     def __init__(self):
@@ -85,31 +86,31 @@ class AntennaLeffStorage:
             self.phi_deg = np.arange(361).astype(float)
             self.leff_phi = f_leff["leff_phi"]
             self.leff_theta = f_leff["leff_theta"]
-            #print(f"shape leff_phi {self.leff_phi.shape}")
-            #print(f"shape leff_theta {self.leff_theta.shape}")
+            # print(f"shape leff_phi {self.leff_phi.shape}")
+            # print(f"shape leff_theta {self.leff_theta.shape}")
+            assert self.leff_phi.shape[2] == self.freq_mhz.shape[0]
+            assert self.leff_theta.shape[2] == self.freq_mhz.shape[0]
         else:
             raise
-    
+
     def get_ngp_leff(self, azi, d_zen):
         azi_int = int(azi)
         d_zen_int = int(d_zen)
         self.i_phi = azi_int
         self.i_theta = d_zen_int
-        return self.leff_phi[azi_int, d_zen_int],  self.leff_theta[azi_int, d_zen_int]
+        return self.leff_phi[azi_int, d_zen_int], self.leff_theta[azi_int, d_zen_int]
 
-    def plot_leff_xx(self,leff, axis):
+    def plot_leff_xx(self, leff, axis):
         plt.figure()
-        plt.title(
-            f"e{axis} Leff {self.name} at direction (phi={self.i_phi}, theta={self.i_theta})"
-        )
-        plt.plot(self.freq_mhz, leff.real, '--',label="Leff real")
-        plt.plot(self.freq_mhz, leff.imag, '--',label="Leff imag")
+        plt.title(f"e{axis} Leff {self.name} at direction (phi={self.i_phi}, theta={self.i_theta})")
+        plt.plot(self.freq_mhz, leff.real, "--", label="Leff real")
+        plt.plot(self.freq_mhz, leff.imag, "--", label="Leff imag")
         plt.plot(self.freq_mhz, np.abs(leff), label="|Leff|")
         plt.grid()
         plt.xlabel("MHz")
         plt.legend()
-        
+
     def plot_leff(self, azi, d_zen):
-        l_phi , l_theta = self.get_ngp_leff(azi, d_zen)
+        l_phi, l_theta = self.get_ngp_leff(azi, d_zen)
         self.plot_leff_xx(l_phi, "$_{phi}$")
         self.plot_leff_xx(l_theta, "$_{theta}$")
