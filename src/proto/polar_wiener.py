@@ -10,6 +10,8 @@ import rshower.manage_log as mlg
 from rshower.basis.traces_event import Handling3dTraces
 from rshower.num.wiener import WienerDeconvolution
 from rshower.io.events.grand_trigged import GrandEventsSelectedFmt01
+from rshower.io.leff_fmt import get_leff_default
+from rshower.model.ant_resp import DetectorUnitAntenna3Axis
 
 logger = getLogger(__name__)
 
@@ -116,20 +118,31 @@ def loss_func_polar_2du(angle_pol, data):
     return loss_func
 
 
-def deconv_main(pn_fevents, pn_fmodel, idx_evt=4):
+def deconv_main(pn_fevents, pn_fmodel, idx_evt=14):
     """
-    Deal with format and event selection
+    Deal with format and event selection:
+        Load data to init Handling3dTraces object
+        Load instrument model : antenna
+        Load instrument model : RF chain
+        Load instrument model : galaxy signale as noise
 
     :param pn_fevents: Path, name of file events
     :param pn_fmodel:  Path, name of file models
     """
+    # Load data to init Handling3dTraces object
     df_events = GrandEventsSelectedFmt01(pn_fevents)
     df_events.plot_stats_events()
     evt = df_events.get_3dtraces(idx_evt, adu2volt=True)
-    #evt.set_periodogram(80)
     pars_evt = df_events.get_azi_elev(idx_evt)
     pprint.pprint(pars_evt)
+    # evt.set_periodogram(80)
     evt.plot_footprint_val_max()
+    # Load instrument model : antenna
+    ant_resp = DetectorUnitAntenna3Axis(get_leff_default(pn_fmodel))
+    ant_resp.ew_leff
+    # Load instrument model : RF chain
+    # Load instrument model : galaxy signale as noise
+
 
 def deconv_all_du():
     """
@@ -211,12 +224,12 @@ def deconv_polar_wiener_du():
     # logger.info(a_pol[idx_du])
 
 
-
 if __name__ == "__main__":
     logger.info(mlg.string_begin_script())
     # =============================================
     pn_fevents = "/home/jcolley/projet/grand_wk/data/event/gp13_2024_polar/GP13_UD_240616_240708_with_time.npz"
-    deconv_main(pn_fevents,"")
+    pn_fmodel = "/home/jcolley/projet/grand_wk/recons/du_model"
+    deconv_main(pn_fevents, pn_fmodel)
     # =============================================
     plt.show()
     logger.info(mlg.string_end_script())

@@ -15,69 +15,46 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 import rshower.basis.coord as coord
-from rshower.io.leff_fmt import AntennaLeffStorage
-from rshower import get_path_model_du
+# from rshower.io.leff_fmt import AntennaLeffStorage
+# from rshower import get_path_model_du
 
 logger = getLogger(__name__)
 
 
-def patch_leff(fft_leff_hc, f_hz):
-    """
-    ringing and causality
-
-    :param fft_leff_hc:
-    :type fft_leff_hc:
-    :param f_hz:
-    :type f_hz:
-    """
-    print(f_hz)
-    coeff_b, coeff_a = butter(6, [60 * 1e6, 220 * 1e6], btype="bandpass", fs=f_hz)
-    size_fc = 2 * (fft_leff_hc.shape[0] - 1)
-    print(fft_leff_hc.shape, size_fc)
-    w, h = freqz(coeff_b, coeff_a, fs=f_hz, worN=fft_leff_hc.shape[0], include_nyquist=True)
-    if False:
-        print("w : ", w, w.shape)
-        size_h = w.shape[0]
-        h_hc = h[: size_h // 2 + 1]
-        fft_leff_hc_cor = fft_leff_hc * h
-    else:
-        # add causality
-        fc_leff = np.concatenate((fft_leff_hc, np.flip(np.conj(fft_leff_hc[1:-1]))))
-        fc_leff.imag = -hilbert(np.real(fc_leff)).imag
-        size_l = fc_leff.shape[0]
-        fft_leff_hc_cor = fc_leff[: size_l // 2 + 1]
-    if True:
-        plt.figure()
-        plt.title("Leff correction")
-        plt.plot(w * 1e-6, abs(fft_leff_hc), label="leff")
-        plt.plot(w * 1e-6, abs(fft_leff_hc_cor), "-.", label="leff cor")
-        plt.plot(w * 1e-6, abs(h), label="Butterworth")
-        plt.grid()
-        plt.legend()
-    return fft_leff_hc_cor
-
-
-def get_leff_from_files():
-    """Return dictionary with 3 antenna Leff
-
-    :param path_leff: path to file Leff
-    :type path_leff: string
-    """
-    path_leff = os.path.join(get_path_model_du(), "detector")
-    path_ant = os.path.join(path_leff, "Light_GP300Antenna_EWarm_leff.npz")
-    leff_ew = AntennaLeffStorage()
-    leff_ew.name = "EW"
-    leff_ew.load(path_ant)
-    path_ant = os.path.join(path_leff, "Light_GP300Antenna_SNarm_leff.npz")
-    leff_sn = AntennaLeffStorage()
-    leff_sn.load(path_ant)
-    leff_sn.name = "SN"
-    path_ant = os.path.join(path_leff, "Light_GP300Antenna_Zarm_leff.npz")
-    leff_up = AntennaLeffStorage()
-    leff_up.load(path_ant)
-    leff_up.name = "UP"
-    d_leff = {"sn": leff_sn, "ew": leff_ew, "up": leff_up}
-    return d_leff
+# def patch_leff(fft_leff_hc, f_hz):
+#     """
+#     ringing and causality
+#
+#     :param fft_leff_hc:
+#     :type fft_leff_hc:
+#     :param f_hz:
+#     :type f_hz:
+#     """
+#     print(f_hz)
+#     coeff_b, coeff_a = butter(6, [60 * 1e6, 220 * 1e6], btype="bandpass", fs=f_hz)
+#     size_fc = 2 * (fft_leff_hc.shape[0] - 1)
+#     print(fft_leff_hc.shape, size_fc)
+#     w, h = freqz(coeff_b, coeff_a, fs=f_hz, worN=fft_leff_hc.shape[0], include_nyquist=True)
+#     if False:
+#         print("w : ", w, w.shape)
+#         size_h = w.shape[0]
+#         h_hc = h[: size_h // 2 + 1]
+#         fft_leff_hc_cor = fft_leff_hc * h
+#     else:
+#         # add causality
+#         fc_leff = np.concatenate((fft_leff_hc, np.flip(np.conj(fft_leff_hc[1:-1]))))
+#         fc_leff.imag = -hilbert(np.real(fc_leff)).imag
+#         size_l = fc_leff.shape[0]
+#         fft_leff_hc_cor = fc_leff[: size_l // 2 + 1]
+#     if True:
+#         plt.figure()
+#         plt.title("Leff correction")
+#         plt.plot(w * 1e-6, abs(fft_leff_hc), label="leff")
+#         plt.plot(w * 1e-6, abs(fft_leff_hc_cor), "-.", label="leff cor")
+#         plt.plot(w * 1e-6, abs(h), label="Butterworth")
+#         plt.grid()
+#         plt.legend()
+#     return fft_leff_hc_cor
 
 
 class PreComputeInterpolFreq:
@@ -189,8 +166,8 @@ class LengthEffectiveInterpolation:
         rp0 = 1 - rp1
         self.weight = [rt0, rt1, rp0, rp1]
         self.idx_i = [it0, it1, ip0, ip1]
-        # logger.debug(idx_i)
-        # logger.debug(weight)
+        logger.debug(self.idx_i)
+        logger.debug(self.weight)
         return rt0, rt1, rp0, rp1, it0, it1, ip0, ip1
 
     def set_sampling_angle(self, s_theta, s_phi):
@@ -225,11 +202,15 @@ class LengthEffectiveInterpolation:
             + rp0 * rt1 * leff[ip0, it1, :]
             + rp1 * rt1 * leff[ip1, it1, :]
         )
-        leff_itp_sph = np.array([leff_itp_t, leff_itp_p])
+        #leff_itp_sph = np.array([leff_itp_t, leff_itp_p])
+        leff_itp_sph = np.array([leff_tp.leff_theta[ip0, it0], leff_tp.leff_phi[ip0, it0]])
         pre = self.o_pre
+        pre.c_inf = 1
+        pre.c_sup = 0
         leff_itp = (
             pre.c_inf * leff_itp_sph[:, pre.idx_itp] + pre.c_sup * leff_itp_sph[:, pre.idx_itp + 1]
         )
+        
         # now add zeros outside leff frequency band and unpack leff theta , phi
         l_t = np.zeros(self.o_pre.size_out, dtype=np.complex64)
         l_t[pre.idx_first : pre.idx_lastp1] = leff_itp[0]
@@ -262,7 +243,7 @@ class LengthEffectiveInterpolation:
     def plot_leff_tan(self):
         plt.figure()
         plt.title(
-            f"Interpolated Leff {self.leff.name} at phi={self.dir_src_deg[0]:.1f}, theta={self.dir_src_deg[1]:.1f}"
+            f"Interpolated Leff {self.leff.name} at (phi={self.dir_src_deg[0]:.1f}, theta={self.dir_src_deg[1]:.1f})"
         )
         plt.plot(self.o_pre.freq_out_mhz, self.l_phi.real, label="Leff phi real")
         plt.plot(self.o_pre.freq_out_mhz, self.l_phi.imag, label="Leff phi imag")
@@ -333,11 +314,12 @@ class DetectorUnitAntenna3Axis:
         self.sn_leff = d_leff["sn"]
         self.ew_leff = d_leff["ew"]
         self.up_leff = d_leff["up"]
-        # Hypothesis : all leff storage have same array angle phit theta
+        logger.debug("Hypothesis : all leff storage have same array angle phi, theta")
         self.interp_leff.set_sampling_angle(self.sn_leff.theta_deg, self.sn_leff.phi_deg)
 
     def set_name_pos(self, name, pos_xcs):
         """
+        [XCS] is the frame associated to XCore of air shower 
         :param name:
         :param pos_xcs: [m] (3,) in stations frame [XCS]
         """
@@ -361,6 +343,10 @@ class DetectorUnitAntenna3Axis:
         self._update_dir_source()
 
     def set_dir_source(self, dir_du):
+        '''
+         in RAD
+        :param dir_du:
+        '''
         self.dir_src_du = dir_du
         self.interp_leff.set_dir_source(self.dir_src_du)
 

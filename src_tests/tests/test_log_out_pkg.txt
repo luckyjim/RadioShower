@@ -1,0 +1,12 @@
+22:57.410  INFO [rshower.manage_log 140] create handler for root logger: ['RadioShower', 'rshower', 'home']
+22:57.411  INFO [home.user.test.script 50] test
+22:57.411  INFO [home.user.test.script 51] 
+22:57.411  INFO [home.user.test.script 51] ===========> Begin at 2024-08-23T15:22:57Z <===========
+22:57.411  INFO [home.user.test.script 51] 
+22:57.411  INFO [home.user.test.script 51] 
+22:57.411  INFO [home.user.test.script 52] -----> Chrono start
+22:57.411  INFO [home.user.test.script 53] -----> Chrono duration (h:m:s): 0:00:00.000173
+22:57.411  INFO [home.user.test.script 54] 
+22:57.411  INFO [home.user.test.script 54] 
+22:57.411  INFO [home.user.test.script 54] ===========> End at 2024-08-23T15:22:57Z <===========
+22:57.411  INFO [home.user.test.script 54] Duration (h:m:s): 0:00:00.000573

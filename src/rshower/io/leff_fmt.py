@@ -4,6 +4,7 @@ import os.path
 from logging import getLogger
 
 import numpy as np
+import matplotlib.pyplot as plt
 
 logger = getLogger(__name__)
 
@@ -84,5 +85,31 @@ class AntennaLeffStorage:
             self.phi_deg = np.arange(361).astype(float)
             self.leff_phi = f_leff["leff_phi"]
             self.leff_theta = f_leff["leff_theta"]
+            #print(f"shape leff_phi {self.leff_phi.shape}")
+            #print(f"shape leff_theta {self.leff_theta.shape}")
         else:
             raise
+    
+    def get_ngp_leff(self, azi, d_zen):
+        azi_int = int(azi)
+        d_zen_int = int(d_zen)
+        self.i_phi = azi_int
+        self.i_theta = d_zen_int
+        return self.leff_phi[azi_int, d_zen_int],  self.leff_theta[azi_int, d_zen_int]
+
+    def plot_leff_xx(self,leff, axis):
+        plt.figure()
+        plt.title(
+            f"e{axis} Leff {self.name} at direction (phi={self.i_phi}, theta={self.i_theta})"
+        )
+        plt.plot(self.freq_mhz, leff.real, '--',label="Leff real")
+        plt.plot(self.freq_mhz, leff.imag, '--',label="Leff imag")
+        plt.plot(self.freq_mhz, np.abs(leff), label="|Leff|")
+        plt.grid()
+        plt.xlabel("MHz")
+        plt.legend()
+        
+    def plot_leff(self, azi, d_zen):
+        l_phi , l_theta = self.get_ngp_leff(azi, d_zen)
+        self.plot_leff_xx(l_phi, "$_{phi}$")
+        self.plot_leff_xx(l_theta, "$_{theta}$")

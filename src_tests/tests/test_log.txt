@@ -1,0 +1,12 @@
+22:57.406  INFO [rshower.manage_log 140] create handler for root logger: ['RadioShower', 'rshower']
+22:57.407  INFO [RadioShower.src_tests.tests.test_manage_log 29] test
+22:57.407  INFO [RadioShower.src_tests.tests.test_manage_log 30] 
+22:57.407  INFO [RadioShower.src_tests.tests.test_manage_log 30] ===========> Begin at 2024-08-23T15:22:57Z <===========
+22:57.407  INFO [RadioShower.src_tests.tests.test_manage_log 30] 
+22:57.407  INFO [RadioShower.src_tests.tests.test_manage_log 30] 
+22:57.407  INFO [RadioShower.src_tests.tests.test_manage_log 31] -----> Chrono start
+22:57.407  INFO [RadioShower.src_tests.tests.test_manage_log 32] -----> Chrono duration (h:m:s): 0:00:00.000182
+22:57.407  INFO [RadioShower.src_tests.tests.test_manage_log 33] 
+22:57.407  INFO [RadioShower.src_tests.tests.test_manage_log 33] 
+22:57.407  INFO [RadioShower.src_tests.tests.test_manage_log 33] ===========> End at 2024-08-23T15:22:57Z <===========
+22:57.407  INFO [RadioShower.src_tests.tests.test_manage_log 33] Duration (h:m:s): 0:00:00.000597

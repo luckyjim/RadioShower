@@ -139,6 +139,7 @@ class GrandEventsSelectedFmt01:
         if self.trigger_time is None:
             trigger_time = None
         else:
+            # convert second to nanosecond
             trigger_time = self.trigger_time[m_slice]
             trigger_time -= np.min(trigger_time)
             trigger_time *= 10e9
