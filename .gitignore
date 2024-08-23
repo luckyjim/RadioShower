@@ -11,3 +11,4 @@ __pycache__
 /.coverage
 
 quality/html_coverage
+src_tests/tests/test_log*.txt

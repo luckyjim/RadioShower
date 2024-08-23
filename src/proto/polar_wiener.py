@@ -11,6 +11,7 @@ from rshower.basis.traces_event import Handling3dTraces
 from rshower.num.wiener import WienerDeconvolution
 from rshower.io.events.grand_trigged import GrandEventsSelectedFmt01
 from rshower.io.leff_fmt import get_leff_default
+from rshower.io.rf_fmt import read_TF3_fmt
 from rshower.model.ant_resp import DetectorUnitAntenna3Axis
 
 logger = getLogger(__name__)
@@ -118,7 +119,7 @@ def loss_func_polar_2du(angle_pol, data):
     return loss_func
 
 
-def deconv_main(pn_fevents, pn_fmodel, idx_evt=14):
+def deconv_main(pn_fevents, pn_fmodel, idx_evt=3):
     """
     Deal with format and event selection:
         Load data to init Handling3dTraces object
@@ -139,10 +140,12 @@ def deconv_main(pn_fevents, pn_fmodel, idx_evt=14):
     evt.plot_footprint_val_max()
     # Load instrument model : antenna
     ant_resp = DetectorUnitAntenna3Axis(get_leff_default(pn_fmodel))
-    ant_resp.ew_leff
     # Load instrument model : RF chain
+    rf_fft = read_TF3_fmt(pn_fmodel)
     # Load instrument model : galaxy signale as noise
-
+    gal_psd = None
+    #
+    return evt, ant_resp, rf_fft, gal_psd
 
 def deconv_all_du():
     """
