@@ -47,6 +47,7 @@ def manage_args():
         default=-100,
     )
     parser.add_argument(
+        "-i",
         "--index",
         type=int,
         help="Select event with index <index>, given by -i option, index is always > 0 or = 0",
@@ -71,7 +72,6 @@ def manage_args():
         help="dump trace of DU",
     )  # retrieve argument
     parser.add_argument(
-        "-i",
         "--info",
         action="store_true",
         required=False,
