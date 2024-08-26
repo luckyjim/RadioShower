@@ -11,7 +11,7 @@ from rshower.basis.traces_event import Handling3dTraces
 from rshower.num.wiener import WienerDeconvolution
 from rshower.io.events.grand_trigged import GrandEventsSelectedFmt01
 from rshower.io.leff_fmt import get_leff_default
-from rshower.io.rf_fmt import read_TF3_fmt
+from rshower.io.rf_fmt import read_TF3_fmt, plot_global_rf_chain_TF3
 from rshower.model.ant_resp import DetectorUnitAntenna3Axis
 
 logger = getLogger(__name__)
@@ -142,6 +142,7 @@ def deconv_main(pn_fevents, pn_fmodel, idx_evt=3):
     ant_resp = DetectorUnitAntenna3Axis(get_leff_default(pn_fmodel))
     # Load instrument model : RF chain
     rf_fft = read_TF3_fmt(pn_fmodel)
+    plot_global_rf_chain_TF3(pn_fmodel)
     # Load instrument model : galaxy signale as noise
     gal_psd = None
     #
