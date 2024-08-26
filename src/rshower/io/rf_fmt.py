@@ -31,9 +31,7 @@ def read_TFx_yy_fmt(n_path, n_ew, n_ns, n_z):
 
 
 def read_TF2_fmt(n_path):
-    """
-    
-    """
+    """ """
     n_ew = "TF2_20db_EW"
     n_ns = "TF2_20db_NS"
     n_z = "TF2_20db_Z"
@@ -41,9 +39,7 @@ def read_TF2_fmt(n_path):
 
 
 def read_TF3_fmt(n_path):
-    """
-    
-    """
+    """ """
     n_ew = "TF3_20dB_EW"
     n_ns = "TF3_20dB_NS"
     n_z = "TF3_20dB_Z"
@@ -60,8 +56,8 @@ def plot_global_rf_chain(n_path, f_read, title=""):
     plt.legend()
     plt.grid()
     plt.xlabel("MHz")
-    plt.ylabel("dB")
+    plt.ylabel("??")
 
 
 def plot_global_rf_chain_TF3(n_path, title="RF chain version TF3"):
-    plot_global_rf_chain(n_path, read_TF3_fmt, "RF chain version TF3")
+    plot_global_rf_chain(n_path, read_TF3_fmt, title)
