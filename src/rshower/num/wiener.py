@@ -183,6 +183,7 @@ class WienerDeconvolution:
         self.f_ifftshift = False
         self.psd_sig = None
         self.idx_min = 0
+        self.a_freq_mhz = None
 
     def set_flag_ifftshift(self, flag):
         self.f_ifftshift = flag
@@ -239,6 +240,8 @@ class WienerDeconvolution:
         if self.f_ifftshift:
             sig = sf.ifftshift(sig)
         self.wiener = wiener
+        # between 0 and 1
+        self.gain_weiner = psd_sig / (psd_sig + self.psd_noise)
         self.sig = sig
         self.psd_sig_est = psd_sig
         self.snr = psd_sig / self.psd_noise

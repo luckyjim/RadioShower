@@ -94,6 +94,7 @@ def main():
             logger.error(f"index events must < {d_event.nb_events}")
             return
         o_tevent = d_event.get_3dtraces(args.index)
+        o_tevent.set_noise_interval(624,1024)
     if args.info:
         str_info = d_event.get_info()
         print(f"{str_info}")

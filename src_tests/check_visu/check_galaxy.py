@@ -35,6 +35,6 @@ def check_GalaxyModelVolt_signal():
 
 if __name__ == "__main__":
     logger.info(mlg.string_begin_script())
-    #check_GalaxyModelVolt()
-    check_GalaxyModelVolt_signal()
+    check_GalaxyModelVolt_ampl()
+    #check_GalaxyModelVolt_signal()
     plt.show()

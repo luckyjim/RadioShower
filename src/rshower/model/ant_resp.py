@@ -15,6 +15,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 import rshower.basis.coord as coord
+
 # from rshower.io.leff_fmt import AntennaLeffStorage
 # from rshower import get_path_model_du
 
@@ -96,7 +97,7 @@ class PreComputeInterpolFreq:
         self.freq_out_mhz = freq_out_mhz
         self.size_out = freq_out_mhz.shape[0]
         # freq_out_mhz must start be 0 and first element is the delta frequency
-        assert freq_out_mhz[0] == 0.0 
+        assert freq_out_mhz[0] == 0.0
         d_freq_out = freq_out_mhz[1]
         # index of freq in first in band, + 1 to have first in band
         idx_first = int(freq_in_mhz[0] / d_freq_out) + 1
@@ -182,6 +183,10 @@ class LengthEffectiveInterpolation:
         self._update_idx_interpol_sph()
 
     def set_angle_polar(self, a_pol_tan):
+        """
+
+        :param a_pol_tan: RAD
+        """
         self.angle_pol = a_pol_tan
         self.cos_pol = np.cos(self.angle_pol)
         self.sin_pol = np.sin(self.angle_pol)
@@ -205,12 +210,12 @@ class LengthEffectiveInterpolation:
             + rp1 * rt1 * leff[ip1, it1, :]
         )
         leff_itp_sph = np.array([leff_itp_t, leff_itp_p])
-        #leff_itp_sph = np.array([leff_tp.leff_theta[ip0, it0], leff_tp.leff_phi[ip0, it0]])
+        # leff_itp_sph = np.array([leff_tp.leff_theta[ip0, it0], leff_tp.leff_phi[ip0, it0]])
         pre = self.o_pre
         leff_itp = (
             pre.c_inf * leff_itp_sph[:, pre.idx_itp] + pre.c_sup * leff_itp_sph[:, pre.idx_itp + 1]
         )
-        
+
         # now add zeros outside leff frequency band and unpack leff theta , phi
         l_t = np.zeros(self.o_pre.size_out, dtype=np.complex64)
         l_t[pre.idx_first : pre.idx_lastp1] = leff_itp[0]
@@ -245,7 +250,7 @@ class LengthEffectiveInterpolation:
         plt.title(
             f"Interpolated Leff {self.leff.name} at (phi={self.dir_src_deg[0]:.1f}, theta={self.dir_src_deg[1]:.1f})"
         )
-        plt.plot(self.o_pre.freq_out_mhz, self.l_phi.real,".-.", label="Leff phi real")
+        plt.plot(self.o_pre.freq_out_mhz, self.l_phi.real, ".-.", label="Leff phi real")
         plt.plot(self.o_pre.freq_out_mhz, self.l_phi.imag, label="Leff phi imag")
         plt.plot(self.o_pre.freq_out_mhz, self.l_theta.real, ".-.", label="Leff theta real")
         plt.plot(self.o_pre.freq_out_mhz, self.l_theta.imag, label="Leff theta imag")
@@ -327,12 +332,13 @@ class DetectorUnitAntenna3Axis:
         self.sn_leff = d_leff["sn"]
         self.ew_leff = d_leff["ew"]
         self.up_leff = d_leff["up"]
+        self.leff = [d_leff["sn"], d_leff["ew"], d_leff["up"]]
         logger.debug("Hypothesis : all leff storage have same array angle phi, theta")
         self.interp_leff.set_sampling_angle(self.sn_leff.theta_deg, self.sn_leff.phi_deg)
 
     def set_name_pos(self, name, pos_xcs):
         """
-        [XCS] is the frame associated to XCore of air shower 
+        [XCS] is the frame associated to XCore of air shower
         :param name:
         :param pos_xcs: [m] (3,) in stations frame [XCS]
         """
@@ -356,10 +362,10 @@ class DetectorUnitAntenna3Axis:
         self._update_dir_source()
 
     def set_dir_source(self, dir_du):
-        '''
+        """
          in RAD
         :param dir_du:
-        '''
+        """
         self.dir_src_du = dir_du
         self.interp_leff.set_dir_source(self.dir_src_du)
 

@@ -69,7 +69,7 @@ class Handling3dTraces:
         self.info_shower = ""
         nb_du = 0
         nb_sample = 0
-        self.nperseg = 512
+        self.nperseg = 0
         self.traces = np.zeros((nb_du, 3, nb_sample))
         self.idx2idt = range(nb_du)
         self.t_start_ns = np.zeros((nb_du), dtype=np.int64)
@@ -95,6 +95,7 @@ class Handling3dTraces:
         # computing by user and store in object
         self.t_max = None
         self.v_max = None
+        self.noise_inter = None
 
     ### INTERNAL
 
@@ -115,6 +116,9 @@ class Handling3dTraces:
         assert isinstance(self.traces, np.ndarray)
         assert traces.ndim == 3
         assert traces.shape[1] == 3
+        self.nperseg = traces.shape[2] // 4
+        if self.nperseg < 256:
+            self.nperseg = 256
         self.traces = traces
         if du_id is None:
             du_id = list(range(traces.shape[0]))
@@ -130,6 +134,7 @@ class Handling3dTraces:
         assert isinstance(self.t_start_ns, np.ndarray)
         assert traces.shape[0] == len(du_id)
         assert len(du_id) == t_start_ns.shape[0]
+
         self._define_t_samples()
 
     def init_network(self, du_pos):
@@ -140,6 +145,12 @@ class Handling3dTraces:
         """
         self.network = DetectorUnitNetwork()
         self.network.init_pos_id(du_pos, self.idx2idt)
+
+    def set_noise_interval(self, i_beg, i_end):
+        assert i_beg < i_end
+        assert i_beg >= 0
+        assert i_end <= self.traces.shape[2]
+        self.noise_inter = [i_beg, i_end]
 
     def set_unit_axis(self, str_unit="TBD", axis_name="idx", type_tr="Trace"):
         """
@@ -445,6 +456,15 @@ class Handling3dTraces:
         common_time = t_min + np.arange(nb_sample, dtype=np.float64) * delta
         return common_time, extended_traces
 
+    def get_psd_trace_idx(self, idx):
+        psd = None
+        for idx_axis, axis in enumerate(self.axis_name):
+            freq, pxx_den = get_psd(self.traces[idx, idx_axis], self.f_samp_mhz[idx], self.nperseg)
+            if psd is None:
+                psd = np.zeros((3,pxx_den.shape[0]), dtype=np.float32)
+            psd[idx_axis] = pxx_den
+        return freq, psd
+
     ### PLOTS
 
     def plot_trace_idx(self, idx, to_draw="012"):  # pragma: no cover
@@ -522,6 +542,15 @@ class Handling3dTraces:
         plt.xlim([0, 400])
         plt.grid()
         plt.legend()
+        #
+        if self.noise_inter is not None:
+            noise = Handling3dTraces("Noise")
+            i_beg, i_end = self.noise_inter[0], self.noise_inter[1]
+            noise.init_traces(
+                self.traces[:, :, i_beg:i_end], self.idx2idt, f_samp_mhz=self.f_samp_mhz
+            )
+            noise.type_trace = "Noise"
+            noise.plot_psd_trace_idx(idx)
 
     def plot_psd_trace_du(self, du_id, to_draw="012"):  # pragma: no cover
         """Draw power spectrum for 3 traces associated to DU idx2idt
