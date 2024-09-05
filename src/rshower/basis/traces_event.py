@@ -354,7 +354,7 @@ class Handling3dTraces:
         """
         return np.linalg.norm(self.traces, axis=1)
 
-    def get_tmax_vmax(self, hilbert=True, interpol="auto"):
+    def get_tmax_vmax(self, hilbert=True, interpol="parab"):
         """Return time where norm of the amplitude of the Hilbert tranform  is max
 
         :param hilbert: True for Hilbert envelop else norm L2
@@ -539,7 +539,7 @@ class Handling3dTraces:
         plt.title(m_title)
         plt.ylabel(rf"({self.unit_trace})$^2$/Hz")
         plt.xlabel(f"MHz\n{self.name}")
-        plt.xlim([0, 400])
+        plt.xlim([0, freq[-1]])
         plt.grid()
         plt.legend()
         #

@@ -153,7 +153,7 @@ class GrandEventsSelectedFmt01:
         unit = "ADU"
         if adu2volt:
             fact = np.float64(0.9 / 2 ** 13)
-            event.traces = event.traces.astype(np.float64)
+            event.traces = fact*event.traces.astype(np.float64)
             unit = "Volt"
         event.init_network(self.du_coord[m_slice, 1:])
         event.network.name = "GP13"

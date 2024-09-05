@@ -11,6 +11,7 @@ import matplotlib.pyplot as plt
 
 from .signal import interpol_at_new_x
 
+
 logger = getLogger(__name__)
 
 
@@ -34,6 +35,7 @@ class WienerDeconvolutionWhiteNoise:
             self.sig_size = 2 * (s_rfft - 1)
         else:
             self.sig_size = 2 * s_rfft - 1
+        logger.debug(f"sig_size: {self.sig_size}, s_rfft: {s_rfft}")
         self.rfft_ker = rfft_ker
         self.rfft_ker_c = np.conj(self.rfft_ker)
         self.es_ker = (rfft_ker * self.rfft_ker_c).real
@@ -178,12 +180,14 @@ class WienerDeconvolutionWhiteNoise:
 
 class WienerDeconvolution:
     def __init__(self, f_sample_hz=1):
+        assert isinstance(f_sample_hz, float)
         self.f_hz = f_sample_hz
         logger.info(f"f_sample_hz : {f_sample_hz}")
         self.f_ifftshift = False
         self.psd_sig = None
         self.idx_min = 0
         self.a_freq_mhz = None
+        self.sig_size = None
 
     def set_flag_ifftshift(self, flag):
         self.f_ifftshift = flag
@@ -194,10 +198,11 @@ class WienerDeconvolution:
 
     def set_rfft_kernel(self, rfft_ker):
         s_rfft = rfft_ker.shape[0]
-        if s_rfft % 2 == 0:
+        if s_rfft % 2 == 1:
             self.sig_size = 2 * (s_rfft - 1)
         else:
             self.sig_size = 2 * s_rfft - 1
+        logger.debug(f"sig_size: {self.sig_size}, s_rfft: {s_rfft}")
         self.rfft_ker = rfft_ker
         self.rfft_ker_c = np.conj(self.rfft_ker)
         self.ker_pow2 = (rfft_ker * self.rfft_ker_c).real
@@ -213,12 +218,21 @@ class WienerDeconvolution:
 
     def set_psd_noise(self, psd_noise):
         """
-        Set energy spectrum of signal
+        Set energy spectrum of 
 
         :param psd_sig:
         :type psd_sig:
         """
         self.psd_noise = psd_noise
+
+    def set_psd_sig(self, psd_sig):
+        """
+        Set energy spectrum of signal
+
+        :param psd_sig:
+        :type psd_sig:
+        """
+        self.psd_sig_est = psd_sig
 
     def get_interpol(self, freq_mhz, sig):
         return interpol_at_new_x(freq_mhz, sig, self.a_freq_mhz, "linear")
@@ -245,6 +259,7 @@ class WienerDeconvolution:
         self.sig = sig
         self.psd_sig_est = psd_sig
         self.snr = psd_sig / self.psd_noise
+        logger.debug(fft_sig.shape)
         return sig, fft_sig
 
     def deconv_measure(self, measure, psd_sig):
@@ -257,11 +272,11 @@ class WienerDeconvolution:
         self.measure = measure
         return self.deconv_fft_measure(rfft_m, psd_sig)
 
-    def plot_psd(self, loglog=True):
+    def plot_psd(self, title="", loglog=False):
         freq_hz = self.a_freq_mhz
         print(self.sig_size, freq_hz.shape, 1 / self.f_hz)
         plt.figure()
-        plt.title("Power Spectrum Density (PSD)")
+        plt.title(f"Power Spectrum Density (PSD){title}")
         if loglog:
             my_plot = plt.loglog
         else:
@@ -283,5 +298,12 @@ class WienerDeconvolution:
         plt.title("measure_signal" + title)
         plt.plot(self.sig, label="Wiener solution")
         plt.plot(self.measure, label="Measures")
+        plt.grid()
+        plt.legend()
+    
+    def plot_ker_pow2(self, title=""):
+        plt.figure()
+        plt.title("|Kernel|^2" + title)
+        plt.plot(self.a_freq_mhz, self.ker_pow2, label="Kernel")
         plt.grid()
         plt.legend()
