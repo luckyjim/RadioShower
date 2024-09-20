@@ -297,6 +297,7 @@ class LengthEffectiveInterpolation:
         plt.plot(self.o_pre.freq_out_mhz, np.abs(leff_pol), label="|Leff|")
         plt.grid()
         plt.xlabel("MHz")
+        plt.ylim([-5,5])
         plt.legend()
 
     def plot_leff_xyz(self):

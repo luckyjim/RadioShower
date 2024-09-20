@@ -246,6 +246,8 @@ class WienerDeconvolution:
         :type es_noise: float (n_s,)
         """
         rfft_m = rfft_measure
+        self.rfft_m_band = np.zeros_like(rfft_m)
+        self.rfft_m_band = rfft_m[self.r_freq]
         # coeff normalisation of se is sig_size
         wiener = (self.rfft_ker_c * psd_sig) / (self.ker_pow2 * psd_sig + self.psd_noise)
         fft_sig = np.zeros_like(rfft_m)
@@ -259,7 +261,7 @@ class WienerDeconvolution:
         self.sig = sig
         self.psd_sig_est = psd_sig
         self.snr = psd_sig / self.psd_noise
-        logger.debug(fft_sig.shape)
+        self.fft_sig = fft_sig
         return sig, fft_sig
 
     def deconv_measure(self, measure, psd_sig):
@@ -293,14 +295,26 @@ class WienerDeconvolution:
         plt.semilogy(freq_hz[1:], self.snr[1:])
         plt.grid()
 
-    def plot_measure_signal(self, title=""):
+    def plot_signal_est(self, title=""):
         plt.figure()
-        plt.title("measure_signal" + title)
+        plt.title("Estimated signal " + title)
         plt.plot(self.sig, label="Wiener solution")
-        plt.plot(self.measure, label="Measures")
+        #plt.ylim([8,-8])
         plt.grid()
         plt.legend()
-    
+        
+    def plot_measure_est(self, title=""):
+        plt.figure()
+        plt.title("measure_signal" + title)
+        plt.plot(self.measure, label="Measures")
+        band_mea = sf.irfft(self.rfft_m_band)
+        plt.plot(band_mea, 'k',label="Measures band")
+        est_mea = sf.irfft(self.rfft_ker*self.fft_sig)
+        plt.plot(est_mea, label="Estimated measures")
+        plt.grid()
+        plt.legend()
+
+   
     def plot_ker_pow2(self, title=""):
         plt.figure()
         plt.title("|Kernel|^2" + title)
