@@ -9,3 +9,6 @@ __pycache__
 /.pytest_cache/
 /ecl.txt
 /.coverage
+
+quality/html_coverage
+src_tests/tests/test_log*.txt

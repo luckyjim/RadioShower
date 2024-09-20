@@ -328,7 +328,7 @@ def get_fastest_size_rfft(sig_size, f_samp_mhz, padding_fact=1):
     return fastest_size_fft, freqs_mhz
 
 
-def interpol_at_new_x(a_x, a_y, new_x, kind="cubic"):
+def interpol_at_new_x(a_x, a_y, new_x, kind="linear"):
     """
     Interpolation of discreet function F defined by set of point F(a_x)=a_y for new_x value
     and set to zero outside interval definition a_x
@@ -342,4 +342,38 @@ def interpol_at_new_x(a_x, a_y, new_x, kind="cubic"):
     assert a_x.shape[0] > 0
     func_interpol = interpolate.interp1d(a_x, a_y, kind, bounds_error=False, fill_value=(0.0, 0.0))
     return func_interpol(new_x)
+
+
+def halfcplx_fullcplx(v_half, even=True):
+    """
+    Return fft with full complex format where vector has half complex format,
+    ie v_half=rfft(signal) in numpy/scipy convention
+
+    For N size of signal and f frequency sampling
+
+    numpy and scipy.fft convention:
+    ===============================
+
+    halfcplx: for N=4 =>  size of format halfcplx is N//2 + 1=3
+      f*0, f*1/N, f*2/N
+      - f*2/N is Nyquist frequency
+      - for real signal, f*0 and f*2/N mode are real in Fourier space
+            => same number of value in direct space and Fourier space to define signal
+
+    fullcplx: for N=4
+      f*0, f*1/N, -f*2/N, -f*1/N
+      - Nyquist frequency is negative
+
+    @note:
+      Numpy reference : https://numpy.org/doc/stable/reference/generated/numpy.fft.rfftfreq.html
+
+    :param v_half (array 1D complex): complex vector in half complex format, ie from rfft(signal)
+    :param even (bool): True if size of signal is even
+
+    @return (array 1D complex) : fft(signal) in full complex format
+    """
+    if even:
+        return np.concatenate((v_half, np.flip(np.conj(v_half[1:-1]))))
+    return np.concatenate((v_half, np.flip(np.conj(v_half[1:]))))
+
 

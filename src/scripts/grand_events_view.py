@@ -1,6 +1,6 @@
 #! /usr/bin/env python3
 """
-Created on 6 avr. 2023
+Created on 22 August 2024
 
 @author: jcolley
 """
@@ -12,7 +12,7 @@ from pathlib import Path
 import pprint
 
 import rshower.manage_log as mlg
-from rshower.io.events.grand_trigged import EventsTriggedFormat1
+from rshower.io.events.grand_trigged import GrandEventsSelectedFmt01
 
 
 # specific logger definition for script because __mane__ is "__main__" !
@@ -22,9 +22,9 @@ logger = mlg.get_logger_for_script(__file__)
 mlg.create_output_for_logger("error", log_stdout=True)
 
 def manage_args():
-    parser = argparse.ArgumentParser(description="Information and plot event/traces for ROOT file")
+    parser = argparse.ArgumentParser(description="Muliti events viewer from GRAND network GP13")
     parser.add_argument(
-        "file", help="path and name of ROOT file GRAND", type=argparse.FileType("r")
+        "file", help="path and name of file GRAND", type=argparse.FileType("r")
     )
     parser.add_argument(
         "-f",
@@ -47,9 +47,10 @@ def manage_args():
         default=-100,
     )
     parser.add_argument(
-        "--idx_evt",
+        "-i",
+        "--index",
         type=int,
-        help="Select event with index <idx_evt>, given by -i option, idx_evt is always > 0 or = 0",
+        help="Select event with index <index>, given by -i option, index is always > 0 or = 0",
         default=-100,
     )
     parser.add_argument(
@@ -71,11 +72,10 @@ def manage_args():
         help="dump trace of DU",
     )  # retrieve argument
     parser.add_argument(
-        "-i",
         "--info",
         action="store_true",
         required=False,
-        help="some information about the contents of the file",
+        help="Some information and plots about the contents of the file",
     )  # retrieve argument
     return parser.parse_args()
 
@@ -85,18 +85,20 @@ def main():
     logger.info("Example script to deal with 3D traces.")
 
     args = manage_args()
-    d_event = EventsTriggedFormat1(args.file.name)
-    if args.idx_evt != -100:
-        if args.idx_evt < 0:
+    d_event = GrandEventsSelectedFmt01(args.file.name)
+    if args.index != -100:
+        if args.index < 0:
             logger.error("index events must >= 0")
             return
-        if args.idx_evt >= d_event.nb_events:
+        if args.index >= d_event.nb_events:
             logger.error(f"index events must < {d_event.nb_events}")
             return
-        o_tevent = d_event.get_3dtraces(args.idx_evt)
+        o_tevent = d_event.get_3dtraces(args.index)
+        o_tevent.set_noise_interval(624,1024)
     if args.info:
         str_info = d_event.get_info()
         print(f"{str_info}")
+        d_event.plot_stats_events()
     if args.list_du:
         print(f"Identifier DU : {o_tevent.idx2idt}")
     if args.trace_image:

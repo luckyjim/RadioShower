@@ -9,12 +9,15 @@ import scipy.signal as ssig
 import matplotlib.pyplot as plt
 from matplotlib import colors
 from matplotlib.backend_bases import MouseButton
+from matplotlib.widgets import CheckButtons
 
 from rshower.basis.du_network import DetectorUnitNetwork
 import rshower.num.signal as rss
 
 
 logger = getLogger(__name__)
+
+G_3d_widget = None
 
 
 def get_psd(trace, f_samp_mhz, nperseg=0):
@@ -69,7 +72,7 @@ class Handling3dTraces:
         self.info_shower = ""
         nb_du = 0
         nb_sample = 0
-        self.nperseg = 512
+        self.nperseg = 0
         self.traces = np.zeros((nb_du, 3, nb_sample))
         self.idx2idt = range(nb_du)
         self.t_start_ns = np.zeros((nb_du), dtype=np.int64)
@@ -95,6 +98,7 @@ class Handling3dTraces:
         # computing by user and store in object
         self.t_max = None
         self.v_max = None
+        self.noise_inter = None
 
     ### INTERNAL
 
@@ -115,6 +119,9 @@ class Handling3dTraces:
         assert isinstance(self.traces, np.ndarray)
         assert traces.ndim == 3
         assert traces.shape[1] == 3
+        self.nperseg = traces.shape[2] // 4
+        if self.nperseg < 256:
+            self.nperseg = 256
         self.traces = traces
         if du_id is None:
             du_id = list(range(traces.shape[0]))
@@ -130,6 +137,7 @@ class Handling3dTraces:
         assert isinstance(self.t_start_ns, np.ndarray)
         assert traces.shape[0] == len(du_id)
         assert len(du_id) == t_start_ns.shape[0]
+
         self._define_t_samples()
 
     def init_network(self, du_pos):
@@ -141,7 +149,13 @@ class Handling3dTraces:
         self.network = DetectorUnitNetwork()
         self.network.init_pos_id(du_pos, self.idx2idt)
 
-    def set_unit_axis(self, str_unit="TBD", axis_name="idx", type_tr="Trace"):
+    def set_noise_interval(self, i_beg, i_end):
+        assert i_beg < i_end
+        assert i_beg >= 0
+        assert i_end <= self.traces.shape[2]
+        self.noise_inter = [i_beg, i_end]
+
+    def set_unit_axis(self, unit_trace="TBD", axis_name="idx", type_trace="Trace"):
         """
 
         :param str_unit: define the unit of traces
@@ -151,11 +165,11 @@ class Handling3dTraces:
         :param type_tr: define type of traces
         :type type_tr: string
         """
-        assert isinstance(str_unit, str)
+        assert isinstance(unit_trace, str)
         assert isinstance(axis_name, str)
-        assert isinstance(type_tr, str)
-        self.type_trace = type_tr
-        self.unit_trace = str_unit
+        assert isinstance(type_trace, str)
+        self.type_trace = type_trace
+        self.unit_trace = unit_trace
         self.axis_name = self._d_axis_val[axis_name]
 
     def set_periodogram(self, size):
@@ -226,6 +240,7 @@ class Handling3dTraces:
         for idx, ident in enumerate(self.idx2idt):
             self.idt2idx[ident] = idx
         self.traces = self.traces[l_idx]
+        self.f_samp_mhz = self.f_samp_mhz[l_idx]
         self.t_start_ns = self.t_start_ns[l_idx]
         if self.t_samples.shape[0] > 0:
             self.t_samples = self.t_samples[l_idx]
@@ -279,7 +294,6 @@ class Handling3dTraces:
         self.keep_only_trace_with_index(idx_ok)
         return idx_ok
 
-    ### GETTER :
     def copy(self, new_traces=None, deepcopy=True):
         """Return a copy of current object where traces can be modify
 
@@ -308,6 +322,10 @@ class Handling3dTraces:
             self.t_max = None
             self.v_max = None
         return my_copy
+
+    ### GETTER
+    def get_nb_du(self):
+        return len(self.idx2idt)
 
     def get_delta_t_ns(self):
         """Return sampling rate in ns
@@ -343,7 +361,7 @@ class Handling3dTraces:
         """
         return np.linalg.norm(self.traces, axis=1)
 
-    def get_tmax_vmax(self, hilbert=True, interpol="auto"):
+    def get_tmax_vmax(self, hilbert=True, interpol="parab"):
         """Return time where norm of the amplitude of the Hilbert tranform  is max
 
         :param hilbert: True for Hilbert envelop else norm L2
@@ -445,7 +463,53 @@ class Handling3dTraces:
         common_time = t_min + np.arange(nb_sample, dtype=np.float64) * delta
         return common_time, extended_traces
 
+    def get_psd_trace_idx(self, idx):
+        psd = None
+        for idx_axis, axis in enumerate(self.axis_name):
+            freq, pxx_den = get_psd(self.traces[idx, idx_axis], self.f_samp_mhz[idx], self.nperseg)
+            if psd is None:
+                psd = np.zeros((3, pxx_den.shape[0]), dtype=np.float32)
+            psd[idx_axis] = pxx_den
+        return freq, psd
+
     ### PLOTS
+
+    def plot_trace_3d_idx(self, idx):
+        global G_3d_widget
+
+        def change_checkbutton(label):
+            print(label)
+            if label == labels[0]:
+                if activated[0]:
+                    ax1.axis("auto")
+                else:
+                    ax1.axis("equal")
+                activated[0] = not activated[0]
+                plt.draw()
+
+        fig, ax = plt.subplots()
+        fig.subplots_adjust(bottom=0.2)
+        # 3D plot
+        ax1 = fig.add_subplot(projection="3d")
+        ax.tick_params(labelleft=False, labelbottom=False)
+        data_xd = self.traces[idx]
+        ln = ax1.scatter(data_xd[0], data_xd[1], data_xd[2])
+        ax1.axis("equal")
+        s_title = f"{self.type_trace}, DU {self.idx2idt[idx]} (idx={idx})"
+        s_title += f"\n$F_{{sampling}}$={self.f_samp_mhz[idx]} MHz"
+        s_title += f"; {self.get_size_trace()} samples"
+        ax1.set_title(s_title)
+        ax1.grid()
+        # Button
+        axcheck = fig.add_axes([0.7, 0.05, 0.2, 0.075])
+        labels = ["Same scale"]
+        activated = [True]
+        chxbox = CheckButtons(axcheck, labels, activated)
+        # why global
+        # https://stackoverflow.com/questions/42419139/matplotlib-widgets-button-doesnt-work-inside-a-class
+        G_3d_widget = chxbox
+        chxbox.on_clicked(change_checkbutton)
+        plt.show(block=False)
 
     def plot_trace_idx(self, idx, to_draw="012"):  # pragma: no cover
         """Draw 3 traces associated to DU with index idx
@@ -519,9 +583,18 @@ class Handling3dTraces:
         plt.title(m_title)
         plt.ylabel(rf"({self.unit_trace})$^2$/Hz")
         plt.xlabel(f"MHz\n{self.name}")
-        plt.xlim([0, 400])
+        plt.xlim([0, freq[-1]])
         plt.grid()
         plt.legend()
+        #
+        if self.noise_inter is not None:
+            noise = Handling3dTraces("Noise")
+            i_beg, i_end = self.noise_inter[0], self.noise_inter[1]
+            noise.init_traces(
+                self.traces[:, :, i_beg:i_end], self.idx2idt, f_samp_mhz=self.f_samp_mhz
+            )
+            noise.type_trace = "Noise"
+            noise.plot_psd_trace_idx(idx)
 
     def plot_psd_trace_du(self, du_id, to_draw="012"):  # pragma: no cover
         """Draw power spectrum for 3 traces associated to DU idx2idt

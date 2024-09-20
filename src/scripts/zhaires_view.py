@@ -13,7 +13,7 @@ import pprint
 
 import rshower.manage_log as mlg
 from rshower.io.shower.zhaires_master import ZhairesMaster
-
+from rshower.io.shower.zhaires_base import get_simu_xmax
 
 # specific logger definition for script because __mane__ is "__main__" !
 logger = mlg.get_logger_for_script(__file__)
@@ -43,6 +43,9 @@ def manage_args():
         "--trace",
         help="plot trace x,y,z and power spectrum of detector unit (station)",
         default="",
+    )
+    parser.add_argument(
+        "-p", "--polar", help="plot polar angle footprint", action="store_true", required=False
     )
     parser.add_argument(
         "--trace_image",
@@ -91,6 +94,10 @@ def main():
     if args.footprint:
         o_tevent.plot_footprint_val_max()
         o_tevent.plot_footprint_4d_max()
+    if args.polar:
+        pars = d_event.get_simu_info()
+        o_tevent.set_xmax(get_simu_xmax(pars))
+        o_tevent.plot_polar_angle()
     if args.time_val:
         o_tevent.plot_footprint_time_max()
     if args.trace != "":
