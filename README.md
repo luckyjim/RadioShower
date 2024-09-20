@@ -64,12 +64,15 @@ Out[5]: 32.9
 
 Read [ZHAireS](http://aires.fisica.unlp.edu.ar/zhaires/) simulation in HDF5 or text file format.
 
-Interactive footprint plot:  
+Interactive footprint plot:
+* for max EField value  or polarization angle 
 * traces, power spectrum density
-* name of station, max EField value
+* name of station
 * information on simulation : site, Xmax distance, direction
 
-![ZHAireS footprint](doc/image/footprint.png)
+![ZHAireS footprint](doc/image/ZHaireS_footprint.png)
+
+![ZHAireS footprint_polar](doc/image/ZHaireS_footprint_polar_angle.png)
 
 #### help 
 
