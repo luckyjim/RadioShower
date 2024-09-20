@@ -91,6 +91,7 @@ options:
   --time_val            interactive plot, value of each station at time t defined by a slider
   -t TRACE, --trace TRACE
                         plot trace x,y,z and power spectrum of detector unit (station)
+  -p, --polar           plot polar angle footprint                        
   --trace_image         interactive image plot (double click) of norm of traces
   --list_du             list of identifier of station
   --dump DUMP           dump trace of station
