@@ -1,6 +1,7 @@
 """
 Handling a set of 3D traces
 """
+
 from logging import getLogger
 import copy
 
@@ -324,8 +325,6 @@ class Handling3dTraces:
         return my_copy
 
     ### GETTER
-    def get_nb_du(self):
-        return len(self.idx2idt)
 
     def get_delta_t_ns(self):
         """Return sampling rate in ns
@@ -427,6 +426,15 @@ class Handling3dTraces:
         """
         return self.traces.shape[2]
 
+    def get_std_noise(self, idx=None):
+        size_noise = np.min([200, int(self.get_size_trace() / 20)])
+        if idx is None:
+            noise = np.std(self.traces[:, :, -size_noise:], axis=-1)
+            assert noise.shape[0] == self.get_nb_trace()
+            return noise
+        else:
+            return np.std(self.traces[idx, :, -size_noise:], axis=-1)
+
     def get_snr_and_noise(self):
         """Return a crude estimation of SNR and noise level
 
@@ -436,10 +444,10 @@ class Handling3dTraces:
 
         :return: snr float(nb_trace,), noise(nb_trace,)
         """
-        size_noise = np.min([100, int(self.get_size_trace() / 20)])
-        noise = np.max(np.std(self.traces[:, :, -size_noise:], axis=-1), axis=-1)
-        _, v_max = self.get_tmax_vmax(hilbert=True, interpol="auto")
-        return v_max / noise, v_max, noise
+        noise_mean = np.mean(self.get_std_noise(), axis=1)
+        t_max, v_max = self.get_tmax_vmax(hilbert=False, interpol="no")
+        snr = v_max / noise_mean
+        return snr, noise_mean, t_max, v_max
 
     def get_extended_traces(self):
         """Return extended traces to time interval of event
@@ -525,19 +533,18 @@ class Handling3dTraces:
         s_title += f"\n$F_{{sampling}}$={self.f_samp_mhz[idx]} MHz"
         s_title += f"; {self.get_size_trace()} samples"
         plt.title(s_title)
-        a_sigma = np.zeros(3, dtype=np.float32)
+        std_3d = self.get_std_noise(idx)
         for idx_axis, axis in enumerate(self.axis_name):
             if str(idx_axis) in to_draw:
-                m_sig = np.std(self.traces[idx, idx_axis, -100:])
-                a_sigma[idx_axis] = m_sig
+                std_axis = std_3d[idx_axis]
                 plt.plot(
                     self.t_samples[idx],
                     self.traces[idx, idx_axis],
                     self._color[idx_axis],
-                    label=axis + r", $\sigma_{noise}\approx$" + f"{m_sig:.1e}",
+                    label=axis + r", $\sigma_{noise}\approx$" + f"{std_axis:.1e}",
                 )
         if self.t_max is not None:
-            snr = self.v_max[idx] / a_sigma.max()
+            snr = self.v_max[idx] / std_3d.mean()
             plt.plot(
                 self.t_max[idx],
                 self.v_max[idx],
@@ -658,3 +665,29 @@ class Handling3dTraces:
             self.network.plot_footprint_time(a_time, a_values, "Max value")
         else:
             logger.error("DU network isn't defined, can't plot footprint")
+
+    def plot_tmax_vmax(self, hline=None, vline=None):
+        """
+        :param hline: None or [value in [0,100], "legend hline"]
+        :param vline: None or [number, "legend vline"]
+        """
+        plt.figure()
+        plt.title(f"Time of max, max value\n{self.name}")
+        t_tot = self.get_size_trace() * self.get_delta_t_ns()[0]
+        t_max_rel = self.t_max - self.t_samples[:, 0]
+        plt.scatter(100 * t_max_rel / t_tot, self.v_max)
+        plt.xlim([0, 100])
+        plt.xlabel("Position of time of max in trace, % ")
+        plt.ylabel(f"Max value of trace, {self.unit_trace}")
+        if hline:
+            plt.hlines(hline[0], 0, 100, label=hline[1], linestyles="-")
+        if vline:
+            v_inf = np.min(self.v_max)
+            v_sup = np.max(self.v_max)
+            if hline:
+                v_inf = np.min([v_inf, hline[0]])
+                v_sup = np.max([v_sup, hline[0]])
+            plt.vlines(vline[0], v_inf, v_sup, label=vline[1], linestyles="-.")
+        plt.yscale("log")
+        plt.grid()
+        plt.legend()
