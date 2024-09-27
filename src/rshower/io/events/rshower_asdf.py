@@ -35,9 +35,10 @@ def save_asdf_single_event(n_file, event, info_sim, type_file="simu_event"):
     d_event["axis_name"] = event.axis_name
     d_gen["event"] = d_event
     #
-    d_net = {}
-    d_net["ant_pos"] = event.network.du_pos
-    d_gen["network"] = d_net
+    if event.network:
+        d_net = {}
+        d_net["ant_pos"] = event.network.du_pos
+        d_gen["network"] = d_net
     df_simu = asdf.AsdfFile(d_gen)
     df_simu.write_to(n_file, all_array_compression="zlib")
 
@@ -70,7 +71,8 @@ def load_asdf_simu_single_event(f_asdf):
         np.array(f_asdf["event"]["t_start_ns"]),
         f_asdf["event"]["f_samp_mhz"],
     )
-    event.init_network(np.array(f_asdf["network"]["ant_pos"]))
+    if "network" in f_asdf["event"]:
+        event.init_network(np.array(f_asdf["network"]["ant_pos"]))
     event.set_unit_axis(f_asdf["event"]["unit_trace"])
     event.axis_name = f_asdf["event"]["axis_name"]
     return event, info_sim
