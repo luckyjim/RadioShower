@@ -16,7 +16,7 @@ import os.path
 from logging import getLogger
 import tarfile
 import tempfile
-
+import pprint
 
 import numpy as np
 
@@ -74,6 +74,7 @@ class ZhairesSummaryFileVers28:
         }
         self.str_sry = str_sry
         if file_sry != "":
+            print(f"Read {file_sry}")
             with open(file_sry) as f_sry:
                 self.str_sry = f_sry.read()
 
@@ -95,7 +96,8 @@ class ZhairesSummaryFileVers28:
                 self.l_error.append(key)
                 break
         self.d_sry = convert_str2number(d_sry)
-        # logger.debug(pprint.pformat(self.d_sry))
+        logger.debug(pprint.pformat(self.d_sry))
+        pprint.pprint(self.d_sry)
 
     def get_dict(self):
         return self.d_sry
@@ -172,7 +174,7 @@ class ZhairesSingleEventText(ZhairesSingleEventBase):
         # print(l_files)
         l_sry = []
         for m_file in l_files:
-            if ".sry" in m_file:
+            if ".sry" in m_file and m_file[0] != ".":
                 l_sry.append(m_file)
         nb_sry = len(l_sry)
         if nb_sry > 1:
