@@ -172,7 +172,10 @@ class LengthEffectiveInterpolation:
         logger.debug(self.idx_i)
         logger.debug(self.weight)
         return rt0, rt1, rp0, rp1, it0, it1, ip0, ip1
-
+    
+    #
+    # SETTER
+    #
     def set_sampling_angle(self, s_theta, s_phi):
         self.theta_deg = s_theta
         self.phi_deg = s_phi
@@ -190,6 +193,24 @@ class LengthEffectiveInterpolation:
         self.angle_pol = a_pol_tan
         self.cos_pol = np.cos(self.angle_pol)
         self.sin_pol = np.sin(self.angle_pol)
+
+    #
+    # Leff
+    #
+    def get_fft_leff_du(self, leff):
+        l_tan = self.get_fft_leff_tan(leff)
+        l_t, l_p = l_tan[0], l_tan[1]
+        p_rad = self.dir_src_rad[0]
+        t_rad = self.dir_src_rad[1]
+        c_t, s_t = np.cos(t_rad), np.sin(t_rad)
+        c_p, s_p = np.cos(p_rad), np.sin(p_rad)
+        l_x = l_t * c_t * c_p - s_p * l_p
+        l_y = l_t * c_t * s_p + c_p * l_p
+        l_z = -s_t * l_t
+        self.l_x = l_x
+        self.l_y = l_y
+        self.l_z = l_z
+        return np.array([l_x, l_y, l_z])
 
     def get_fft_leff_tan(self, leff_tp):
         self.leff = leff_tp
@@ -223,28 +244,17 @@ class LengthEffectiveInterpolation:
         l_p[pre.idx_first : pre.idx_lastp1] = leff_itp[1]
         self.l_phi = l_p
         self.l_theta = l_t
-        return l_p, l_t
-
-    def get_fft_leff_du(self, leff):
-        l_p, l_t = self.get_fft_leff_tan(leff)
-        p_rad = self.dir_src_rad[0]
-        t_rad = self.dir_src_rad[1]
-        c_t, s_t = np.cos(t_rad), np.sin(t_rad)
-        c_p, s_p = np.cos(p_rad), np.sin(p_rad)
-        l_x = l_t * c_t * c_p - s_p * l_p
-        l_y = l_t * c_t * s_p + c_p * l_p
-        l_z = -s_t * l_t
-        self.l_x = l_x
-        self.l_y = l_y
-        self.l_z = l_z
-        return np.array([l_x, l_y, l_z])
+        return np.array([l_t, l_p])
 
     def get_fft_leff_pol(self, leff):
         # logger.debug(f"{self.dir_src_deg} {np.rad2deg(self.angle_pol)}")
-        l_p, l_t = self.get_fft_leff_tan(leff)
+        l_tan = self.get_fft_leff_tan(leff)
         # TAN order is (e_theta, e_phi, e_normal_out)
-        return self.cos_pol * l_t + self.sin_pol * l_p
+        return self.cos_pol * l_tan[0] + self.sin_pol * l_tan[1]
 
+    #
+    # PLOT
+    #
     def plot_leff_tan(self):
         plt.figure()
         plt.title(
@@ -297,7 +307,7 @@ class LengthEffectiveInterpolation:
         plt.plot(self.o_pre.freq_out_mhz, np.abs(leff_pol), label="|Leff|")
         plt.grid()
         plt.xlabel("MHz")
-        plt.ylim([-5,5])
+        plt.ylim([-5, 5])
         plt.legend()
 
     def plot_leff_xyz(self):
@@ -365,10 +375,10 @@ class DetectorUnitAntenna3Axis:
     def set_dir_source(self, dir_du):
         """
          in RAD
-        :param dir_du:
+        :param dir_du: (azi, d_zen)
         """
         self.dir_src_du = dir_du
-        self.interp_leff.set_dir_source(self.dir_src_du)
+        self.interp_leff.set_dir_source(dir_du)
 
     def _update_dir_source(self):
         """
@@ -392,17 +402,21 @@ class DetectorUnitAntenna3Axis:
         itp = self.interp_leff
         resp[0] = np.sum(itp.get_fft_leff_du(self.sn_leff) * fft_efield_du, axis=0)
         resp[1] = np.sum(itp.get_fft_leff_du(self.ew_leff) * fft_efield_du, axis=0)
-        # itp.plot_leff_xyz()
         resp[2] = np.sum(itp.get_fft_leff_du(self.up_leff) * fft_efield_du, axis=0)
         return resp
 
-    def get_resp_2d_efield_tan(self, efield_tan):
+    def get_resp_2d_efield_tan(self, fft_efield_tan):
         """Return fft of antennas response for 3 axis with efield in [TAN] tangential plan
 
         :param efield_tan: electric field in [TAN]
         :type efield_tan: float (2, n_s)
         """
-        pass
+        resp = np.empty((3,fft_efield_tan.shape[1]), dtype=fft_efield_tan.dtype)
+        itp = self.interp_leff
+        resp[0] = np.sum(itp.get_fft_leff_tan(self.sn_leff) * fft_efield_tan, axis=0)
+        resp[1] = np.sum(itp.get_fft_leff_tan(self.ew_leff) * fft_efield_tan, axis=0)
+        resp[2] = np.sum(itp.get_fft_leff_tan(self.up_leff) * fft_efield_tan, axis=0)
+        return resp
 
     def get_resp_1d_efield_pol(self, fft_efield_pol):
         """Return fft of antennas response for 3 axis with efield in [POL] linear polarization

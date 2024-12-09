@@ -1,15 +1,14 @@
-'''
-Created on 17 sept. 2024
-
-@author: jcolley
-'''
+"""
+@author: Colley Jean-Marc CNRS/IN2P3/LPNHE
+"""
 
 from rshower.basis.efield_event import *
 
 
 #
-# OTHERS METHOD  
+# OTHERS METHOD
 #
+
 
 def fit_vec_linear_polar_with_max(trace):
     """
@@ -119,6 +118,7 @@ def fit_vec_linear_polar_hls(trace):
     # assert np.allclose(np.linalg.norm(np.matmul(m_ata, vec_pol)), 0)
     return vec_pol
 
+
 def efield_in_polar_frame(efield3d, threshold=40):
     """Return E field in linear polarization direction
 
@@ -134,8 +134,9 @@ def efield_in_polar_frame(efield3d, threshold=40):
 
 
 #
-# CHECK 
+# CHECK
 #
+
 
 def check_vec_linear_polar_l2(trace, idx_on, vec_pol):
     """
@@ -178,6 +179,7 @@ def check_vec_linear_polar_l2(trace, idx_on, vec_pol):
     std_l2 = np.sqrt(np.sum(prob * diff * diff))
     logger.debug(f"Angle error l2: {mean_l2} {std_l2}")
     return mean_l2, std_l2
+
 
 def check_vec_linear_polar_proto(trace, idx_on, vec_pol):
     """
@@ -238,8 +240,119 @@ def check_vec_linear_polar_proto(trace, idx_on, vec_pol):
     return mean_w2, std_w2
 
 
+def check_xmax_line_pyramid():
+    """
+    xmax  [0. 0. 1.]
+    """
+    du_pos = np.array([[1, 1, 0], [-1, 1, 0], [-1, -1, 0], [1, -1, 0]], dtype=np.float64)
+    v_dir_src = np.array([[-1, -1, 1], [1, -1, 1], [1, 1, 1], [-1, 1, 1]], dtype=np.float64)
+    print(f"v_dir_src:\n{v_dir_src}")
+    xmax, res = estimate_xmax_line(v_dir_src, du_pos)
+    print(f"xmax 4pts: {xmax}\n")
+    xmax, res = estimate_xmax_line(v_dir_src[:3], du_pos[:3])
+    print(f"xmax 3pts: {xmax}\n")
+    print(v_dir_src[[0, 2]])
+    xmax, res = estimate_xmax_line(v_dir_src[:2], du_pos[:2])
+    print(f"xmax 2pts: {xmax}\n")
+    xmax, res = estimate_xmax_line(v_dir_src[[0, 2]], du_pos[[0, 2]])
+    print(f"xmax 2pts: {xmax}\n")
+    # with noise 1%
+    noise_dir = np.random.normal(0, 1e-2, v_dir_src.shape)
+    v_dir_src += noise_dir
+    print(f"v_dir_src: {v_dir_src}")
+    xmax, res = estimate_xmax_line(v_dir_src, du_pos)
+    print(f"xmax 4pts: {xmax}\n")
+
+def check_xmax_line_pyramid_rec():
+    """
+    xmax  [0. 0. 1.]
+    """
+    du_pos = np.array([[2, 1, 0], [-2, 1, 0], [-2, -1, 0], [2, -1, 0]], dtype=np.float64)
+    v_dir_src = np.array([[-2, -1, 1], [2, -1, 1], [2, 1, 1], [-2, 1, 1]], dtype=np.float64)
+    print(f"v_dir_src:\n{v_dir_src}")
+    xmax, res = estimate_xmax_line(v_dir_src, du_pos)
+    print(f"xmax 4pts: {xmax}\n")
+    xmax, res = estimate_xmax_line(v_dir_src[:3], du_pos[:3])
+    print(f"xmax 3pts: {xmax}\n")
+    print(v_dir_src[[0, 2]])
+    xmax, res = estimate_xmax_line(v_dir_src[:2], du_pos[:2])
+    print(f"xmax 2pts: {xmax}\n")
+    xmax, res = estimate_xmax_line(v_dir_src[[0, 2]], du_pos[[0, 2]])
+    print(f"xmax 2pts: {xmax}\n")
+    # with noise 1%
+    noise_dir = np.random.normal(0, 1e-2, v_dir_src.shape)
+    v_dir_src += noise_dir
+    print(f"v_dir_src: {v_dir_src}")
+    xmax, res = estimate_xmax_line(v_dir_src, du_pos)
+    print(f"xmax 4pts: {xmax}\n")
 
 
 
-if __name__ == '__main__':
-    pass
+def check_xmax_line_pyramid_offset():
+    """
+    xmax  [3. 3. 1.]
+    """
+    du_pos = np.array([[1, 1, 0], [-1, 1, 0], [-1, -1, 0], [1, -1, 0]], dtype=np.float64)
+    du_pos += np.array([3, 3, 0])
+    v_dir_src = np.array([[-1, -1, 1], [1, -1, 1], [1, 1, 1], [-1, 1, 1]], dtype=np.float64)
+    print(f"v_dir_src:\n{v_dir_src}")
+    xmax, res = estimate_xmax_line(v_dir_src, du_pos)
+    print(f"xmax 4pts: {xmax}\n")
+    xmax, res = estimate_xmax_line(v_dir_src[:3], du_pos[:3])
+    print(f"xmax 3pts: {xmax}\n")
+    print(v_dir_src[[0, 2]])
+    xmax, res = estimate_xmax_line(v_dir_src[:2], du_pos[:2])
+    print(f"xmax 2pts: {xmax}\n")
+    xmax, res = estimate_xmax_line(v_dir_src[[0, 2]], du_pos[[0, 2]])
+    print(f"xmax 2pts: {xmax}\n")
+    # with noise 1%
+    noise_dir = np.random.normal(0, 1e-2, v_dir_src.shape)
+    v_dir_src += noise_dir
+    print(f"v_dir_src: {v_dir_src}")
+    xmax, res = estimate_xmax_line(v_dir_src, du_pos)
+    print(f"xmax 4pts: {xmax}\n")
+
+def check_xmax_line_2pts_opposite():
+    """
+    xmax  [0. 0. 1.]
+    """
+    du_pos = np.array([[0, 1, 0], [0, -1, 0]], dtype=np.float64)
+    v_dir_src = np.array([[0, -1, 1], [0, 1, 1]], dtype=np.float64)
+    print(f"v_dir_src:\n{v_dir_src}")
+    xmax, res = estimate_xmax_line(v_dir_src, du_pos)
+    print(f"xmax 2pts: {xmax}\n")
+
+
+def check_xmax_line_pyramid_outliner():
+    """
+    xmax  [0. 0. 1.]
+    """
+    du_pos = np.array([[2, 1, 0], [-2, 1, 0], [-2, -1, 0], [2, -1, 0]], dtype=np.float64)
+    v_dir_src = np.array([[-2, -1, 1], [2, -1, 1], [2, 1, 1], [-2, 1, 1]], dtype=np.float64)    
+    print(f"v_dir_src:\n{v_dir_src}")
+    # exact
+    xmax, res = estimate_xmax_line(v_dir_src, du_pos)
+    print(f"xmax 4pts: {xmax}")
+    print(f"residu:\n{res}\n")
+    # noise
+    noise = np.random.normal(0, 1e-3, v_dir_src.shape)
+    xmax, res = estimate_xmax_line(v_dir_src+noise, du_pos)
+    print(f"xmax 4pts noise: {xmax}")
+    print(f"residu:\n{res}\n")
+    # outlier
+    v_dir_src[0, 0] += 2
+    print(f"v_dir_src:\n{v_dir_src}")
+    xmax, res = estimate_xmax_line(v_dir_src, du_pos)
+    print(f"xmax 4pts: {xmax}")
+    print(f"residu:\n{res}\n")
+    # sans outlier
+    xmax, res = estimate_xmax_line(v_dir_src[1:], du_pos[1:])
+    print(f"xmax 4pts: {xmax}")
+    print(f"residu:\n{res}\n")
+
+if __name__ == "__main__":
+    # check_xmax_line_pyramid()
+    # check_xmax_line_2pts_opposite()
+    #check_xmax_line_pyramid_offset()
+    check_xmax_line_pyramid_outliner()
+    #check_xmax_line_pyramid_rec()

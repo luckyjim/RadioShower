@@ -10,7 +10,11 @@ logger = getLogger(__name__)
 
 
 def _get_leff(path_leff, l_files):
-    """Return dictionary with 3 antenna Leff"""
+    """Return dictionary with 3 antenna Leff
+     0: EW
+     1: SN
+     2: UP
+    """
     path_ant = os.path.join(path_leff, l_files[0])
     leff_ew = AntennaLeffStorage()
     leff_ew.name = "EW"

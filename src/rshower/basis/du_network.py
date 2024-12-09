@@ -44,6 +44,8 @@ class DetectorUnitNetwork:
         self.du_pos = np.zeros((nb_du, 3))
         self.idx2idt = np.arange(nb_du)
         self.area_km2 = -1
+        self.core_pos = None
+        self.xmax_pos = None
 
     def init_pos_id(self, du_pos, du_id=None):
         """Init object with array DU position and identifier
@@ -108,17 +110,21 @@ class DetectorUnitNetwork:
         if self.du_pos.shape[0] < 3:
             self.area_km2 = 0
         pts = self.du_pos[:, :2].astype(np.float64)
-        self.delaunay = Delaunay(self.du_pos[:, :2])
-        triangle = self.delaunay.simplices
-        a_area = np.abs(
-            np.cross(
-                pts[triangle[:, 1], :] - pts[triangle[:, 0], :],
-                pts[triangle[:, 2], :] - pts[triangle[:, 0], :],
+        try:
+            self.delaunay = Delaunay(self.du_pos[:, :2])
+            triangle = self.delaunay.simplices
+            a_area = np.abs(
+                np.cross(
+                    pts[triangle[:, 1], :] - pts[triangle[:, 0], :],
+                    pts[triangle[:, 2], :] - pts[triangle[:, 0], :],
+                )
             )
-        )
-        a_area /= 2
-        self.area_km2 = np.sum(a_area) / 1e6
+            a_area /= 2
+            self.area_km2 = np.sum(a_area) / 1e6
+        except:
+            self.area_km2 =0
         return self.area_km2
+            
 
     def get_max_dist_du(self):
         """TODO
@@ -204,6 +210,17 @@ class DetectorUnitNetwork:
             edgecolors="k",
             cmap=my_cmaps,
         )
+        if self.xmax_pos is not None:
+            plt.plot(self.xmax_pos[0], self.xmax_pos[1], marker="X", color="blue", markersize=20)
+        if self.core_pos is not None:
+            plt.plot(self.core_pos[0], self.core_pos[1], marker="*", color="green", markersize=20)
+            if self.xmax_pos is not None:
+                delta = self.xmax_pos[:2] - self.core_pos[:2]
+                delta /= np.linalg.norm(delta)
+                delta *= 1000
+                plt.arrow(
+                    self.core_pos[0], self.core_pos[1], delta[0], delta[1], color="green", width=50
+                )
         fig.colorbar(scm, label=unit)
         xlabel = "North [m]  (azimuth=0°) =>"
         if traces is not None:

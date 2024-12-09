@@ -12,14 +12,20 @@ from rshower.num.wiener import WienerDeconvolution
 import rshower.num.signal as rss
 from rshower.io.events.grand_trigged import GrandEventsSelectedFmt01
 from rshower.io.leff_fmt import get_leff_default
-from rshower.io.rf_fmt import read_TF3_fmt, plot_global_rf_chain_TF3
+import rshower.io.rf_fmt as rfchain
 from rshower.model.ant_resp import DetectorUnitAntenna3Axis
+from rshower.basis import coord
 from scipy.fft._basic import fft
 
 
 # define a handler for logger : standard only
 logger = mlg.get_logger_for_script(__file__)
 mlg.create_output_for_logger("info", log_stdout=True)
+
+
+def max_algebra(array_1d):
+    idx = np.argmax(np.abs(array_1d))
+    return array_1d[idx]
 
 
 def weight_efield_estimation(tfd_ef, weight, t_plot=""):
@@ -178,8 +184,7 @@ def deconv_load_data(pn_fevents, pn_fmodel, idx_evt=1):
     # Load instrument model : antenna
     ant_resp = DetectorUnitAntenna3Axis(get_leff_default(pn_fmodel))
     # Load instrument model : RF chain
-    rf_fft = read_TF3_fmt(pn_fmodel)
-    plot_global_rf_chain_TF3(pn_fmodel)
+    rf_fft = rfchain.read_TF3_fmt(pn_fmodel)
     return df_events, ant_resp, rf_fft
 
 
@@ -221,7 +226,7 @@ def plot_polar_angle_max(evt, l_cost, idx_cost, type_cost, band=[0, 359], title=
     plt.title(title)
     max_val = evt.get_max_norm()
     l_min = []
-    for idx in range(evt.get_nb_du()):
+    for idx in range(evt.get_nb_trace()):
         data = l_cost[idx][type_cost][band[0] : band[1], idx_cost]
         # plt.figure()
         # plt.plot(data)
@@ -244,8 +249,12 @@ def polar_wiener_lost_func_all_du_gp13(df_events, ant3d, rf_fft, idx_evt=0):
     pars = df_events.get_azi_elev(idx_evt)
     l_cost = polar_wiener_lost_func_all_du(evt, pars, ant3d, rf_fft)
     #  evt 1
-    plot_polar_angle_max(evt, l_cost, 0, 0, band=[100, 250],title="Polar angle with residu of SN voltage")
-    plot_polar_angle_max(evt, l_cost, 1, 1, band=[100, 250],title="Polar angle with $\delta$Efield (EW-UP) ")
+    plot_polar_angle_max(
+        evt, l_cost, 0, 0, band=[100, 250], title="Polar angle with residu of SN voltage"
+    )
+    plot_polar_angle_max(
+        evt, l_cost, 1, 1, band=[100, 250], title="Polar angle with $\delta$Efield (EW-UP) "
+    )
     # evt 14
     # plot_polar_angle_max(
     #     evt,
@@ -260,10 +269,174 @@ def polar_wiener_lost_func_all_du(evt, pars, ant3d, rf_fft):
     evt.get_tmax_vmax()
     evt.plot_footprint_val_max()
     l_cost = []
-    for idx in range(evt.get_nb_du()):
+    for idx in range(evt.get_nb_trace()):
         cost_res, cost_dif = polar_wiener_lost_func(evt, ant3d, rf_fft, pars, idx)
         l_cost.append([cost_res, cost_dif])
     return l_cost
+
+# def polar_wiener_lost_func_ref(evt, ant3d, rf_fft, pars, i_du=0):
+#     """
+#     Plot residu versus polar angle
+#
+#     :param df_events:
+#     :param ant3d:
+#     :param rf_fpolar_wiener_lost_func_all_duft:
+#     :param wiener:
+#     """
+#     f_plot = False
+#     assert isinstance(ant3d, DetectorUnitAntenna3Axis)
+#     l_axis = ["SN", "EW", "UP"]
+#     l_col = ["k", "y", "b", "r"]
+#     # l_axis = ["SN", "EW"]
+#     size_per = 100
+#     size_trace = evt.get_size_trace()
+#     evt.set_periodogram(size_per)
+#     if f_plot:
+#         evt.plot_trace_idx(i_du)
+#         evt.plot_psd_trace_idx(i_du)
+#         evt.plot_footprint_val_max()
+#         evt.plot_footprint_time_max()
+#     # Out freq definition
+#     size_padd, freqs_out_mhz = rss.get_fastest_size_rfft(evt.get_size_trace(), evt.f_samp_mhz[0])
+#     size_fft = freqs_out_mhz.shape[0]
+#     logger.debug(f"size_fft: {size_fft}, size_padd: {size_padd}")
+#     ant3d.set_freq_out_mhz(freqs_out_mhz)
+#     fft_evt = sf.rfft(evt.traces)
+#     # RF chain
+#     freq, tf_ew, tf_ns, tf_z = rf_fft
+#     tf_elec = np.zeros((3, size_fft), dtype=np.complex64)
+#     tf_elec[0] = rss.interpol_at_new_x(freq, tf_ns, freqs_out_mhz)
+#     tf_elec[1] = rss.interpol_at_new_x(freq, tf_ew, freqs_out_mhz)
+#     tf_elec[2] = rss.interpol_at_new_x(freq, tf_z, freqs_out_mhz)
+#     # Antenna
+#     ant3d.set_freq_out_mhz(freqs_out_mhz)
+#     l_azi_offset = [0, 0, 0]
+#     if "xmax" in pars.keys():
+#         v_dux = pars["xmax"] - evt.network.du_pos[i_du]
+#         dir_evt_rad = coord.du_cart_to_dir(v_dux)
+#         print(f"Xmax direction : {np.rad2deg(dir_evt_rad)}")
+#     else:
+#         dir_evt_rad = np.array([pars["azi"], pars["d_zen"]])
+#         dir_evt_rad = np.deg2rad(dir_evt_rad)
+#     ant3d.set_dir_source(dir_evt_rad)
+#
+#     # Wiener
+#     wiener = WienerDeconvolution(evt.f_samp_mhz[0] * 1e6)
+#     logger.debug(tf_elec.shape)
+#     wiener.set_rfft_kernel(tf_elec[0])
+#     # wiener.plot_ker_pow2(", tf_elec[0]")
+#     bandwidth = [70, 190]
+#     wiener.set_band(bandwidth)
+#     # psd galaxy/noise
+#     psd_noise = np.zeros((3, size_fft), dtype=np.float32)
+#     noise = Handling3dTraces("Noise")
+#     noise.init_traces(evt.traces[:, :, -400:], evt.idx2idt, f_samp_mhz=evt.f_samp_mhz)
+#     noise.set_periodogram(size_per)
+#     if f_plot:
+#         noise.plot_trace_idx(i_du)
+#         noise.plot_psd_trace_idx(i_du)
+#     freq_psd, psd = noise.get_psd_trace_idx(i_du)
+#
+#     psd_noise[0] = wiener.get_interpol(freq_psd, psd[0])
+#     psd_noise[1] = wiener.get_interpol(freq_psd, psd[1])
+#     psd_noise[2] = wiener.get_interpol(freq_psd, psd[2])
+#     # psd signal
+#     evt.set_periodogram(size_per)
+#     psd_meas = np.zeros((3, size_fft), dtype=np.float32)
+#     freq_psd, psd = evt.get_psd_trace_idx(i_du)
+#     psd_meas[0] = wiener.get_interpol(freq_psd, psd[0])
+#     psd_meas[1] = wiener.get_interpol(freq_psd, psd[1])
+#     psd_meas[2] = wiener.get_interpol(freq_psd, psd[2])
+#     # out
+#     fft_ef = np.zeros((3, size_fft), dtype=np.complex64)
+#     w_ef = np.zeros((3, size_fft), dtype=np.float32)
+#     cost_res = np.zeros((180, 4), dtype=np.float64)
+#     cost_dif = np.zeros((180, 4), dtype=np.float64)
+#     pic_epol = np.zeros(180, dtype=np.float32)
+#     for angle in range(180):
+#         logger.debug(f"=============> angle {angle}")
+#         t_best_sol = ""
+#         if f_plot and (angle == 61 or angle == 241):
+#             t_best_sol = f" Angle {angle}"
+#         ant3d.interp_leff.set_angle_polar(np.deg2rad(angle))
+#         for i_a, axis in enumerate(l_axis):
+#             #dir_evt_rad = np.array([(pars["azi"] + l_azi_offset[i_a]) % 360, pars["d_zen"]])
+#             #dir_evt_rad = np.deg2rad(dir_evt_rad)
+#             ant3d.set_dir_source(dir_evt_rad)
+#             leff_pol = ant3d.interp_leff.get_fft_leff_pol(ant3d.leff[i_a])
+#             #print(angle, np.sum(np.abs(leff_pol)))
+#             wiener.set_rfft_kernel(leff_pol * tf_elec[i_a])
+#             # wiener.plot_ker_pow2()
+#             wiener.set_psd_noise(psd_noise[i_a])
+#             psd_sig = psd_meas[i_a] - psd_noise[i_a]
+#             psd_sig = np.clip(psd_sig, 1e-9, 1)
+#             wiener.set_psd_sig(psd_sig)
+#             # wiener.plot_psd(f", axis {axis}")
+#             sig_est, fft_est = wiener.deconv_measure(evt.traces[i_du, i_a], psd_sig)
+#             if f_plot and (angle == 61 or angle == 241):
+#                 wiener.plot_measure_est(f", Angle {angle}, {axis}")
+#                 wiener.plot_signal_est(f", Angle {angle}, {axis}")
+#                 # ant3d.interp_leff.plot_leff_pol()
+#                 # wiener.plot_ker_pow2(f", Angle {angle}, {axis}")
+#             pic_epol[angle] = max_algebra(sig_est)
+#             fft_ef[i_a] = fft_est.copy()
+#             w_ef[i_a] = wiener.snr.copy()
+#         wbf_ef = w_ef[:, wiener.r_freq]
+#         # best Wiener solution
+#         best_tfd_ef = weight_efield_estimation(fft_ef, w_ef, t_best_sol)
+#         # Cost function
+#         wd_scal = np.ones(3, dtype=np.float64)
+#         for i_a, axis in enumerate(l_axis):
+#             dir_evt_rad = np.array([(pars["azi"] + l_azi_offset[i_a]) % 360, pars["d_zen"]])
+#             dir_evt_rad = np.deg2rad(dir_evt_rad)
+#             ant3d.set_dir_source(dir_evt_rad)
+#             leff_pol = ant3d.interp_leff.get_fft_leff_pol(ant3d.leff[i_a])
+#             res = fft_evt[i_du, i_a] - leff_pol * tf_elec[i_a] * best_tfd_ef
+#             # res /= 1 + np.abs(fft_evt[i_du, i_a])
+#             cost_res[angle, i_a] = norm2_cplx(res[wiener.r_freq])
+#             i_ap = (i_a + 1) % 3
+#             diff = fft_ef[i_a] - fft_ef[i_ap]
+#             dem = 1 + np.max(np.array([np.abs(fft_ef[i_a]), np.abs(fft_ef[i_ap])]), axis=0)
+#             # diff /= dem
+#             wd_scal[i_a] = wbf_ef[i_a].sum() ** 2 + wbf_ef[i_ap].sum() ** 2
+#             # wd_scal[i_a] = np.sum(1/(wbf_ef[i_a] - wbf_ef[i_ap])**2)
+#             # if angle == 62:
+#             #print(axis, wd_scal[i_a])
+#             cost_dif[angle, i_a] = norm2_cplx(diff[wiener.r_freq])
+#         # diff = (fft_ef[0]*w_ef[0] - fft_ef[1]*w_ef[1])/(w_ef[0]+w_ef[1])
+#         cost_res[angle, 3] = np.sum(cost_res[angle, :3])
+#         cost_dif[angle, 3] = np.sum(cost_dif[angle, :3] * wd_scal) / wd_scal.sum()
+#
+#     if i_du % 15 == 0:
+#         print("Estimator SN-WE: ", np.argmin(cost_dif[:, 0]) % 180)
+#         print("Estimator min diff: ", np.argmin(cost_dif[:, :3]) % 180)
+#         print("Estimator weight all diff: ", np.argmin(cost_dif[:, 3]) % 180)
+#         i_bsnr = np.argmax(wd_scal)
+#         print("Estimator diff best SNR: ", np.argmin(cost_dif[:, i_bsnr]) % 180)
+#         print("Estimator residu: ", np.argmin(cost_res[:, 3]) % 180)
+#
+#         plt.figure()
+#         plt.title(f"cost function $||residu||^2$, DU index {i_du} ({evt.idx2idt[i_du]})")
+#         for i_a, axis in enumerate(l_axis):
+#             plt.semilogy(cost_res[:, i_a], l_col[i_a], label=axis)
+#         plt.semilogy(cost_res[:, 3], label="Total")
+#         plt.legend()
+#         plt.grid()
+#         plt.xlabel("Deg")
+#         plt.figure()
+#         plt.title(f"cost function $||\delta E||^2$, DU index {i_du} ({evt.idx2idt[i_du]})")
+#         for i_a, axis in enumerate(l_axis):
+#             m_lab = axis + "-" + l_axis[(i_a + 1) % (len(l_axis))]
+#             plt.semilogy(cost_dif[:, i_a], l_col[i_a], label=m_lab)
+#         plt.semilogy(cost_dif[:, 3], label="Total")
+#         plt.grid()
+#         plt.legend()
+#         plt.xlabel("Deg")
+#         plt.figure()
+#         plt.title(f"DU {i_du}")
+#         plt.plot(pic_epol)
+#         plt.grid()
+#     return cost_res, cost_dif
 
 
 def polar_wiener_lost_func(evt, ant3d, rf_fft, pars, i_du=0):
@@ -279,7 +452,6 @@ def polar_wiener_lost_func(evt, ant3d, rf_fft, pars, i_du=0):
     assert isinstance(ant3d, DetectorUnitAntenna3Axis)
     l_axis = ["SN", "EW", "UP"]
     l_col = ["k", "y", "b", "r"]
-    # l_axis = ["SN", "EW"]
     size_per = 100
     size_trace = evt.get_size_trace()
     evt.set_periodogram(size_per)
@@ -295,23 +467,28 @@ def polar_wiener_lost_func(evt, ant3d, rf_fft, pars, i_du=0):
     ant3d.set_freq_out_mhz(freqs_out_mhz)
     fft_evt = sf.rfft(evt.traces)
     # RF chain
-    freq, tf_ew, tf_ns, tf_z = rf_fft
+    freq, tf_ns, tf_ew, tf_z = rf_fft
     tf_elec = np.zeros((3, size_fft), dtype=np.complex64)
     tf_elec[0] = rss.interpol_at_new_x(freq, tf_ns, freqs_out_mhz)
     tf_elec[1] = rss.interpol_at_new_x(freq, tf_ew, freqs_out_mhz)
     tf_elec[2] = rss.interpol_at_new_x(freq, tf_z, freqs_out_mhz)
     # Antenna
     ant3d.set_freq_out_mhz(freqs_out_mhz)
-    l_azi_offset = [0, 0, 0]
-    dir_evt_rad = np.array([pars["azi"], pars["d_zen"]])
-    dir_evt_rad = np.deg2rad(dir_evt_rad)
+    if "xmax" in pars.keys():
+        v_dux = pars["xmax"] - evt.network.du_pos[i_du]
+        dir_evt_rad = coord.du_cart_to_dir(v_dux)
+        print(f"Xmax direction : {np.rad2deg(dir_evt_rad)}")
+    else:
+        dir_evt_rad = np.array([pars["azi"], pars["d_zen"]])
+        dir_evt_rad = np.deg2rad(dir_evt_rad)
     ant3d.set_dir_source(dir_evt_rad)
+    
     # Wiener
     wiener = WienerDeconvolution(evt.f_samp_mhz[0] * 1e6)
     logger.debug(tf_elec.shape)
     wiener.set_rfft_kernel(tf_elec[0])
     # wiener.plot_ker_pow2(", tf_elec[0]")
-    bandwidth = [70, 190]
+    bandwidth = [90, 200]
     wiener.set_band(bandwidth)
     # psd galaxy/noise
     psd_noise = np.zeros((3, size_fft), dtype=np.float32)
@@ -338,6 +515,7 @@ def polar_wiener_lost_func(evt, ant3d, rf_fft, pars, i_du=0):
     w_ef = np.zeros((3, size_fft), dtype=np.float32)
     cost_res = np.zeros((360, 4), dtype=np.float64)
     cost_dif = np.zeros((360, 4), dtype=np.float64)
+    pic_epol = np.zeros(360, dtype=np.float32)
     for angle in range(360):
         logger.debug(f"=============> angle {angle}")
         t_best_sol = ""
@@ -345,11 +523,9 @@ def polar_wiener_lost_func(evt, ant3d, rf_fft, pars, i_du=0):
             t_best_sol = f" Angle {angle}"
         ant3d.interp_leff.set_angle_polar(np.deg2rad(angle))
         for i_a, axis in enumerate(l_axis):
-            dir_evt_rad = np.array([(pars["azi"] + l_azi_offset[i_a]) % 360, pars["d_zen"]])
-            dir_evt_rad = np.deg2rad(dir_evt_rad)
             ant3d.set_dir_source(dir_evt_rad)
             leff_pol = ant3d.interp_leff.get_fft_leff_pol(ant3d.leff[i_a])
-            print(angle, np.sum(np.abs(leff_pol)))
+            #print(angle, np.sum(np.abs(leff_pol)))
             wiener.set_rfft_kernel(leff_pol * tf_elec[i_a])
             # wiener.plot_ker_pow2()
             wiener.set_psd_noise(psd_noise[i_a])
@@ -357,13 +533,13 @@ def polar_wiener_lost_func(evt, ant3d, rf_fft, pars, i_du=0):
             psd_sig = np.clip(psd_sig, 1e-9, 1)
             wiener.set_psd_sig(psd_sig)
             # wiener.plot_psd(f", axis {axis}")
-            _, fft_est = wiener.deconv_measure(evt.traces[i_du, i_a], psd_sig)
+            sig_est, fft_est = wiener.deconv_measure(evt.traces[i_du, i_a], psd_sig)
             if f_plot and (angle == 61 or angle == 241):
-                raise
                 wiener.plot_measure_est(f", Angle {angle}, {axis}")
                 wiener.plot_signal_est(f", Angle {angle}, {axis}")
                 # ant3d.interp_leff.plot_leff_pol()
                 # wiener.plot_ker_pow2(f", Angle {angle}, {axis}")
+            pic_epol[angle] = max_algebra(sig_est)
             fft_ef[i_a] = fft_est.copy()
             w_ef[i_a] = wiener.snr.copy()
         wbf_ef = w_ef[:, wiener.r_freq]
@@ -372,12 +548,9 @@ def polar_wiener_lost_func(evt, ant3d, rf_fft, pars, i_du=0):
         # Cost function
         wd_scal = np.ones(3, dtype=np.float64)
         for i_a, axis in enumerate(l_axis):
-            dir_evt_rad = np.array([(pars["azi"] + l_azi_offset[i_a]) % 360, pars["d_zen"]])
-            dir_evt_rad = np.deg2rad(dir_evt_rad)
-            ant3d.set_dir_source(dir_evt_rad)
             leff_pol = ant3d.interp_leff.get_fft_leff_pol(ant3d.leff[i_a])
             res = fft_evt[i_du, i_a] - leff_pol * tf_elec[i_a] * best_tfd_ef
-            #res /= 1 + np.abs(fft_evt[i_du, i_a])
+            # res /= 1 + np.abs(fft_evt[i_du, i_a])
             cost_res[angle, i_a] = norm2_cplx(res[wiener.r_freq])
             i_ap = (i_a + 1) % 3
             diff = fft_ef[i_a] - fft_ef[i_ap]
@@ -386,20 +559,20 @@ def polar_wiener_lost_func(evt, ant3d, rf_fft, pars, i_du=0):
             wd_scal[i_a] = wbf_ef[i_a].sum() ** 2 + wbf_ef[i_ap].sum() ** 2
             # wd_scal[i_a] = np.sum(1/(wbf_ef[i_a] - wbf_ef[i_ap])**2)
             # if angle == 62:
-            print(axis, wd_scal[i_a])
+            #print(axis, wd_scal[i_a])
             cost_dif[angle, i_a] = norm2_cplx(diff[wiener.r_freq])
         # diff = (fft_ef[0]*w_ef[0] - fft_ef[1]*w_ef[1])/(w_ef[0]+w_ef[1])
         cost_res[angle, 3] = np.sum(cost_res[angle, :3])
         cost_dif[angle, 3] = np.sum(cost_dif[angle, :3] * wd_scal) / wd_scal.sum()
 
-    if i_du%5==0:
+    if i_du % 1 == 0:
         print("Estimator SN-WE: ", np.argmin(cost_dif[:, 0]) % 180)
         print("Estimator min diff: ", np.argmin(cost_dif[:, :3]) % 180)
         print("Estimator weight all diff: ", np.argmin(cost_dif[:, 3]) % 180)
         i_bsnr = np.argmax(wd_scal)
         print("Estimator diff best SNR: ", np.argmin(cost_dif[:, i_bsnr]) % 180)
         print("Estimator residu: ", np.argmin(cost_res[:, 3]) % 180)
-    
+
         plt.figure()
         plt.title(f"cost function $||residu||^2$, DU index {i_du} ({evt.idx2idt[i_du]})")
         for i_a, axis in enumerate(l_axis):
@@ -417,6 +590,10 @@ def polar_wiener_lost_func(evt, ant3d, rf_fft, pars, i_du=0):
         plt.grid()
         plt.legend()
         plt.xlabel("Deg")
+        plt.figure()
+        plt.title(f"DU {i_du}")
+        plt.plot(pic_epol)
+        plt.grid()
     return cost_res, cost_dif
 
 

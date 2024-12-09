@@ -14,7 +14,7 @@ logger = getLogger(__name__)
 
 
 def get_info_shower(d_sim):
-    xmax = d_sim["xmax_site_level"]
+    xmax = d_sim["FIX_xmax_pos"]
     dist_xmax = np.linalg.norm(xmax) / 1000
     ret = f"||xmax_site_level||={dist_xmax:.1f} km;"
     azi, zenith = d_sim["azimuth"], d_sim["zenith"]

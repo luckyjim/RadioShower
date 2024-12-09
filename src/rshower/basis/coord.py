@@ -23,6 +23,21 @@ logger = getLogger(__name__)
 # [DU] see convention of this frame in module frame.py
 #
 
+def du_cart_to_dir_vec(xyz):
+    """Convert cartesian vector xyz to direction in [DU] frame
+
+    :param xyz: cartesian vector
+    :type xyz: float (3,n)
+
+    :return: angle direction: azimuth, distance zenithal
+    :rtype: float (2,n)
+    """
+    azi_w = np.arctan2(xyz[1], xyz[0])
+    idx = np.argwhere( azi_w < 0)
+    azi_w[idx] += G_2PI
+    rho = np.sqrt(xyz[0] ** 2 + xyz[1] ** 2)
+    d_zen = np.arctan2(rho, xyz[2])
+    return np.array([azi_w, d_zen])
 
 def du_cart_to_dir(xyz):
     """Convert cartesian vector xyz to direction in [DU] frame
