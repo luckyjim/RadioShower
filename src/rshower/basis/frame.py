@@ -1,4 +1,5 @@
 """
+Colley Jean-Marc, CNRS/IN2P3/LPNHE
 
 See coord.py module for specific spherical/angle convention associated to each frame
 
@@ -95,39 +96,55 @@ class FrameAFrameB:
         self.offset_ab_a = offset_ab_a
         self.rot_b2a = rot_b2a
         self.offset_ab_b = np.matmul(self.rot_b2a.T, offset_ab_a)
-        self._d_frame = {"fa": "a", "fb": "b"}
+        self._d_frame = {"fa": "A", "fb": "B"}
 
-    def pos_to(self, pos, id_frame):
-        if self._d_frame[id_frame] == "a":
+    def pos_to(self, pos, id_frame_out):
+        """Convert position (so add offset) pos to to frame with id_frame_out
+
+        :param pos:
+        :param id_frame_out:
+        """
+        if self._d_frame[id_frame_out] == "A":
             return self.pos_to_a(pos)
-        elif self._d_frame[id_frame] == "b":
+        elif self._d_frame[id_frame_out] == "B":
             return self.pos_to_b(pos)
         else:
             raise
 
-    def vec_to(self, vec, id_frame):
-        if self._d_frame[id_frame] == "a":
+    def vec_to(self, vec, id_frame_out):
+        """Convert vector vec to frame with id_frame_out
+
+        :param vec:
+        :param id_frame_out:
+        """
+        if self._d_frame[id_frame_out] == "A":
             return self.vec_to_a(vec)
-        elif self._d_frame[id_frame] == "b":
+        elif self._d_frame[id_frame_out] == "B":
             return self.vec_to_b(vec)
         else:
             raise
 
     def pos_to_a(self, pos_b):
+        """Convert position (so add offset) pos_b to frame A"""
         return self.offset_ab_a + np.matmul(self.rot_b2a, pos_b)
 
     def pos_to_b(self, pos_a):
+        """Convert position (so add offset) pos_a to frame B"""
         return -self.offset_ab_b + np.matmul(self.rot_b2a.T, pos_a)
 
     def vec_to_a(self, vec_b):
+        """Convert vector vec_b to frame A"""
         return np.matmul(self.rot_b2a, vec_b)
 
     def vec_to_b(self, vec_a):
+        """Convert vector vec_a to frame B"""
         return np.matmul(self.rot_b2a.T, vec_a)
 
 
 class FrameDuFrameTan(FrameAFrameB):
     """Transformation between frame [TAN] and [DU]
+    frame A : DU
+    frame B : TAN
 
     rot_b2a or rot_du2tan is defined by 2 elementaries rotation
 
@@ -147,8 +164,6 @@ class FrameDuFrameTan(FrameAFrameB):
           N(orth)          e_theta
           W(est)           e_phi
           Up               e_up
-
-
     """
 
     def __init__(self, vec_dir_du):
@@ -168,4 +183,29 @@ class FrameDuFrameTan(FrameAFrameB):
         me = Rot.from_euler("ZY", [azi_w, d_zen]).as_matrix()
         assert np.allclose(rot_b2a, me)
         super().__init__(offset_ab_a, rot_b2a)
-        self._d_frame = {"DU": "a", "TAN": "b"}
+        self._d_frame = {"DU": "A", "TAN": "B"}
+
+
+class FrameNetFrameShower(FrameAFrameB):
+    """Transformation between frame [NET] and [SHW]
+    frame A : NET
+    frame B : SHW
+
+    ..note:
+        [NET]       <->   [SHW]
+          N(orth)          vxB
+          W(est)           vxvxB
+          Up               v
+    """
+
+    def __init__(self, xmaxcore_net, v_mag_net):
+        """ """
+        v_prim = xmaxcore_net / np.linalg.norm(xmaxcore_net)
+        vxb = np.cross(v_prim, v_mag_net)
+        vxvxb = np.cross(v_prim, vxb)
+        rot_shw2net = np.zeros((3, 3), dtype=np.float32)
+        rot_shw2net[:, 0] = vxb
+        rot_shw2net[:, 1] = vxvxb
+        rot_shw2net[:, 2] = v_prim
+        super().__init__(xmaxcore_net, rot_shw2net)
+        self._d_frame = {"NET": "A", "SHW": "B"}
