@@ -23,7 +23,7 @@ def check_frame_shower():
     zenith = 90 - np.rad2deg(np.arcsin(20 / 50))
     print(zenith)
     dir = coord.du_sph_to_cart(np.array([np.deg2rad(90), np.deg2rad(zenith), 1.0]))
-    trshw = FrameNetFrameShower(dir, 0)
+    trshw = FrameNetFrameShower(-dir, 0)
     pos_sh = trshw.pos_to(pos, "SHW")
     print(pos_sh.shape)
     plt.figure()
