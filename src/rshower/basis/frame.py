@@ -207,7 +207,7 @@ class FrameNetFrameShower(FrameAFrameB):
 
     def __init__(self, v_prim, inc_mag, xmax=None):
         """
-        If you don't Xmax, vector transformation will be correct 
+        If you don't know Xmax, vector transformation will be anyway correct 
         but position transformation will be relative.
 
         :param v_prim: unit vector of XC with X Xmax and C core in NET frame
