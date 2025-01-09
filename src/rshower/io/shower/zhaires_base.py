@@ -28,7 +28,12 @@ def get_simu_magnetic_vector(d_simu):
 
 
 def get_simu_xmax(d_simu):
-    xmax = 1000.0 * np.array([d_simu["x_max"]["x"], d_simu["x_max"]["y"], d_simu["x_max"]["z"]])
+    '''Return Xmax in same frame as antenna position in meter
+    
+    :param d_simu:
+    '''
+    z_xmax_du = d_simu["x_max"]["z"] - d_simu["ground_altitude"]
+    xmax = 1000.0 * np.array([d_simu["x_max"]["x"], d_simu["x_max"]["y"], z_xmax_du])
     return xmax
 
 
