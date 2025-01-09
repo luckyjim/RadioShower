@@ -36,11 +36,21 @@ Frame available:
         * Cartesian: NWU ie tangential to the surface of the earth
           * X: North mag, Y: West mag, Z: normal up to earth 
         * Spherical
-          * azi_w (phi_n)[0,360] = angle between X and azi_w(West)=90 degree
+          * azi_w (phi_n)[0,360] = angle from X, azi_w(West)=90 degree
           * d_zen (theta_n) = angle from zenith , d_zen(horizon)=90 degree
         * Remark : so in fact it's a familly of frame 
         * Example: 
         
+        
+    [SHW] is shower frame associated to Xmax position, primary direction (v) 
+          and magnetic field of earth B
+        * Origin : Xmax 
+        * Cartesian: 
+          * X: vxB, Y: vx(vxB), Z: v is direction of move of the primary  
+        * Spherical
+          * TBD
+        * Remark:
+
 
     [DU] is the frame associated to one Detector Unit (DU)
         * Origin [W84]/[N]: antenna position given by GPS position
@@ -86,8 +96,7 @@ from logging import getLogger
 import numpy as np
 from scipy.spatial.transform import Rotation as Rot
 
-#
-#
+
 logger = getLogger(__name__)
 
 
@@ -126,11 +135,11 @@ class FrameAFrameB:
 
     def pos_to_a(self, pos_b):
         """Convert position (so add offset) pos_b to frame A"""
-        return self.offset_ab_a + np.matmul(self.rot_b2a, pos_b)
+        return self.offset_ab_a[:, None] + np.matmul(self.rot_b2a, pos_b)
 
     def pos_to_b(self, pos_a):
         """Convert position (so add offset) pos_a to frame B"""
-        return -self.offset_ab_b + np.matmul(self.rot_b2a.T, pos_a)
+        return -self.offset_ab_b[:, None] + np.matmul(self.rot_b2a.T, pos_a)
 
     def vec_to_a(self, vec_b):
         """Convert vector vec_b to frame A"""
@@ -143,8 +152,8 @@ class FrameAFrameB:
 
 class FrameDuFrameTan(FrameAFrameB):
     """Transformation between frame [TAN] and [DU]
-    frame A : DU
-    frame B : TAN
+    Frame A : DU
+    Frame B : TAN
 
     rot_b2a or rot_du2tan is defined by 2 elementaries rotation
 
@@ -168,9 +177,7 @@ class FrameDuFrameTan(FrameAFrameB):
 
     def __init__(self, vec_dir_du):
         """
-
-        :param vec_dir_du: angle azi, dist zen
-        :type vec_dir_du:
+        :param vec_dir_du: [RAD] (angle azi, dist zen) direction of source in sky (z>0)
         """
         offset_ab_a = np.zeros(3, dtype=vec_dir_du.dtype)
         azi_w = vec_dir_du[0]
@@ -188,8 +195,8 @@ class FrameDuFrameTan(FrameAFrameB):
 
 class FrameNetFrameShower(FrameAFrameB):
     """Transformation between frame [NET] and [SHW]
-    frame A : NET
-    frame B : SHW
+    Frame A : NET
+    Frame B : SHW
 
     ..note:
         [NET]       <->   [SHW]
@@ -198,14 +205,24 @@ class FrameNetFrameShower(FrameAFrameB):
           Up               v
     """
 
-    def __init__(self, xmaxcore_net, v_mag_net):
-        """ """
-        v_prim = xmaxcore_net / np.linalg.norm(xmaxcore_net)
+    def __init__(self, v_prim, inc_mag, xmax=None):
+        """
+        If you don't Xmax, vector transformation will be correct 
+        but position transformation will be relative.
+
+        :param v_prim: unit vector of XC with X Xmax and C core in NET frame
+        :param inc_mag: [RAD] inclinaison of magnetique field
+        :param xmax: Xmax position in NET frame
+        """
+        v_mag_net = np.array([np.cos(inc_mag), 0, -np.sin(inc_mag)])
+        v_prim = v_prim / np.linalg.norm(v_prim)
         vxb = np.cross(v_prim, v_mag_net)
         vxvxb = np.cross(v_prim, vxb)
         rot_shw2net = np.zeros((3, 3), dtype=np.float32)
         rot_shw2net[:, 0] = vxb
         rot_shw2net[:, 1] = vxvxb
         rot_shw2net[:, 2] = v_prim
-        super().__init__(xmaxcore_net, rot_shw2net)
+        if xmax is None:
+            xmax = np.zeros(3, dtype=np.float32) 
+        super().__init__(xmax, rot_shw2net)
         self._d_frame = {"NET": "A", "SHW": "B"}
