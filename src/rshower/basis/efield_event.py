@@ -195,7 +195,7 @@ class HandlingEfield(Handling3dTraces):
             dir_vec[idx] = v_dux
             logger.debug(f"xmax  : {self.xmax}")
             logger.debug(f"pos du: {self.network.du_pos[idx]}, {v_dux}")
-            vec_dir_du = coord.du_cart_to_dir(v_dux)
+            vec_dir_du = coord.nwu_cart_to_dir(v_dux)
             dir_angle[idx] = vec_dir_du
             # print(idx, np.rad2deg(vec_dir_du))
             t_dutan = FrameDuFrameTan(vec_dir_du)
@@ -235,7 +235,7 @@ class HandlingEfield(Handling3dTraces):
         :param idx:
         """
         v_dux = self.xmax - self.network.du_pos[idx]
-        vec_dir_du = coord.du_cart_to_dir(v_dux)
+        vec_dir_du = coord.nwu_cart_to_dir(v_dux)
         t_dutan = FrameDuFrameTan(vec_dir_du)
         print(f"trace tan: {vec_dir_du}")
         traces_tan = np.empty((self.get_size_trace(), 3), dtype=np.float32)

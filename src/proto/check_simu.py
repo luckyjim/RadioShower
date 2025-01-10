@@ -109,7 +109,8 @@ def do_simu_tan_master(i_e=0):
     trv = do_simu_in_tan_frame(tref2, d_simu, ant3d, rf_fft)
     tr_dc2 = froot.get_handling3dtraces(P_dc2 + F_volt, i_e)
     tr_dc2.plot_footprint_val_max()
-    ident_du = 1
+    ident_du = trv.idx2idt[0]
+    ident_du = 205
     print(trv.idt2idx[ident_du])
     print(tr_dc2.idt2idx[ident_du])
     sim_pol = trv.traces[trv.idt2idx[ident_du]]
@@ -264,8 +265,8 @@ if __name__ == "__main__":
     #i_e = 762 # 8km
     #i_e = 759 # 234km, azi=11, >40
     i_e = 755  # ok !! pacmac
-    plot_input_data(i_e)
+    #plot_input_data(i_e)
     # do_simu_polar_master(i_e)
-    #do_simu_tan_master(i_e)
+    do_simu_tan_master(i_e)
     #do_simu_master(i_e)
     plt.show()

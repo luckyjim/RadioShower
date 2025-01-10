@@ -29,6 +29,6 @@ def test_du_tan():
     # e_phi paralle au plan O,x,y
     assert np.allclose(ret[2], 0)
     # direction of pointing in DU must be (0,0,1) in TAN
-    cart_dir_du = coord.du_sph_to_cart(np.array([vec_dir_du[0], vec_dir_du[1], 1]))
+    cart_dir_du = coord.nwu_sph_to_cart(np.array([vec_dir_du[0], vec_dir_du[1], 1]))
     ret = cf_du_tan.vec_to_b(cart_dir_du)
     assert np.allclose(ret, [0, 0, 1])

@@ -313,7 +313,7 @@ def polar_wiener_lost_func_all_du(evt, pars, ant3d, rf_fft):
 #     l_azi_offset = [0, 0, 0]
 #     if "xmax" in pars.keys():
 #         v_dux = pars["xmax"] - evt.network.du_pos[i_du]
-#         dir_evt_rad = coord.du_cart_to_dir(v_dux)
+#         dir_evt_rad = coord.nwu_cart_to_dir(v_dux)
 #         print(f"Xmax direction : {np.rad2deg(dir_evt_rad)}")
 #     else:
 #         dir_evt_rad = np.array([pars["azi"], pars["d_zen"]])
@@ -476,7 +476,7 @@ def polar_wiener_lost_func(evt, ant3d, rf_fft, pars, i_du=0):
     ant3d.set_freq_out_mhz(freqs_out_mhz)
     if "xmax" in pars.keys():
         v_dux = pars["xmax"] - evt.network.du_pos[i_du]
-        dir_evt_rad = coord.du_cart_to_dir(v_dux)
+        dir_evt_rad = coord.nwu_cart_to_dir(v_dux)
         print(f"Xmax direction : {np.rad2deg(dir_evt_rad)}")
     else:
         dir_evt_rad = np.array([pars["azi"], pars["d_zen"]])

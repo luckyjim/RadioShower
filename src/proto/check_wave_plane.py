@@ -10,7 +10,7 @@ import pprint
 import numpy as np
 import grand.dataio.root_files as froot
 
-from rshower.basis.coord import du_cart_to_sph, du_cart_to_dir_vec
+from rshower.basis.coord import nwu_cart_to_sph, nwe_cart_to_dir_vec
 from rshower.basis.traces_event import Handling3dTraces
 from rshower.basis.efield_event import HandlingEfield, plt, fit_vec_linear_polar_l2
 from rshower.io.rf_fmt import read_TF3_fmt
@@ -354,7 +354,7 @@ def check_direction_evt_noread(i_e, gef, d_sim, f_plot=False):
     for idx in range(tr_ef.get_nb_trace()):
         dif_angle[idx] = np.dot(dir_vec[idx], v_dir_src[idx])
     dif_angle = np.rad2deg(np.arccos(dif_angle))
-    dir_opt = np.rad2deg(du_cart_to_dir_vec(v_dir_src.transpose()))
+    dir_opt = np.rad2deg(nwe_cart_to_dir_vec(v_dir_src.transpose()))
 
     #
     dif_azi = dir_opt[0] - dir_angle[0]
@@ -424,7 +424,7 @@ def check_dc2_xmax():
             plt.hist(v_res)
             plt.figure()
             plt.plot(v_res, "*")
-        sph = du_cart_to_sph(xmax - d_sim["shower_core_pos"])
+        sph = nwu_cart_to_sph(xmax - d_sim["shower_core_pos"])
         print(f"Core-Xmax dist: {sph[2]/1000:.1f}")
         print(f"Core-Xmax (azi, zen): ({np.rad2deg(sph[0]):.2f}, {np.rad2deg(sph[1]):.2f})")
         if idx != (nb_rm - 1):
@@ -438,13 +438,13 @@ def check_dc2_xmax():
     plt.hist(v_res)
     plt.figure()
     plt.plot(v_res, "*")
-    sph = du_cart_to_sph(xmax)
+    sph = nwu_cart_to_sph(xmax)
     # print(f"Xmax dist: {sph[2]/1000:.1f}")
     # print(f"Xmax (azi, zen): ({np.rad2deg(sph[0]):.2f}, {np.rad2deg(sph[1]):.2f})")
     #
     print("True Values:")
     core_xmax = d_sim["FIX_xmax_pos"] - d_sim["shower_core_pos"]
-    sph = du_cart_to_sph(core_xmax)
+    sph = nwu_cart_to_sph(core_xmax)
     print(f"Core-Xmax dist: {sph[2]/1000:.1f}")
     print(f"Core-Xmax (azi, zen): ({np.rad2deg(sph[0]):.2f}, {np.rad2deg(sph[1]):.2f})")
     pprint.pprint(d_sim)
@@ -464,7 +464,7 @@ def check_zhaires_xmax():
         plt.hist(v_res)
         plt.figure()
         plt.plot(v_res, "*")
-        sph = du_cart_to_sph(xmax)
+        sph = nwu_cart_to_sph(xmax)
         print(f"Xmax dist: {sph[2]}")
         print(f"Xmax (azi, zen): ({np.rad2deg(sph[0]):.1f}, {np.rad2deg(sph[1]):.1f})")
         idx_max = np.argmax(v_res)
