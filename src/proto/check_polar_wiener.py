@@ -12,7 +12,7 @@ from rshower.basis.traces_event import Handling3dTraces
 from rshower.basis.efield_event import HandlingEfield, plt
 import rshower.io.rf_fmt as rfchain
 from rshower.io.leff_fmt import get_leff_default
-from rshower.io.events.grand_trigged import get_info_shower
+from rshower.io.events.grand_io_fmt import get_info_shower
 from rshower.model.ant_resp import DetectorUnitAntenna3Axis
 
 

@@ -12,7 +12,7 @@ from pathlib import Path
 import pprint
 
 import rshower.manage_log as mlg
-from rshower.io.events.grand_trigged import GrandEventsSelectedFmt01
+from rshower.io.events.grand_io_fmt import GrandEventsSelectedFmt01
 
 
 # specific logger definition for script because __mane__ is "__main__" !

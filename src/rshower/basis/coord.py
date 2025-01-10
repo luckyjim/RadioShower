@@ -22,7 +22,7 @@ G_2PI = 2 * np.pi
 logger = getLogger(__name__)
 
 #
-# [DU] see convention of this frame in module frame.py
+# [DU/NET] NWU convention, see comment in frame.py
 #
 
 def nwu_cart_to_dir_vec(xyz):

@@ -4,13 +4,34 @@ Created on 20 août 2024
 @author: jcolley
 """
 from logging import getLogger
+import copy
 
 import numpy as np
 import matplotlib.pyplot as plt
 
 from rshower.basis.traces_event import Handling3dTraces
+import rshower.basis.efield_event as efe
+import rshower.basis.traces_event as tre
 
 logger = getLogger(__name__)
+
+def convert_3dtrace_grandlib(in_tr, f_efield=False):
+    """
+    Conversion from grandlib version to RadioShower
+
+    :param in_tr:
+    :param f_efield:
+    """
+    assert isinstance(in_tr, Handling3dTraces)
+    tr_ef = copy.deepcopy(in_tr)
+    if f_efield:
+        tr_ef.__class__ = efe.HandlingEfield
+        tr_ef.noise_inter = None
+        tr_ef.polar_angle_rad = None
+    else:
+        tr_ef.__class__ = tre.Handling3dTraces
+    tr_ef.network.__class__ = tre.DetectorUnitNetwork
+    return tr_ef
 
 
 def get_info_shower(d_sim):

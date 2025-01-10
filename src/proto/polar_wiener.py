@@ -10,7 +10,7 @@ import rshower.manage_log as mlg
 from rshower.basis.traces_event import Handling3dTraces
 from rshower.num.wiener import WienerDeconvolution
 import rshower.num.signal as rss
-from rshower.io.events.grand_trigged import GrandEventsSelectedFmt01
+from rshower.io.events.grand_io_fmt import GrandEventsSelectedFmt01
 from rshower.io.leff_fmt import get_leff_default
 import rshower.io.rf_fmt as rfchain
 from rshower.model.ant_resp import DetectorUnitAntenna3Axis
