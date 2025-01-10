@@ -32,7 +32,7 @@ def get_simu_xmax(d_simu):
     
     :param d_simu:
     '''
-    z_xmax_du = d_simu["x_max"]["z"] - d_simu["ground_altitude"]
+    z_xmax_du = d_simu["x_max"]["z"] - d_simu["ground_altitude"]["alt"]
     xmax = 1000.0 * np.array([d_simu["x_max"]["x"], d_simu["x_max"]["y"], z_xmax_du])
     return xmax
 

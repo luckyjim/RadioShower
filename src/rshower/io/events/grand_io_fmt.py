@@ -20,17 +20,19 @@ def convert_3dtrace_grandlib(in_tr, f_efield=False):
     :param in_tr:
     :param f_efield:
     """
-    assert isinstance(in_tr, Handling3dTraces)
+    
     tr_ef = copy.deepcopy(in_tr)
     if f_efield:
         tr_ef.__class__ = efe.HandlingEfield
+        tr_ef.xmax = None
         tr_ef.noise_inter = None
         tr_ef.polar_angle_rad = None
     else:
         tr_ef.__class__ = tre.Handling3dTraces
     tr_ef.network.__class__ = tre.DetectorUnitNetwork
+    tr_ef.network.xmax_pos = None
+    tr_ef.network.core_pos = None
     return tr_ef
-
 
 def get_info_shower(d_sim):
     xmax = d_sim["FIX_xmax_pos"]

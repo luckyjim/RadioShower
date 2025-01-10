@@ -303,5 +303,5 @@ class HandlingEfield(Handling3dTraces):
 
     def plot_trace_idx(self, idx, to_draw="012"):
         super().plot_trace_idx(idx, to_draw)
-        self.plot_trace_tan_idx(idx)
-        self.plot_trace_pol_idx(idx)
+        #self.plot_trace_tan_idx(idx)
+        #self.plot_trace_pol_idx(idx)
