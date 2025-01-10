@@ -204,19 +204,38 @@ class FrameNetFrameShower(FrameAFrameB):
           W(est)           vxvxB
           Up               v
     """
+    def __init__(self):
+        pass
+        
+    def init_v_inc(self, v_prim, inc_mag, xmax=None):
+        """Init with magnetic angle inclinaision 
+        
+        If you don't know Xmax, vector transformation will be anyway correct 
+        but position transformation will be relative.
 
-    def __init__(self, v_prim, inc_mag, xmax=None):
+        :param v_prim: unit vector of XC with X Xmax and C core in NET frame,
+                       in NWU convention
+        :param inc_mag: [RAD] inclinaison of magnetique field
+        :param xmax: Xmax position in NET frame, in NWU convention
         """
+        # B in NWU convention
+        vec_b = np.array([np.cos(inc_mag), 0, -np.sin(inc_mag)])
+        self.init_v_b(v_prim, vec_b, xmax)
+        
+    def init_v_b(self, v_prim, vec_b, xmax=None):
+        """Generic init for ENU or NWU convention
+                
+        v_prim, xmax and vec_b must in same orientation convention (ENU, NWU)
+
         If you don't know Xmax, vector transformation will be anyway correct 
         but position transformation will be relative.
 
         :param v_prim: unit vector of XC with X Xmax and C core in NET frame
-        :param inc_mag: [RAD] inclinaison of magnetique field
+        :param vec_b: magnetic field of earth in NET frame
         :param xmax: Xmax position in NET frame
         """
-        v_mag_net = np.array([np.cos(inc_mag), 0, -np.sin(inc_mag)])
         v_prim = v_prim / np.linalg.norm(v_prim)
-        vxb = np.cross(v_prim, v_mag_net)
+        vxb = np.cross(v_prim, vec_b)
         vxvxb = np.cross(v_prim, vxb)
         rot_shw2net = np.zeros((3, 3), dtype=np.float32)
         rot_shw2net[:, 0] = vxb
