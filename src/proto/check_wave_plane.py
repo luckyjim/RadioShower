@@ -10,7 +10,7 @@ import pprint
 import numpy as np
 import grand.dataio.root_files as froot
 
-from rshower.basis.coord import nwu_cart_to_sph, nwe_cart_to_dir_vec
+from rshower.basis.coord import nwu_cart_to_sph, nwu_cart_to_dir_vec
 from rshower.basis.traces_event import Handling3dTraces
 from rshower.basis.efield_event import HandlingEfield, plt, fit_vec_linear_polar_l2
 from rshower.io.rf_fmt import read_TF3_fmt
@@ -354,7 +354,7 @@ def check_direction_evt_noread(i_e, gef, d_sim, f_plot=False):
     for idx in range(tr_ef.get_nb_trace()):
         dif_angle[idx] = np.dot(dir_vec[idx], v_dir_src[idx])
     dif_angle = np.rad2deg(np.arccos(dif_angle))
-    dir_opt = np.rad2deg(nwe_cart_to_dir_vec(v_dir_src.transpose()))
+    dir_opt = np.rad2deg(nwu_cart_to_dir_vec(v_dir_src.transpose()))
 
     #
     dif_azi = dir_opt[0] - dir_angle[0]

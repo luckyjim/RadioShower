@@ -25,7 +25,7 @@ logger = getLogger(__name__)
 # [DU] see convention of this frame in module frame.py
 #
 
-def nwe_cart_to_dir_vec(xyz):
+def nwu_cart_to_dir_vec(xyz):
     """Convert cartesian vector xyz to direction in [DU] frame
 
     :param xyz: cartesian vector
