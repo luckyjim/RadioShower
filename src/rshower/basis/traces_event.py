@@ -1,4 +1,6 @@
 """
+Colley Jean-Marc, CNRS/IN2P3/LPNHE
+
 Handling a set of 3D traces
 """
 
@@ -87,6 +89,7 @@ class Handling3dTraces:
             "port": ["1", "2", "3"],
             "cart": ["X", "Y", "Z"],
             "dir": ["SN", "EW", "UP"],
+            "shw": ["vxB", "vx(vxB)", "v"],
         }
         # blue for UP because the sky is blue
         # yellow for EW because sun is yellow

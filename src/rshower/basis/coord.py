@@ -1,7 +1,7 @@
 """
 Colley Jean-Marc, CNRS/IN2P3/LPNHE
 
-Coordinate transformation in same frame.
+Coordinate transformation in **same** frame.
 
 see frame.py module to have frame definition and specific convention of axis and angle
 
@@ -14,18 +14,15 @@ from logging import getLogger
 
 import numpy as np
 
-#
-#
-#
-
 G_2PI = 2 * np.pi
 logger = getLogger(__name__)
 
 #
-# [DU/NET] NWU convention, see comment in frame.py
+# [DU/NET/COR] frame in NWU convention, see definition in frame.py
 #
 
-def nwu_cart_to_dir_vec(xyz):
+
+def nwu_cart_to_dir(xyz):
     """Convert cartesian vector xyz to direction in [DU] frame
 
     :param xyz: cartesian vector
@@ -35,46 +32,38 @@ def nwu_cart_to_dir_vec(xyz):
     :rtype: float (2,n)
     """
     azi_w = np.arctan2(xyz[1], xyz[0])
-    idx = np.argwhere( azi_w < 0)
+    idx = np.argwhere(azi_w < 0)
     azi_w[idx] += G_2PI
     rho = np.sqrt(xyz[0] ** 2 + xyz[1] ** 2)
     d_zen = np.arctan2(rho, xyz[2])
     return np.array([azi_w, d_zen])
 
-def nwu_cart_to_dir(xyz):
-    """Convert cartesian vector xyz to direction in [DU] frame
 
-    :param xyz: cartesian vector
-    :type xyz: float (3,)
-
-    :return: angle direction: azimuth, distance zenithal
-    :rtype: float (2,)
-    """
-    azi_w = np.arctan2(xyz[1], xyz[0])
-    if azi_w < 0:
-        azi_w += G_2PI
-    rho = np.sqrt(xyz[0] ** 2 + xyz[1] ** 2)
-    d_zen = np.arctan2(rho, xyz[2])
-    return np.array([azi_w, d_zen])
+def nwu_cart_to_dir_one(xyz):
+    return np.squeeze(nwu_cart_to_dir(xyz[:, None]))
 
 
 def nwu_cart_to_sph(xyz):
     """Convert cartesian vector xyz to spherical in [DU] frame
 
     :param xyz: cartesian vector
-    :type xyz: float (3,)
+    :type xyz: float (3,n)
 
     :return: azimuth, distance zenithal, norm
-    :rtype: float (3,)
+    :rtype: float (3,n)
     """
     # TODO: rewrite for vector input like (n,3)
     azi_w = np.arctan2(xyz[1], xyz[0])
-    if azi_w < 0:
-        azi_w += G_2PI
+    idx = np.argwhere(azi_w < 0)
+    azi_w[idx] += G_2PI
     rho_2 = xyz[0] ** 2 + xyz[1] ** 2
     rho = np.sqrt(rho_2)
     d_zen = np.arctan2(rho, xyz[2])
     return np.array([azi_w, d_zen, np.sqrt(rho_2 + xyz[2] ** 2)])
+
+
+def nwu_cart_to_sph_one(xyz):
+    return np.squeeze(nwu_cart_to_sph(xyz[:, None]))
 
 
 def nwu_sph_to_cart(sph):

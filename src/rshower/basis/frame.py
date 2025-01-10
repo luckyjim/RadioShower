@@ -20,7 +20,7 @@ Frame available:
               * above ellipsoide or geoide EGM96
               
 
-    [XCS] is the frame associated to XCore of air shower used by ZHAireS
+    [COR] is the frame associated to Core of air shower used by ZHAireS
         * Origin [W84]: XCore position at Sea level
         * Cartesian: NWU ie tangential to the surface of the earth
           * X: North mag, Y: West mag, Z: normal up to earth 
@@ -231,7 +231,7 @@ class FrameNetFrameShower(FrameAFrameB):
         but position transformation will be relative.
 
         :param v_prim: unit vector of XC with X Xmax and C core in NET frame
-        :param vec_b: magnetic field of earth in NET frame
+        :param vec_b: unit vector magnetic field of earth in NET frame
         :param xmax: Xmax position in NET frame
         """
         v_prim = v_prim / np.linalg.norm(v_prim)

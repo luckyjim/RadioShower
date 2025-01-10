@@ -41,7 +41,7 @@ def check_frame_shower2net():
     pos = np.zeros((3, 20), dtype=np.float32)
     pos[:2] = elp2
     plt.figure()
-    plt.title("ellipse in Shower frame")
+    plt.title("circle in Shower frame")
     plt.grid()
     plt.xlabel("vxB")
     plt.ylabel("vxvxB")
@@ -52,7 +52,7 @@ def check_frame_shower2net():
     trshw.init_v_inc(-dir, 0)
     pos_net = trshw.pos_to(pos, "NET")
     plt.figure()
-    plt.title("ellipse in NET frame")
+    plt.title("circle in NET frame")
     plt.xlabel("x => North")
     plt.ylabel("y => West")
     plt.plot(pos_net[0], pos_net[1], "*")
@@ -60,6 +60,6 @@ def check_frame_shower2net():
     plt.grid()
 
 if __name__ == "__main__":
-    #check_frame_to_shower()
+    check_frame_to_shower()
     check_frame_shower2net()
     plt.show()

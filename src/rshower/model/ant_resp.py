@@ -389,7 +389,7 @@ class DetectorUnitAntenna3Axis:
         diff_n = self.pos_src_xcs - self.pos_du_xcs
         # Hypothesis: small network  (20-30km ) => [XCS]=[DU]+offset, so direction ar same
         self.cart_src_du = diff_n
-        self.dir_src_du = coord.nwu_cart_to_dir(diff_n)
+        self.dir_src_du = coord.nwu_cart_to_dir_one(diff_n)
         self.interp_leff.set_dir_source(self.dir_src_du)
 
     def get_resp_3d_efield_du(self, fft_efield_du):

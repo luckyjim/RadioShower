@@ -1,4 +1,6 @@
 """
+Colley Jean-Marc, CNRS/IN2P3/LPNHE
+
 Handling Detector Unit (DU) network, footprint plots
 """
 from logging import getLogger

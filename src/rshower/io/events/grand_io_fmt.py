@@ -1,7 +1,5 @@
 """
-Created on 20 août 2024
-
-@author: jcolley
+Colley Jean-Marc, CNRS/IN2P3/LPNHE
 """
 from logging import getLogger
 import copy
