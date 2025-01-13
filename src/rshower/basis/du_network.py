@@ -48,6 +48,12 @@ class DetectorUnitNetwork:
         self.area_km2 = -1
         self.core_pos = None
         self.xmax_pos = None
+        self.axis_name = {
+            "NWU": ["North [m]  (azimuth=0°) =>", "West [m]  (azimuth=+90°) =>"],
+            "ENU": ["East [m]  (azimuth=-90°) =>", "North [m]  (azimuth=0°) =>"],
+            "SHW": ["vxB [m]", "vx(vxB) [m]"],
+        }
+        self.axis_key = "NWU"
 
     def init_pos_id(self, du_pos, du_id=None):
         """Init object with array DU position and identifier
@@ -124,9 +130,8 @@ class DetectorUnitNetwork:
             a_area /= 2
             self.area_km2 = np.sum(a_area) / 1e6
         except:
-            self.area_km2 =0
+            self.area_km2 = 0
         return self.area_km2
-            
 
     def get_max_dist_du(self):
         """TODO
@@ -224,12 +229,12 @@ class DetectorUnitNetwork:
                     self.core_pos[0], self.core_pos[1], delta[0], delta[1], color="green", width=50
                 )
         fig.colorbar(scm, label=unit)
-        xlabel = "North [m]  (azimuth=0°) =>"
+        xlabel = self.axis_name[self.axis_key][0]
         if traces is not None:
             xlabel += f"\n{traces.info_shower}"
             xlabel += f"\n{traces.name}"
         plt.xlabel(xlabel)
-        plt.ylabel(rf"West [m]  (azimuth=+90°) =>")
+        plt.ylabel(self.axis_name[self.axis_key][1])
         ax1.grid()
         anch_du = AnchoredText("DU id", prop=dict(size=10), frameon=False, loc="upper left")
         anch_val = AnchoredText("Value", prop=dict(size=10), frameon=False, loc="upper right")
