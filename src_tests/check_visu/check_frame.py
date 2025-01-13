@@ -32,7 +32,8 @@ def check_dc2(i_e):
     azi = d_simu["azimuth"]
     print(zen, azi)
     dir_x = coord.nwu_sph_to_cart(np.array([np.deg2rad(azi), np.deg2rad(zen), 1.0]))
-    trshw.init_v_inc(-dir_x, np.deg2rad(90), d_simu["FIX_xmax_pos"])
+    inc  = np.deg2rad(d_simu["magnetic_field"][0])
+    trshw.init_v_inc(-dir_x, inc, d_simu["FIX_xmax_pos"])
     print(-dir_x)
     #trshw.init_v_inc(-dir_x, 0)
     print(tref.network.du_pos.shape)
