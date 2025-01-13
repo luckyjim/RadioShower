@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 import grand.dataio.root_files as froot
 
 import rshower.basis.coord as coord
-from rshower.io.events.grand_io_fmt import convert_3dtrace_grandlib_2
+from rshower.io.events.grand_io_fmt import convert_3dtrace_grandlib
 from rshower.basis.frame import *
 from rshower.basis.efield_event import HandlingEfield
 from rshower.basis.traces_event import Handling3dTraces
@@ -21,7 +21,7 @@ F_efield = "efield_29-24992_L0_0000.root"
 def check_dc2(i_e):
     tref_gl = froot.get_handling3dtraces(P_dc2 + F_efield, i_e)
     d_simu = froot.get_simu_parameters(P_dc2 + F_efield, i_e)
-    tref = convert_3dtrace_grandlib_2(tref_gl, True)
+    tref = convert_3dtrace_grandlib(tref_gl, True)
     print(d_simu)
     tref.set_xmax(d_simu["FIX_xmax_pos"])
     tref.network.core_pos = d_simu["shower_core_pos"]
