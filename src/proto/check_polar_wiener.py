@@ -15,6 +15,9 @@ from rshower.io.leff_fmt import get_leff_default
 from rshower.io.events.grand_io_fmt import get_info_shower
 from rshower.model.ant_resp import DetectorUnitAntenna3Axis
 
+import sys
+
+print(sys.path)
 
 import proto.polar_wiener as pw
 
