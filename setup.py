@@ -16,6 +16,13 @@ def parse_requirements(filename):
     return [line for line in lineiter if line and not line.startswith("#")]
 
 #print (parse_requirements("shower_radio/requirements_novers.txt"))
+my_requires=[
+    'requests',
+    'importlib-metadata; python_version<"3.10"',
+],
+my_requires.append(parse_requirements("requirements_novers.txt"))
+
+
 setup(
     name="RadioShower",
     description="Tools for radio traces from air shower",
@@ -33,5 +40,5 @@ setup(
     license='MIT', 
     python_requires='>=3.4', 
     #install_requires=["numpy","scipy","matplotlib","asdf","h5py"]
-    install_requires=parse_requirements("requirements_novers.txt")
+    install_requires=my_requires
 )
