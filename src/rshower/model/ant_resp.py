@@ -172,7 +172,7 @@ class LengthEffectiveInterpolation:
         logger.debug(self.idx_i)
         logger.debug(self.weight)
         return rt0, rt1, rp0, rp1, it0, it1, ip0, ip1
-    
+
     #
     # SETTER
     #
@@ -411,7 +411,7 @@ class DetectorUnitAntenna3Axis:
         :param efield_tan: electric field in [TAN]
         :type efield_tan: float (2, n_s)
         """
-        resp = np.empty((3,fft_efield_tan.shape[1]), dtype=fft_efield_tan.dtype)
+        resp = np.empty((3, fft_efield_tan.shape[1]), dtype=fft_efield_tan.dtype)
         itp = self.interp_leff
         resp[0] = np.sum(itp.get_fft_leff_tan(self.sn_leff) * fft_efield_tan, axis=0)
         resp[1] = np.sum(itp.get_fft_leff_tan(self.ew_leff) * fft_efield_tan, axis=0)

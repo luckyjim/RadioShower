@@ -1,0 +1,4 @@
+{
+    "python.analysis.extraPaths": ["/home/jcolley/projet/lucky/RadioShower/src"],
+    "python.envFile": "${workspaceFolder}/.env"
+}

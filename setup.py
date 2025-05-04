@@ -25,7 +25,7 @@ setup(
         "Topic :: Scientific/Engineering :: Astronomy",
         "Topic :: Scientific/Engineering :: Physics",
     ],
-    url="https://github.com/grand-mother/NUTRIG1",
+    url="https://github.com/luckyjim/RadioShower",
     package_dir={"rshower": "src/rshower"},
     scripts=["src/scripts/zhaires_view.py",
              "src/scripts/grand_events_view.py",

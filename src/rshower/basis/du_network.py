@@ -217,8 +217,8 @@ class DetectorUnitNetwork:
             edgecolors="k",
             cmap=my_cmaps,
         )
-        if self.xmax_pos is not None:
-            plt.plot(self.xmax_pos[0], self.xmax_pos[1], marker="X", color="blue", markersize=20)
+        # if self.xmax_pos is not None:
+        #     plt.plot(self.xmax_pos[0], self.xmax_pos[1], marker="X", color="blue", markersize=20)
         if self.core_pos is not None:
             plt.plot(self.core_pos[0], self.core_pos[1], marker="*", color="green", markersize=20)
             if self.xmax_pos is not None:
