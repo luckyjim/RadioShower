@@ -28,7 +28,7 @@ setup(
     url="https://github.com/grand-mother/NUTRIG1",
     package_dir={"rshower": "src/rshower"},
     scripts=["src/scripts/zhaires_view.py",
-             "src/scripts/grand_events_trigged.py",
+             "src/scripts/grand_events_view.py",
              "src/scripts/plot_tmax_vmax.py"],
     license='MIT', 
     python_requires='>=3.4', 
