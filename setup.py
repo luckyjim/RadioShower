@@ -18,8 +18,9 @@ def parse_requirements(filename):
 #print (parse_requirements("shower_radio/requirements_novers.txt"))
 my_requires=[
     'requests',
-    'importlib-metadata; python_version<"3.10"',
-],
+    'importlib-metadata; python_version<"3.10"'
+]
+
 my_requires.append(parse_requirements("requirements_novers.txt"))
 
 
