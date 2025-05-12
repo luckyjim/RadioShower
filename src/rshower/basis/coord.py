@@ -7,7 +7,6 @@ see frame.py module to have frame definition and specific convention of axis and
 
 https://en.wikipedia.org/wiki/Spherical_coordinate_system#Definition
 polar angle is distance zenithal
-
 """
 
 from logging import getLogger
@@ -16,6 +15,7 @@ import numpy as np
 
 G_2PI = 2 * np.pi
 logger = getLogger(__name__)
+
 
 #
 # [DU/NET/COR] frame in NWU convention, see definition in frame.py
@@ -31,6 +31,7 @@ def nwu_cart_to_dir(xyz):
     :return: angle direction: azimuth, distance zenithal
     :rtype: float (2,n)
     """
+    assert xyz.shape[0] == 3
     azi_w = np.arctan2(xyz[1], xyz[0])
     idx = np.argwhere(azi_w < 0)
     azi_w[idx] += G_2PI
@@ -52,7 +53,7 @@ def nwu_cart_to_sph(xyz):
     :return: azimuth, distance zenithal, norm
     :rtype: float (3,n)
     """
-    # TODO: rewrite for vector input like (n,3)
+    assert xyz.shape[0] == 3
     azi_w = np.arctan2(xyz[1], xyz[0])
     idx = np.argwhere(azi_w < 0)
     azi_w[idx] += G_2PI

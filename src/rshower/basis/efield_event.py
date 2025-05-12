@@ -167,20 +167,28 @@ class HandlingEfield(Handling3dTraces):
 
     def get_polar_angle(self, degree=False):
         """
-        Return polar angle estimation with traces E field for all DUs
-
-        attribut filled:
-          * ef_pol: (nb_du, nb_sample) Efield polar !
-          * polar_angle_rad : (nb_du,) polar angle 
-          
-        :param degree: flag to set return angle in degree
-        :type degree: bool
-
-        :return: polars, dir_angle, dir_vec
-            polars (nb_du,) like polar_angle_rad
-            dir_angle (nb_du,2) xmax direction angle (azi, d_zen)
-            dir_vec (nb_du,3)   xmax direction cartesian unit
-        :rtype: float (nb_du,)
+        Calculate the polar angle for each trace in the dataset.
+        This method computes the polar angle of the electric field traces relative 
+        to the direction of the source (Xmax) in the detector unit (DU) frame. It 
+        also calculates the direction angles and the direction vectors for each trace.
+        Args:
+            degree (bool, optional): If True, the polar angles and direction angles 
+                are returned in degrees. Defaults to False (radians).
+        Returns:
+            tuple:
+                - polars (np.ndarray): Array of polar angles for each trace in radians 
+                  (or degrees if `degree=True`).
+                - dir_angle (np.ndarray): Array of direction angles for each trace in 
+                  radians (or degrees if `degree=True`).
+                - dir_vec (np.ndarray): Array of unit direction vectors pointing toward 
+                  the source (Xmax) for each trace.
+        Raises:
+            AssertionError: If `self.xmax` is not a numpy ndarray.
+        Notes:
+            - The method assumes that `self.xmax` is the position of the source (Xmax) 
+              in the NWU coordinate system.
+            - The direction vector is normalized to a unit vector.
+            - The polar angle is computed in the tangent frame of the detector unit.
         """
         assert isinstance(self.xmax, np.ndarray)
         # in DU frame

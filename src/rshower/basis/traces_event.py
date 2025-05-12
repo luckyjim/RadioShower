@@ -238,6 +238,11 @@ class Handling3dTraces:
         :param l_idx:list of index of trace
         :type l_idt: list int
         """
+        if len(l_idx) == 0:
+            self.idt2idx = {}
+            self.idx2idt = []
+            self.traces = None
+            return
         du_id = [self.idx2idt[idx] for idx in l_idx]
         self.idx2idt = du_id
         self.idt2idx = {}
@@ -295,6 +300,7 @@ class Handling3dTraces:
         else:
             assert norm_traces.shape[0] == self.get_nb_trace()
         idx_ok = np.squeeze(np.argwhere(norm_traces > threshold))
+        idx_ok = np.atleast_1d(idx_ok)
         self.keep_only_trace_with_index(idx_ok)
         return idx_ok
 
@@ -466,18 +472,24 @@ class Handling3dTraces:
         delta = self.get_delta_t_ns()[0]
         nb_sample_mm = (t_max - t_min) / delta
         nb_sample = int(np.rint(nb_sample_mm) + size_tr)
-        extended_traces = np.zeros((self.get_nb_trace(), 3, nb_sample), dtype=self.traces.dtype)
+        extended_traces = np.zeros(
+            (self.get_nb_trace(), 3, nb_sample), dtype=self.traces.dtype
+        )
         # don't use np.uint64 else int+ int =float ??
         i_beg = np.rint((self.t_start_ns - t_min) / delta).astype(np.uint32)
         for idx in range(self.get_nb_trace()):
-            extended_traces[idx, :, i_beg[idx] : i_beg[idx] + size_tr] = self.traces[idx]
+            extended_traces[idx, :, i_beg[idx] : i_beg[idx] + size_tr] = self.traces[
+                idx
+            ]
         common_time = t_min + np.arange(nb_sample, dtype=np.float64) * delta
         return common_time, extended_traces
 
     def get_psd_trace_idx(self, idx):
         psd = None
         for idx_axis, axis in enumerate(self.axis_name):
-            freq, pxx_den = get_psd(self.traces[idx, idx_axis], self.f_samp_mhz[idx], self.nperseg)
+            freq, pxx_den = get_psd(
+                self.traces[idx, idx_axis], self.f_samp_mhz[idx], self.nperseg
+            )
             if psd is None:
                 psd = np.zeros((3, pxx_den.shape[0]), dtype=np.float32)
             psd[idx_axis] = pxx_den
@@ -589,7 +601,9 @@ class Handling3dTraces:
                 plt.semilogy(freq[2:], pxx_den[2:], self._color[idx_axis], label=axis)
                 # plt.plot(freq[2:] * 1e-6, pxx_den[2:], self._color[idx_axis], label=axis)
         m_title = f"Power spectrum density of {self.type_trace}, DU {self.idx2idt[idx]} (idx={idx})"
-        m_title += f"\nPeriodogram has {self.nperseg} samples, delta freq {freq[1]:.2f}MHz"
+        m_title += (
+            f"\nPeriodogram has {self.nperseg} samples, delta freq {freq[1]:.2f}MHz"
+        )
         plt.title(m_title)
         plt.ylabel(rf"({self.unit_trace})$^2$/Hz")
         plt.xlabel(f"MHz\n{self.name}")
@@ -653,13 +667,18 @@ class Handling3dTraces:
     def plot_footprint_val_max(self):  # pragma: no cover
         """Plot footprint max value"""
         self.network.plot_footprint_1d(
-            self.get_max_norm(), f"Max ||{self.type_trace}||", self, unit=self.unit_trace
+            self.get_max_norm(),
+            f"Max ||{self.type_trace}||",
+            self,
+            unit=self.unit_trace,
         )
 
     def plot_footprint_time_max(self):  # pragma: no cover
         """Plot footprint time associated to max value"""
         tmax, _ = self.get_tmax_vmax(False)
-        self.network.plot_footprint_1d(tmax, "Time of max value", self, scale="lin", unit="ns")
+        self.network.plot_footprint_1d(
+            tmax, "Time of max value", self, scale="lin", unit="ns"
+        )
 
     def plot_footprint_time_slider(self):  # pragma: no cover
         """Plot footprint max value"""

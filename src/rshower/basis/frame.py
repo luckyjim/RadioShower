@@ -102,6 +102,7 @@ logger = getLogger(__name__)
 
 class FrameAFrameB:
     def __init__(self, offset_ab_a, rot_b2a):
+        assert  offset_ab_a.shape == (3, 1)
         self.offset_ab_a = offset_ab_a
         self.rot_b2a = rot_b2a
         self.offset_ab_b = np.matmul(self.rot_b2a.T, offset_ab_a)
@@ -113,6 +114,9 @@ class FrameAFrameB:
         :param pos:
         :param id_frame_out:
         """
+        assert pos.shape[0] == 3
+        if pos.ndim == 1:
+            pos = pos.reshape(3, -1)
         if self._d_frame[id_frame_out] == "A":
             return self.pos_to_a(pos)
         elif self._d_frame[id_frame_out] == "B":
@@ -126,6 +130,9 @@ class FrameAFrameB:
         :param vec:
         :param id_frame_out:
         """
+        assert vec.shape[0] == 3
+        if vec.ndim == 1:
+            vec = vec.reshape(3, -1)
         if self._d_frame[id_frame_out] == "A":
             return self.vec_to_a(vec)
         elif self._d_frame[id_frame_out] == "B":
@@ -135,11 +142,11 @@ class FrameAFrameB:
 
     def pos_to_a(self, pos_b):
         """Convert position (so add offset) pos_b to frame A"""
-        return self.offset_ab_a[:, None] + np.matmul(self.rot_b2a, pos_b)
+        return self.offset_ab_a + np.matmul(self.rot_b2a, pos_b)
 
     def pos_to_b(self, pos_a):
         """Convert position (so add offset) pos_a to frame B"""
-        return -self.offset_ab_b[:, None] + np.matmul(self.rot_b2a.T, pos_a)
+        return -self.offset_ab_b + np.matmul(self.rot_b2a.T, pos_a)
 
     def vec_to_a(self, vec_b):
         """Convert vector vec_b to frame A"""
@@ -179,7 +186,7 @@ class FrameDuFrameTan(FrameAFrameB):
         """
         :param vec_dir_du: [RAD] (angle azi, dist zen) direction of source in sky (z>0)
         """
-        offset_ab_a = np.zeros(3, dtype=vec_dir_du.dtype)
+        offset_ab_a = np.zeros((3,1), dtype=vec_dir_du.dtype)
         azi_w = vec_dir_du[0]
         d_zen = vec_dir_du[1]
         # Warning : use intrinsec notation upper case X,Y,Z and not lower case x,y, z !!!!
@@ -234,6 +241,8 @@ class FrameNetFrameShower(FrameAFrameB):
         :param vec_b: unit vector magnetic field of earth in NET frame
         :param xmax: Xmax position in NET frame
         """
+        assert v_prim.shape == (3,)
+        assert vec_b.shape == (3,)
         v_prim = v_prim / np.linalg.norm(v_prim)
         vxb = np.cross(v_prim, vec_b)
         vxvxb = np.cross(v_prim, vxb)
@@ -242,6 +251,6 @@ class FrameNetFrameShower(FrameAFrameB):
         rot_shw2net[:, 1] = vxvxb
         rot_shw2net[:, 2] = v_prim
         if xmax is None:
-            xmax = np.zeros(3, dtype=np.float32) 
-        super().__init__(xmax, rot_shw2net)
+            xmax = np.zeros((3,1), dtype=np.float32)
+        super().__init__(xmax.reshape(3,1), rot_shw2net)
         self._d_frame = {"NET": "A", "SHW": "B"}

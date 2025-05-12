@@ -346,7 +346,7 @@ def check_direction_evt_noread(i_e, gef, d_sim, f_plot=False):
     except:
         return np.array([]), np.array([]), np.array([]), np.array([])
     # print(f"Remove trace under 20 uv/m")
-    _, v_dir_src = tr_ef.get_pca()
+    _, v_dir_src = tr_ef.get_polar_normal_vec()
     tr_ef.set_xmax(tr_ef.network.xmax_pos)
     _, dir_angle, dir_vec = tr_ef.get_polar_angle(True)
     dir_angle = dir_angle.transpose()
