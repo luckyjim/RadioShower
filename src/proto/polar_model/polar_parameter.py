@@ -5,13 +5,16 @@ from logging import getLogger
 logger = getLogger(__name__)
 
 import numpy as np
+from scipy.interpolate import griddata
+import matplotlib.pyplot as plt
+from matplotlib import colors
+
 import grand.dataio.root_files as froot
 
 import rshower.basis.frame as frame
 import rshower.basis.coord as coord
 from rshower.basis.traces_event import Handling3dTraces
 from rshower.basis.efield_event import HandlingEfield
-
 from rshower.io.events.grand_io_fmt import convert_3dtrace_grandlib
 
 P_dc2 = "/home/jcolley/projet/grand_wk/data/root/dc2/ZHAireS-NJ/sim_Xiaodushan_20221025_220000_RUN0_CD_ZHAireS_0000/"
@@ -24,6 +27,106 @@ def read_dc2(i_e):
     tref = convert_3dtrace_grandlib(tref_gl, True)
     return tref, d_simu
 
+
+def check_polar_interpol(f_model):
+    logger.info("Load model")
+    pol_par = np.load(f_model)
+    logger.info(f"Size model {pol_par.shape[0]}")
+    # normalize distance
+    pol_par[:, 0] /= 300000
+    # sample model
+    pol_par_mod = pol_par[10:, :7]
+    pol_angle = pol_par[10:, 7]
+    #
+    idx = 0
+    logger.info(f"Start interpol")
+    pol_est = griddata(pol_par_mod, pol_angle, pol_par[:10, :7], method="nearest")
+    logger.info(pol_par[:10, :7])
+    print(f"Estimate: {np.rad2deg(pol_est)}")
+    print(f"Measure : {np.rad2deg(pol_par[:10,7])}")
+
+
+def check_polar_interpol_2(f_model):
+    logger.info("Load model")
+    pol_par = np.load(f_model)
+    logger.info(f"Size model {pol_par.shape[0]}")
+    # normalize distance
+    pol_par[:, 0] /= 300000
+    # sample model
+    nb_check = 200
+    nb_start_model = 20 + nb_check
+    pol_par_mod = pol_par[nb_start_model:, :7]
+    pol_angle = pol_par[nb_start_model:, 7]
+    nb_point = pol_par.shape[0] - nb_start_model
+    #
+    idx = 0
+    logger.info(f"Start interpol")
+    pol_est = griddata(pol_par_mod, pol_angle, pol_par[:nb_check, :7], method="nearest")
+    logger.info(pol_par[:nb_check, :7])
+    print(f"Estimate: {np.rad2deg(pol_est)}")
+    print(f"Measure : {np.rad2deg(pol_par[:nb_check,7])}")
+    plt.figure()
+    plt.title(
+        f"histogram polar angle error model \n model has {nb_point} points, check point {nb_check}"
+    )
+    diff = np.rad2deg(pol_par[:nb_check, 7] - pol_est)
+    plt.hist(diff)
+    plt.xlabel("Degree, nearest grid point method")
+    plt.grid()
+    plt.figure()
+    plt.title("histogram distance of check points")
+    plt.hist(pol_par[:nb_check, 0] * 300)
+    plt.xlabel("Km")
+    plt.grid()
+    plt.figure()
+    plt.title(f"histogram polar angle estimation")
+    diff = np.rad2deg(pol_est)
+    plt.hist(diff)
+    plt.xlabel("Degree, nearest grid point method")
+    plt.grid()
+    plt.figure()
+    plt.title(f"histogram polar angle model over 1000 events\nSampling on {nb_point} DU")
+    plt.hist(np.rad2deg(pol_angle))
+    plt.xlabel("Degree,")
+    plt.grid()
+    # convert angle
+    angle = np.rad2deg(coord.nwu_cart_to_dir(pol_par[:, 1:4].T))
+    plt.figure()
+    plt.title("polar angle versus azimuth")
+    plt.plot(angle[0], np.rad2deg(pol_par[:, 7]), ".")
+    plt.grid()
+    plt.xlabel("Azimuth degree")
+    plt.ylabel("Polar angle degree")
+    #
+    fig, ax1 = plt.subplots(1, 1)
+    ax1.set_title(f"polar angle Efield DC2 versus azimuth")
+    dist_x = pol_par[:, 0] * 300
+    vmin = np.nanmin(dist_x)
+    vmax = np.nanmax(dist_x)
+    norm_user = colors.Normalize(vmin=vmin, vmax=vmax)
+    scm = ax1.scatter(
+        angle[0],
+        np.rad2deg(pol_par[:, 7]),
+        norm=norm_user,
+        s=30,
+        c=dist_x,
+        edgecolors="k",
+        cmap="Blues",
+    )
+    fig.colorbar(scm, label="dist Xmax km")
+    plt.xlabel("Azimuth, degree")
+    plt.ylabel("Polar angle at DU, degree")
+    ax1.grid()
+    # best fit
+    mat = np.ones((pol_par.shape[0], 2), dtype=np.float64)
+    mat[:, 1] = np.sin(np.deg2rad(angle[0]))
+    fit_res = np.linalg.lstsq(mat, np.rad2deg(pol_par[:, 7]))
+    print(fit_res[0])
+    coef = fit_res[0]
+    azi = np.linspace(0,2*np.pi,360)
+    pol = fit_res[0][0]+fit_res[0][1]*np.sin(azi)
+    plt.plot(np.rad2deg(azi), pol,c="red", label=f"Best fit: {coef[0]:.2f}{coef[1]:.2f}*sin(azi)")
+    plt.legend()
 
 def collect_polar_parameters(tref, d_simu):
     """
@@ -144,12 +247,19 @@ def test_polar_parameters():
         polar_par[idx : idx + size, 4:7] = par[2]
         polar_par[idx : idx + size, 7] = par[3]
         idx += size
-    logger.info(polar_par[cpt-1])
+    logger.info(polar_par[cpt - 1])
     del l_size, l_polar_par
     print(f"Nb point polar: {cpt}")
-    np.save(f"par_model_{F_efield.split('.')[0]}", polar_par)
+    # np.save(f"par_model_{F_efield.split('.')[0]}", polar_par)
 
 
+# LOGGER
 TPL_FMT_LOGGER = "%(asctime)s %(levelname)5s [%(name)s %(lineno)d] %(message)s"
 logging.basicConfig(level=logging.INFO, format=TPL_FMT_LOGGER)
-test_polar_parameters()
+
+#
+# test_polar_parameters()
+
+#
+check_polar_interpol_2("par_model_efield_29-24992_L0_0000.npy")
+plt.show()
