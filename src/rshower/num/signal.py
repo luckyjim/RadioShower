@@ -309,7 +309,7 @@ def get_peakamptime_norm_hilbert(a2_time, a3_trace):
     t_max = np.take_along_axis(a2_time, idx_max, axis=1)
     v_max = np.take_along_axis(norm_hilbert_amp, idx_max, axis=1)
     # remove dimension (np.squeeze) to have ~vector ie shape is (n,) instead (n,1)
-    return np.squeeze(t_max), np.squeeze(v_max), np.squeeze(idx_max), norm_hilbert_amp
+    return np.squeeze(t_max,axis=1), np.squeeze(v_max,axis=1), np.squeeze(idx_max,axis=1), norm_hilbert_amp
 
 
 def get_fastest_size_rfft(sig_size, f_samp_mhz, padding_fact=1):

@@ -118,7 +118,7 @@ class SimuDetectorUnitResponse:
                 self.params["lst"],
                 self.size_with_pad,
                 self.freqs_out_mhz,
-                self.o_efield.get_nb_du(),
+                self.o_efield.get_nb_trace(),
             )
 
     def set_xmax(self, xmax_xcs):

@@ -239,6 +239,7 @@ class Handling3dTraces:
         :type l_idt: list int
         """
         if len(l_idx) == 0:
+            logger.info(f"Keep 0 elements, => empty event")
             self.idt2idx = {}
             self.idx2idt = []
             self.traces = None
@@ -283,7 +284,9 @@ class Handling3dTraces:
         :type fact: int
         """
         # self.traces = self.traces[:, :, ::fact]
+        logger.info(f"{self.traces.shape} ")
         self.traces = ssig.decimate(self.traces, fact)
+        logger.info(f"{self.traces.shape} ")
         self.f_samp_mhz /= fact
         self.t_samples = np.zeros((0, 0), dtype=np.float64)
         self._define_t_samples()
@@ -301,6 +304,7 @@ class Handling3dTraces:
             assert norm_traces.shape[0] == self.get_nb_trace()
         idx_ok = np.squeeze(np.argwhere(norm_traces > threshold))
         idx_ok = np.atleast_1d(idx_ok)
+        logger.info(f"Keep {len(idx_ok)} DU on {self.get_nb_trace()}")
         self.keep_only_trace_with_index(idx_ok)
         return idx_ok
 
@@ -380,9 +384,11 @@ class Handling3dTraces:
         :rtype: float(nb_du,) , float(nb_du,)
         """
         if hilbert:
+            logger.info(f"{self.t_samples.shape} {self.traces.shape}")
             tmax, vmax, idx_max, tr_norm = rss.get_peakamptime_norm_hilbert(
                 self.t_samples, self.traces
             )
+            logger.info(len(tmax))
         else:
             tr_norm = np.linalg.norm(self.traces, axis=1)
             idx_max = np.argmax(tr_norm, axis=1)

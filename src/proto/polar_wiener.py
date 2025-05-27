@@ -1,3 +1,4 @@
+import sys
 import pprint
 from logging import getLogger
 
@@ -647,7 +648,12 @@ if __name__ == "__main__":
     pn_fevents = "/home/jcolley/projet/grand_wk/data/event/gp13_2024_polar/GP13_UD_240616_240708_with_time.npz"
     pn_fmodel = "/home/jcolley/projet/grand_wk/recons/du_model"
     df_events, ant_resp, rf_fft = deconv_load_data(pn_fevents, pn_fmodel)
-    # plt.show()
+    tr3d = df_events.get_3dtraces(13)
+    tr3d.plot_trace_idx(0)
+    tr3d.plot_trace_idx(1)
+    tr3d.plot_trace_idx(2)
+    plt.show()
+    sys.exit(0)
     polar_wiener_lost_func_all_du_gp13(df_events, ant_resp, rf_fft, 1)
     # =============================================
     plt.show()

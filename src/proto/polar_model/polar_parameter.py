@@ -124,8 +124,11 @@ def check_polar_interpol_2(f_model):
     print(fit_res[0])
     coef = fit_res[0]
     azi = np.linspace(0,2*np.pi,360)
+    c_inc = np.cos(np.deg2rad(61.6))
+    pol_an = np.rad2deg(np.arccos(c_inc*np.sin(azi)))
     pol = fit_res[0][0]+fit_res[0][1]*np.sin(azi)
     plt.plot(np.rad2deg(azi), pol,c="red", label=f"Best fit: {coef[0]:.2f}{coef[1]:.2f}*sin(azi)")
+    plt.plot(np.rad2deg(azi), pol_an,c="b", label=f"Analytic polar angle")
     plt.legend()
 
 def collect_polar_parameters(tref, d_simu):
@@ -174,7 +177,7 @@ def collect_polar_parameters_cart(tref, d_simu, threshold=30):
     assert isinstance(tref, HandlingEfield)
     pprint.pprint(d_simu)
     logger.info(f"Nb DU : {tref.get_nb_trace()}")
-    tref.set_xmax(d_simu["FIX_xmax_pos_grandlib"])
+    tref.set_xmax(d_simu["FIX_xmax_pos"])
     tref.remove_trace_low_signal(threshold)
     if tref.get_nb_trace() == 0:
         print("Pass signal too low")
@@ -250,7 +253,7 @@ def test_polar_parameters():
     logger.info(polar_par[cpt - 1])
     del l_size, l_polar_par
     print(f"Nb point polar: {cpt}")
-    # np.save(f"par_model_{F_efield.split('.')[0]}", polar_par)
+    #np.save(f"par_model_cor_{F_efield.split('.')[0]}", polar_par)
 
 
 # LOGGER
@@ -258,7 +261,7 @@ TPL_FMT_LOGGER = "%(asctime)s %(levelname)5s [%(name)s %(lineno)d] %(message)s"
 logging.basicConfig(level=logging.INFO, format=TPL_FMT_LOGGER)
 
 #
-# test_polar_parameters()
+#test_polar_parameters()
 
 #
 check_polar_interpol_2("par_model_efield_29-24992_L0_0000.npy")

@@ -31,6 +31,12 @@ def convert_3dtrace_grandlib(in_tr, f_efield=False):
         except:
             pass
     tro.init_network(in_tr.network.du_pos)
+    try:
+        tro.xmax_pos = in_tr.xmax_pos
+        tro.core_pos= in_tr.core_pos
+    except:
+        pass
+        
     return tro
 
 

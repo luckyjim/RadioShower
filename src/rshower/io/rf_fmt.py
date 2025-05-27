@@ -95,4 +95,4 @@ def interpol_RF(rf_fft, out_freq):
     rf_ns = rss.interpol_at_new_x(rf_fft[0], rf_fft[1], out_freq)
     rf_ew = rss.interpol_at_new_x(rf_fft[0], rf_fft[2], out_freq)
     rf_up = rss.interpol_at_new_x(rf_fft[0], rf_fft[3], out_freq)
-    return rf_ns, rf_ew, rf_up
+    return np.array([rf_ns, rf_ew, rf_up])
