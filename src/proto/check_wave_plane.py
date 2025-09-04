@@ -3,7 +3,7 @@ Created on 13 sept. 2024
 
 @author: jcolley
 """
-import pickle 
+import pickle
 import os.path
 import pprint
 
@@ -176,9 +176,9 @@ def check_direction():
     d_res["l_dif_azi"] = l_dif_azi
     d_res["l_dif_zen"] = l_dif_zen
     d_res["l_dif_dir"] = l_dif_dir
-    with open('res_optical_dif_test.pkl', 'wb') as fres:
+    with open("res_optical_dif_test.pkl", "wb") as fres:
         pickle.dump(d_res, fres)
-        
+
     plt.figure()
     plt.title("Histogram diff azimuth, bin 1")
     plt.hist(l_dif_azi[0], 25)
@@ -213,7 +213,7 @@ def check_direction():
     plt.title(
         f"Difference of direction of Xmax at DU level,\nbetween normal to Efield and straight line."
     )
-    #plt.ylim([0,16])
+    # plt.ylim([0,16])
     plt.xlabel(f"Bin number.\nFile : {f_dc2_ef}")
     plt.ylabel("Difference of direction [degree]")
     #
@@ -477,6 +477,6 @@ if __name__ == "__main__":
     # check_zhaires_xmax()
     # check_dc2_xmax()
     check_direction_evt(399, True)
-    #check_direction()
+    # check_direction()
     # check_direction_slow()
     plt.show()

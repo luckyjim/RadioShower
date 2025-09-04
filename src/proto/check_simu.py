@@ -37,10 +37,11 @@ PN_fmodel = "/home/jcolley/projet/grand_wk/recons/du_model/"
 
 
 def select_event():
-    dfrs =  uproot.open(P_dc2+F_shower)
+    dfrs = uproot.open(P_dc2 + F_shower)
     d_azi = dfrs["tshower"]["azimuth"].array(library="np")
     d_zen = dfrs["tshower"]["zenith"].array(library="np")
-    a_idx=np.argwhere(np.logical_and.reduce((d_azi%90 > 40, d_azi%90 < 50, d_zen < 50)))
+    a_idx = np.argwhere(np.logical_and.reduce((d_azi % 90 > 40, d_azi % 90 < 50, d_zen < 50)))
+
 
 def max_algebra(array_1d):
     idx = np.argmax(np.abs(array_1d))
@@ -75,6 +76,7 @@ def relative_error_trace(tra, trb, s_tra="A", s_trb="B"):
         plt.xlabel("%")
     return l_err
 
+
 def compare_simu_du_tan(i_e=0):
     tref, d_simu, ant3d, rf_fft = loading_simu_file_in(i_e)
     tr_du = do_simu_in_du_frame(tref, d_simu, ant3d, rf_fft)
@@ -90,6 +92,7 @@ def compare_simu_du_tan(i_e=0):
     tref.plot_trace_3d_idx(tref.idt2idx[ident_du])
     relative_error_trace(sim_du, sim_tan, "DU", "TAN")
 
+
 def compare_simu_du_polar(i_e=0):
     tref, d_simu, ant3d, rf_fft = loading_simu_file_in(i_e)
     tr_du = do_simu_in_du_frame(tref, d_simu, ant3d, rf_fft)
@@ -104,6 +107,7 @@ def compare_simu_du_polar(i_e=0):
     sim_pol = tr_pol.traces[tr_pol.idt2idx[ident_du]]
     tref.plot_trace_3d_idx(tref.idt2idx[ident_du])
     relative_error_trace(sim_du, sim_pol, "DU", "POLAR")
+
 
 def compare_simu_polar_tan(i_e=0):
     tref, d_simu, ant3d, rf_fft = loading_simu_file_in(i_e)
@@ -161,7 +165,7 @@ def compare_simu_du_dc2(i_e=0):
     tr_dc2 = froot.get_handling3dtraces(P_dc2 + F_volt, i_e)
     tr_dc2.plot_footprint_val_max()
     ident_du = 100
-    #ident_du = tr_du.idx2idt[0]
+    # ident_du = tr_du.idx2idt[0]
     print(tr_du.idt2idx[ident_du])
     print(tr_dc2.idt2idx[ident_du])
     tr_dc2.plot_trace_du(ident_du)
@@ -309,10 +313,12 @@ def do_simu_in_tan_frame_all_polar(tref, d_simu, ant3d, rf_fft):
     rot_event = Handling3dTraces(f"azi: {deg_dir[0]:.1f}, d_zen: {deg_dir[1]:.1f}")
     rot_event.set_unit_axis(r"$\mu$V", "dir", "Voltage")
     t_size = tref.get_size_trace()
-    rot_event.init_traces(np.zeros((1, 3, t_size)), du_id=[tref.idx2idt[idx]], f_samp_mhz=tref.f_samp_mhz)
+    rot_event.init_traces(
+        np.zeros((1, 3, t_size)), du_id=[tref.idx2idt[idx]], f_samp_mhz=tref.f_samp_mhz
+    )
     rot_event.range_plot = [1600, 1900]
-    max_ef = max_algebra(ef_tan[:2].ravel())*1.2
-    max_ef = np.max(np.linalg.norm(ef_tan[:2], axis=0))*1.1
+    max_ef = max_algebra(ef_tan[:2].ravel()) * 1.2
+    max_ef = np.max(np.linalg.norm(ef_tan[:2], axis=0)) * 1.1
     print(max_ef)
     for a_pol in range(0, 360, 5):
         ef_tan_rot = rotate_via_numpy(ef_tan[:2], np.deg2rad(a_pol))
@@ -419,17 +425,17 @@ def view_effect_polar(i_e):
 
 if __name__ == "__main__":
     i_e = 774  # 75km, azi 306°
-    #i_e = 766  #  6 km
+    # i_e = 766  #  6 km
     i_e = 764  # 70km, azi=107
     # i_e = 762 # 8km
     # i_e = 759 # 234km, azi=11, >40
-    #i_e = 755  # ok !! pacmac
-    #i_e = 755
+    # i_e = 755  # ok !! pacmac
+    # i_e = 755
     # plot_input_data(i_e)
-    #compare_simu_du_tan(i_e)
-    #compare_simu_du_polar(i_e)
+    # compare_simu_du_tan(i_e)
+    # compare_simu_du_polar(i_e)
     # compare_simu_polar_dc2(i_e)
     # compare_simu_tan_dc2(i_e)
     compare_simu_du_dc2(i_e)
-    #view_effect_polar(i_e)
+    # view_effect_polar(i_e)
     plt.show()

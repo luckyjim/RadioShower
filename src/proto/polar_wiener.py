@@ -275,6 +275,7 @@ def polar_wiener_lost_func_all_du(evt, pars, ant3d, rf_fft):
         l_cost.append([cost_res, cost_dif])
     return l_cost
 
+
 # def polar_wiener_lost_func_ref(evt, ant3d, rf_fft, pars, i_du=0):
 #     """
 #     Plot residu versus polar angle
@@ -477,14 +478,14 @@ def polar_wiener_lost_func(evt, ant3d, rf_fft, pars, i_du=0):
     ant3d.set_freq_out_mhz(freqs_out_mhz)
     if "xmax" in pars.keys():
         v_dux = pars["xmax"] - evt.network.du_pos[i_du]
-        #dir_evt_rad = coord.nwu_cart_to_dir_NOK(v_dux)
-        dir_evt_rad = np.squeeze(coord.nwu_cart_to_dir(v_dux[:,None]))
+        # dir_evt_rad = coord.nwu_cart_to_dir_NOK(v_dux)
+        dir_evt_rad = np.squeeze(coord.nwu_cart_to_dir(v_dux[:, None]))
         print(f"Xmax direction : {np.rad2deg(dir_evt_rad)}")
     else:
         dir_evt_rad = np.array([pars["azi"], pars["d_zen"]])
         dir_evt_rad = np.deg2rad(dir_evt_rad)
     ant3d.set_dir_source(dir_evt_rad)
-    
+
     # Wiener
     wiener = WienerDeconvolution(evt.f_samp_mhz[0] * 1e6)
     logger.debug(tf_elec.shape)
@@ -527,7 +528,7 @@ def polar_wiener_lost_func(evt, ant3d, rf_fft, pars, i_du=0):
         for i_a, axis in enumerate(l_axis):
             ant3d.set_dir_source(dir_evt_rad)
             leff_pol = ant3d.interp_leff.get_fft_leff_pol(ant3d.leff[i_a])
-            #print(angle, np.sum(np.abs(leff_pol)))
+            # print(angle, np.sum(np.abs(leff_pol)))
             wiener.set_rfft_kernel(leff_pol * tf_elec[i_a])
             # wiener.plot_ker_pow2()
             wiener.set_psd_noise(psd_noise[i_a])
@@ -561,7 +562,7 @@ def polar_wiener_lost_func(evt, ant3d, rf_fft, pars, i_du=0):
             wd_scal[i_a] = wbf_ef[i_a].sum() ** 2 + wbf_ef[i_ap].sum() ** 2
             # wd_scal[i_a] = np.sum(1/(wbf_ef[i_a] - wbf_ef[i_ap])**2)
             # if angle == 62:
-            #print(axis, wd_scal[i_a])
+            # print(axis, wd_scal[i_a])
             cost_dif[angle, i_a] = norm2_cplx(diff[wiener.r_freq])
         # diff = (fft_ef[0]*w_ef[0] - fft_ef[1]*w_ef[1])/(w_ef[0]+w_ef[1])
         cost_res[angle, 3] = np.sum(cost_res[angle, :3])

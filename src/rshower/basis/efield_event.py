@@ -168,24 +168,24 @@ class HandlingEfield(Handling3dTraces):
     def get_polar_angle(self, degree=False):
         """
         Calculate the polar angle for each trace in the dataset.
-        This method computes the polar angle of the electric field traces relative 
-        to the direction of the source (Xmax) in the detector unit (DU) frame. It 
+        This method computes the polar angle of the electric field traces relative
+        to the direction of the source (Xmax) in the detector unit (DU) frame. It
         also calculates the direction angles and the direction vectors for each trace.
         Args:
-            degree (bool, optional): If True, the polar angles and direction angles 
+            degree (bool, optional): If True, the polar angles and direction angles
                 are returned in degrees. Defaults to False (radians).
         Returns:
             tuple:
-                - polars (np.ndarray): Array of polar angles for each trace in radians 
+                - polars (np.ndarray): Array of polar angles for each trace in radians
                   (or degrees if `degree=True`).
-                - dir_angle (np.ndarray): Array of direction angles for each trace in 
+                - dir_angle (np.ndarray): Array of direction angles for each trace in
                   radians (or degrees if `degree=True`).
-                - dir_vec (np.ndarray): Array of unit direction vectors pointing toward 
+                - dir_vec (np.ndarray): Array of unit direction vectors pointing toward
                   the source (Xmax) for each trace.
         Raises:
             AssertionError: If `self.xmax` is not a numpy ndarray.
         Notes:
-            - The method assumes that `self.xmax` is the position of the source (Xmax) 
+            - The method assumes that `self.xmax` is the position of the source (Xmax)
               in the NWU coordinate system.
             - The direction vector is normalized to a unit vector.
             - The polar angle is computed in the tangent frame of the detector unit.
@@ -311,5 +311,5 @@ class HandlingEfield(Handling3dTraces):
 
     def plot_trace_idx(self, idx, to_draw="012"):
         super().plot_trace_idx(idx, to_draw)
-        #self.plot_trace_tan_idx(idx)
-        #self.plot_trace_pol_idx(idx)
+        # self.plot_trace_tan_idx(idx)
+        # self.plot_trace_pol_idx(idx)

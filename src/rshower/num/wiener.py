@@ -110,7 +110,7 @@ class WienerDeconvolutionWhiteNoise:
         :param sigma: white noise with standard deviation sigma > 0
         :type sigma: float
         """
-        wh_var = sigma ** 2
+        wh_var = sigma**2
         rfft_m = rfft_measure
         # coeff normalisation of se is sig_size
         if self.es_sig is None:
@@ -179,7 +179,7 @@ class WienerDeconvolutionWhiteNoise:
 
 
 class WienerDeconvolution:
-    def __init__(self, f_sample_hz=1):
+    def __init__(self, f_sample_hz=1.0):
         assert isinstance(f_sample_hz, float)
         self.f_hz = f_sample_hz
         logger.info(f"f_sample_hz : {f_sample_hz}")
@@ -188,6 +188,9 @@ class WienerDeconvolution:
         self.idx_min = 0
         self.a_freq_mhz = None
         self.sig_size = None
+    
+    def set_f_sample(self, f_mhz):
+        self.f_hz = f_mhz*1e6
 
     def set_flag_ifftshift(self, flag):
         self.f_ifftshift = flag
@@ -218,7 +221,7 @@ class WienerDeconvolution:
 
     def set_psd_noise(self, psd_noise):
         """
-        Set energy spectrum of 
+        Set energy spectrum of
 
         :param psd_sig:
         :type psd_sig:
@@ -299,22 +302,21 @@ class WienerDeconvolution:
         plt.figure()
         plt.title("Estimated signal " + title)
         plt.plot(self.sig, label="Wiener solution")
-        #plt.ylim([8,-8])
+        # plt.ylim([8,-8])
         plt.grid()
         plt.legend()
-        
+
     def plot_measure_est(self, title=""):
         plt.figure()
         plt.title("measure_signal" + title)
         plt.plot(self.measure, label="Measures")
         band_mea = sf.irfft(self.rfft_m_band)
-        plt.plot(band_mea, 'k',label="Measures band")
-        est_mea = sf.irfft(self.rfft_ker*self.fft_sig)
+        plt.plot(band_mea, "k", label="Measures band")
+        est_mea = sf.irfft(self.rfft_ker * self.fft_sig)
         plt.plot(est_mea, label="Estimated measures")
         plt.grid()
         plt.legend()
 
-   
     def plot_ker_pow2(self, title=""):
         plt.figure()
         plt.title("|Kernel|^2" + title)

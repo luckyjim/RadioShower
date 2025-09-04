@@ -13,7 +13,6 @@ import scipy.fft as sf
 from rshower.basis.traces_event import Handling3dTraces
 from rshower.num.signal import get_fastest_size_rfft
 from rshower.model.ant_resp import DetectorUnitAntenna3Axis, get_leff_from_files
-from rshower.model.galaxy import GalaxySignalGp300
 from rshower.model.rf_chain import RfChainGP300
 
 

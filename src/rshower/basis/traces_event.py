@@ -103,6 +103,8 @@ class Handling3dTraces:
         self.t_max = None
         self.v_max = None
         self.noise_inter = None
+        # analogic to numeric
+        self.a2n = 8192.0 / 9e5
 
     ### INTERNAL
 
@@ -186,7 +188,7 @@ class Handling3dTraces:
 
     ### OPERATIONS
 
-    def apply_bandpass(self, fr_min, fr_max, causal=True):
+    def apply_bandpass(self, fr_min, fr_max, causal=True, order=9):
         """
         band filter with butterfly window
 
@@ -195,11 +197,12 @@ class Handling3dTraces:
         low = fr_min * 1e6
         high = fr_max * 1e6
         f_hz = self.f_samp_mhz[0] * 1e6
-        order = 9
-        coeff_b, coeff_a = ssig.butter(order, [low, high], btype="bandpass", fs=f_hz)
         if causal:
-            filtered = ssig.lfilter(coeff_b, coeff_a, self.traces)
+            # second order section format more stable for causal filter
+            sos = ssig.butter(order, [low, high], btype="bandpass", fs=f_hz, output="sos")
+            filtered = ssig.sosfilt(sos, self.traces)
         else:
+            coeff_b, coeff_a = ssig.butter(order, [low, high], btype="bandpass", fs=f_hz)
             filtered = ssig.filtfilt(coeff_b, coeff_a, self.traces)
         self.traces = filtered.real
         self.t_max = None
@@ -276,6 +279,13 @@ class Handling3dTraces:
         if self.t_samples.shape[0] > 0:
             self.t_samples = self.t_samples[:new_nb_du, :]
         self.network.reduce_nb_du(new_nb_du)
+
+    def reduce_nb_sample(self, new_nb_sample):
+        """ """
+        assert new_nb_sample > 0
+        assert new_nb_sample <= self.get_size_trace()
+        self.traces = self.traces[:, :, :new_nb_sample]
+        self.t_samples = self.t_samples[:, :new_nb_sample]
 
     def downsize_sampling(self, fact):
         """Downsampling with scipy decimate function
@@ -384,11 +394,9 @@ class Handling3dTraces:
         :rtype: float(nb_du,) , float(nb_du,)
         """
         if hilbert:
-            logger.info(f"{self.t_samples.shape} {self.traces.shape}")
             tmax, vmax, idx_max, tr_norm = rss.get_peakamptime_norm_hilbert(
                 self.t_samples, self.traces
             )
-            logger.info(len(tmax))
         else:
             tr_norm = np.linalg.norm(self.traces, axis=1)
             idx_max = np.argmax(tr_norm, axis=1)
@@ -478,28 +486,37 @@ class Handling3dTraces:
         delta = self.get_delta_t_ns()[0]
         nb_sample_mm = (t_max - t_min) / delta
         nb_sample = int(np.rint(nb_sample_mm) + size_tr)
-        extended_traces = np.zeros(
-            (self.get_nb_trace(), 3, nb_sample), dtype=self.traces.dtype
-        )
+        extended_traces = np.zeros((self.get_nb_trace(), 3, nb_sample), dtype=self.traces.dtype)
         # don't use np.uint64 else int+ int =float ??
         i_beg = np.rint((self.t_start_ns - t_min) / delta).astype(np.uint32)
         for idx in range(self.get_nb_trace()):
-            extended_traces[idx, :, i_beg[idx] : i_beg[idx] + size_tr] = self.traces[
-                idx
-            ]
+            extended_traces[idx, :, i_beg[idx] : i_beg[idx] + size_tr] = self.traces[idx]
         common_time = t_min + np.arange(nb_sample, dtype=np.float64) * delta
         return common_time, extended_traces
 
     def get_psd_trace_idx(self, idx):
         psd = None
         for idx_axis, axis in enumerate(self.axis_name):
-            freq, pxx_den = get_psd(
-                self.traces[idx, idx_axis], self.f_samp_mhz[idx], self.nperseg
-            )
+            freq, pxx_den = get_psd(self.traces[idx, idx_axis], self.f_samp_mhz[idx], self.nperseg)
             if psd is None:
                 psd = np.zeros((3, pxx_den.shape[0]), dtype=np.float32)
             psd[idx_axis] = pxx_den
         return freq, psd
+
+    def to_digit(self, in_place=False, int_type=np.int16):
+        if in_place:
+            self.traces *= self.a2n
+            np.ceil(self.traces, out=self.traces, dtype=int_type)
+            self.unit_trace = "ADU"
+            return
+        return np.ceil(self.traces * self.a2n, dtype=int_type)
+
+    def to_analog(self, new_unit, in_place=False):
+        if in_place:
+            self.traces /= self.a2n
+            self.unit_trace = new_unit
+            return
+        return self.traces / self.a2n
 
     ### PLOTS
 
@@ -607,9 +624,7 @@ class Handling3dTraces:
                 plt.semilogy(freq[2:], pxx_den[2:], self._color[idx_axis], label=axis)
                 # plt.plot(freq[2:] * 1e-6, pxx_den[2:], self._color[idx_axis], label=axis)
         m_title = f"Power spectrum density of {self.type_trace}, DU {self.idx2idt[idx]} (idx={idx})"
-        m_title += (
-            f"\nPeriodogram has {self.nperseg} samples, delta freq {freq[1]:.2f}MHz"
-        )
+        m_title += f"\nPeriodogram has {self.nperseg} samples, delta freq {freq[1]:.2f}MHz"
         plt.title(m_title)
         plt.ylabel(rf"({self.unit_trace})$^2$/Hz")
         plt.xlabel(f"MHz\n{self.name}")
@@ -682,9 +697,7 @@ class Handling3dTraces:
     def plot_footprint_time_max(self):  # pragma: no cover
         """Plot footprint time associated to max value"""
         tmax, _ = self.get_tmax_vmax(False)
-        self.network.plot_footprint_1d(
-            tmax, "Time of max value", self, scale="lin", unit="ns"
-        )
+        self.network.plot_footprint_1d(tmax, "Time of max value", self, scale="lin", unit="ns")
 
     def plot_footprint_time_slider(self):  # pragma: no cover
         """Plot footprint max value"""
