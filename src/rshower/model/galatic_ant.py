@@ -45,15 +45,16 @@ class GalacticAntComponent:
         asd_mod = self.asd_mod[:, :, self.lst]
         nb_freq = len(self.freqs_mhz)
         asd = np.zeros((nb_freq, 3))
-        asd[:, 0] = interpol_at_new_x(self.f_mod[:, 0], asd_mod[:, 0], self.freqs_mhz, "linear")
-        asd[:, 1] = interpol_at_new_x(self.f_mod[:, 0], asd_mod[:, 1], self.freqs_mhz, "linear")
-        asd[:, 2] = interpol_at_new_x(self.f_mod[:, 0], asd_mod[:, 2], self.freqs_mhz, "linear")
+        asd[:, 0] = interpol_at_new_x(self.f_mod, asd_mod[:, 0], self.freqs_mhz, "linear")
+        asd[:, 1] = interpol_at_new_x(self.f_mod, asd_mod[:, 1], self.freqs_mhz, "linear")
+        asd[:, 2] = interpol_at_new_x(self.f_mod, asd_mod[:, 2], self.freqs_mhz, "linear")
         self.asd = asd
 
     def set_model_file(self, pn_model):
         m_asd = np.load(pn_model)
         self.f_mod = m_asd["fq"]
         self.asd_mod = m_asd["asd"]
+        print( self.f_mod.shape, self.asd_mod.shape)
 
     def set_lst_freq_size_out(self, lst, freqs_mhz, size_out):
         """Define LST, out frequency, size of trace"""
@@ -102,7 +103,7 @@ class GalacticAntComponent:
 
     def plot_psd_model(self, lst):
         plt.figure()
-        plt.title(f"Model PSD galactic component at LST {self.lst}")
+        plt.title(f"Model PSD galactic component at LST {lst}")
         plt.semilogy(self.f_mod[1:-2], self.asd_mod[1:-2, 0, lst] ** 2, label="axis 0")
         plt.semilogy(self.f_mod[1:-2], self.asd_mod[1:-2, 1, lst] ** 2, label="axis 1")
         plt.semilogy(self.f_mod[1:-2], self.asd_mod[1:-2, 2, lst] ** 2, label="axis 2")
@@ -167,13 +168,15 @@ class GalacticAntComponent:
 
 
 if __name__ == "__main__":
-    gen_gal = GalacticAntComponent("GP300")
+    PN_fmodel = "/home/jcolley/projet/grand_wk/recons/du_model/"
+    gen_gal = GalacticAntComponent()
+    gen_gal.set_model_file(PN_fmodel+ "/ASD_galaxy_ant_HFSS.npy")
     size_out = 4096 * 2
     fs_hz = 2_000_000_000
     freqs_mhz = sf.rfftfreq(size_out, 1 / fs_hz) * 1e-6
     print(freqs_mhz[-1])
-    gen_gal.set_lst_freq_size_out(2, freqs_mhz, size_out)
-    gen_gal.plot_psd_model(2)
+    gen_gal.set_lst_freq_size_out(0, freqs_mhz, size_out)
+    gen_gal.plot_psd_model(1)
     # gen_gal.plot_psd_inter()
     # gen_gal.plot_psd_trace()
     # gen_gal.plot_check_trace(0)
