@@ -4,19 +4,19 @@ Created on 4 avr. 2023
 @author: jcolley
 """
 
-
 from logging import getLogger
 
 import numpy as np
 import scipy.fft as sf
 
 
-from galaxy_alone import galactic_noise
+# from galaxy_alone import galactic_noise
 from grand.sim.detector.rf_chain import RFChain
 
 from rshower.basis.traces_event import Handling3dTraces
 from rshower.num.signal import get_fastest_size_rfft
 from rshower.model.ant_resp import DetectorUnitAntenna3Axis
+from rshower.model.galatic_ant import GalacticAntComponent
 from rshower.io.leff_fmt import get_leff_default
 import rshower.io.rf_fmt as rfchain
 
@@ -68,9 +68,10 @@ class SimuDetectorUnitResponse:
         self.params = {
             "flag_add_leff": True,
             "flag_add_rf": True,
+            "flag_noise": True,  # add galactic signal
             "fact_padding": 1.0,
             "lst": 18.0,
-            "fact_noise": 2,  # to adapt noise level observed
+            "fact_noise": 1,  # to adapt noise level observed
         }
         # object contents Efield and network information
         self.o_efield = Handling3dTraces()
@@ -89,6 +90,8 @@ class SimuDetectorUnitResponse:
         self.fft_noise_gal_3d = None
         self.v_out = None
         self.fft_rf = None
+        self.gal = GalacticAntComponent()
+        self.gal.set_model_file(PN_fmodel + "/ASD_galaxy_ant_HFSS.npy")
 
     ### SETTER
 
@@ -121,18 +124,22 @@ class SimuDetectorUnitResponse:
             # self.o_rfchain.compute_for_freqs(self.freqs_out_mhz)
             # self.fft_rf = self.o_rfchain.get_tf()
             self.fft_rf = rfchain.interpol_RF(self.o_rfchain, self.freqs_out_mhz)
+            self.gal.set_lst_freq_size_out(self.params["lst"], self.freqs_out_mhz, size_with_pad)
+        # FFT Efield
         self.fft_efield = sf.rfft(self.o_efield.traces, n=self.size_with_pad)
         assert self.fft_efield.shape[0] == self.o_efield.traces.shape[0]
         assert self.fft_efield.shape[1] == self.o_efield.traces.shape[1]
         # lst: local sideral time, galactic noise max at 18h
         logger.info("Compute galaxy noise for all traces")
-        self.fft_noise_gal_3d = galactic_noise(
-            self.params["lst"],
-            self.size_with_pad,
-            self.freqs_out_mhz,
-            self.o_efield.get_nb_trace(),
-        )
-        self.fft_noise_gal_3d *= self.params["fact_noise"]
+        if self.params["flag_noise"]:
+            self.fft_noise_gal_3d = self.gal.get_rfft_gal_ant(self.o_efield.get_nb_trace())
+        # self.fft_noise_gal_3d = galactic_noise(
+        #     self.params["lst"],
+        #     self.size_with_pad,
+        #     self.freqs_out_mhz,
+        #     self.o_efield.get_nb_trace(),
+        # )
+        # self.fft_noise_gal_3d *= self.params["fact_noise"]
 
     def set_xmax(self, xmax_xcs):
         """
@@ -148,10 +155,28 @@ class SimuDetectorUnitResponse:
         """
         Simulate all DU
         """
-        logger.info(self.o_efield.traces.shape)
-        logger.info(self.o_efield.get_nb_trace())
-        for idx in range(self.o_efield.get_nb_trace()):
-            self.compute_du_idx(idx)
+        if (
+            self.params["flag_noise"] == False
+            and self.params["flag_add_leff"] == True
+            and self.params["flag_add_rf"] == True
+        ):
+            for idx in range(self.o_efield.get_nb_trace()):
+                self.compute_du_idx_prod(idx)
+        else:
+            for idx in range(self.o_efield.get_nb_trace()):
+                self.compute_du_idx(idx)
+
+    def compute_du_idx_prod(self, idx_du):
+        """Simulate one DU
+        Simulation DU effect computing for DU at idx
+        """
+        logger.info(f"==============>  Processing DU with id: {self.o_efield.idx2idt[idx_du]}")
+        self.o_ant3d.set_name_pos(
+            self.o_efield.idx2idt[idx_du], self.o_efield.network.du_pos[idx_du]
+        )
+        fft_3d = self.o_ant3d.get_resp_3d_efield_du(self.fft_efield[idx_du])
+        fft_3d *= self.fft_rf
+        self.v_out[idx_du] = sf.irfft(fft_3d)[:, : self.sig_size]
 
     def compute_du_idx(self, idx_du):
         """Simulate one DU
