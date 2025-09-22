@@ -31,12 +31,46 @@ def get_psd(trace, f_samp_mhz, nperseg=0):
     :param nperseg: number of sample by periodogram
     """
     if nperseg == 0:
-        nperseg = trace.shape[0] // 2
+        nperseg = trace.shape[0]
 
     freq, pxx_den = ssig.welch(
         trace, f_samp_mhz * 1e6, nperseg=nperseg, window="taylor", scaling="density"
     )
     return freq * 1e-6, pxx_den
+
+
+def get_psd_pulse(trace, f_samp_mhz, support_percent=98):
+    # define support interval
+    marge = (100 - support_percent) / 2
+    trace_2 = trace**2
+    c_sum = (trace_2).cumsum()
+    c_sum_nor = c_sum / c_sum[-1]
+    print(c_sum_nor)
+    threshold = marge / 100
+    for idx in range(len(trace)):
+        if c_sum_nor[idx] > threshold:
+            i_beg = idx - 1
+            break
+    threshold = (100 - marge) / 100
+    print("Back search:", threshold)
+    for idx in range(len(trace)):
+        # print(idx, c_sum_nor[-idx])
+        if c_sum_nor[-idx - 1] < threshold:
+            i_end = len(trace) - idx - 1
+            break
+    print(i_beg, i_end)
+    print(c_sum_nor[i_beg - 1 : i_beg + 2])
+    print(c_sum_nor[i_end - 1 : i_end + 2])
+    # # --- Tracés ---
+    # plt.figure(figsize=(10,4))
+    # plt.plot(trace_2)
+    # plt.plot(c_sum)
+    # plt.axvspan(i_beg, i_end, alpha=0.2, color='orange')
+    # plt.title(f"Signal transitoire avec intervalle {support_percent:.1f}% energie")
+    # plt.xlabel("idx")
+    # plt.ylabel("Amplitude")
+    # plt.grid(True)
+    return i_beg, i_end
 
 
 class Handling3dTraces:
@@ -125,9 +159,6 @@ class Handling3dTraces:
         assert isinstance(self.traces, np.ndarray)
         assert traces.ndim == 3
         assert traces.shape[1] == 3
-        self.nperseg = traces.shape[2] // 4
-        if self.nperseg < 256:
-            self.nperseg = 256
         self.traces = traces
         if du_id is None:
             du_id = list(range(traces.shape[0]))
@@ -143,7 +174,7 @@ class Handling3dTraces:
         assert isinstance(self.t_start_ns, np.ndarray)
         assert traces.shape[0] == len(du_id)
         assert len(du_id) == t_start_ns.shape[0]
-
+        self.set_periodogram(self.get_size_trace())
         self._define_t_samples()
 
     def init_network(self, du_pos):
@@ -282,10 +313,11 @@ class Handling3dTraces:
 
     def reduce_nb_sample(self, new_nb_sample):
         """ """
-        assert new_nb_sample > 0
-        assert new_nb_sample <= self.get_size_trace()
+        # assert new_nb_sample > 0
+        # assert new_nb_sample <= self.get_size_trace()
         self.traces = self.traces[:, :, :new_nb_sample]
         self.t_samples = self.t_samples[:, :new_nb_sample]
+        self.set_periodogram(new_nb_sample)
 
     def downsize_sampling(self, fact):
         """Downsampling with scipy decimate function
@@ -300,7 +332,6 @@ class Handling3dTraces:
         self.f_samp_mhz /= fact
         self.t_samples = np.zeros((0, 0), dtype=np.float64)
         self._define_t_samples()
-        self.nperseg = np.min(np.array([self.traces.shape[2] // 2, self.nperseg]))
 
     def remove_trace_low_signal(self, threshold, norm_traces=None):
         """Remove trace where <norm_traces> is lower than <threshold>
@@ -616,15 +647,20 @@ class Handling3dTraces:
         """
         self._define_t_samples()
         plt.figure()
+        l_len = []
+        l_freq = []
         for idx_axis, axis in enumerate(self.axis_name):
             if str(idx_axis) in to_draw:
+                i_beg, i_end = get_psd_pulse(self.traces[idx, idx_axis], self.f_samp_mhz[idx], 99.5)
+                l_len.append(i_end - i_beg)
                 freq, pxx_den = get_psd(
-                    self.traces[idx, idx_axis], self.f_samp_mhz[idx], self.nperseg
+                    self.traces[idx, idx_axis, i_beg:i_end], self.f_samp_mhz[idx], 0
                 )
+                l_freq.append(f"{freq[1]:.2f},")
                 plt.semilogy(freq[2:], pxx_den[2:], self._color[idx_axis], label=axis)
                 # plt.plot(freq[2:] * 1e-6, pxx_den[2:], self._color[idx_axis], label=axis)
         m_title = f"Power spectrum density of {self.type_trace}, DU {self.idx2idt[idx]} (idx={idx})"
-        m_title += f"\nPeriodogram has {self.nperseg} samples, delta freq {freq[1]:.2f}MHz"
+        m_title += f"\nPeriodogram has {l_len} samples, delta freq {l_freq}MHz"
         plt.title(m_title)
         plt.ylabel(rf"({self.unit_trace})$^2$/Hz")
         plt.xlabel(f"MHz\n{self.name}")
