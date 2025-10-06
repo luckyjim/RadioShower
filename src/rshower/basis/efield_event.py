@@ -3,6 +3,7 @@ Colley Jean-Marc, CNRS/IN2P3/LPNHE
 
 Handling a set of 3D traces
 """
+
 from logging import getLogger
 
 import numpy as np
@@ -91,6 +92,7 @@ class HandlingEfield(Handling3dTraces):
         super().__init__(name)
         self.xmax = -1
         self.polar_angle_rad = None
+        self.ef_pol = None
 
     #
     # SETTER
@@ -154,17 +156,6 @@ class HandlingEfield(Handling3dTraces):
             a_vec_pol[idx, :], _ = fit_vec_linear_polar_l2(self.traces[idx], threshold)
         return a_vec_pol
 
-    # def get_traces_passband(self, f_mhz=[30, 250], causal=False):
-    #     """Return array traces with passband filter
-    #
-    #     :param f_mhz: [MHz] border
-    #     :type f_mhz: list of 2 number
-    #     """
-    #     raise
-    #     if causal:
-    #         return sns.filter_butter_band_lfilter(self.traces, f_mhz[0], f_mhz[1], self.f_samp_mhz)
-    #     return sns.filter_butter_band(self.traces, f_mhz[0], f_mhz[1], self.f_samp_mhz)
-
     def get_polar_angle(self, degree=False):
         """
         Calculate the polar angle for each trace in the dataset.
@@ -205,6 +196,7 @@ class HandlingEfield(Handling3dTraces):
             dir_vec[idx] = v_dux
             logger.debug(f"xmax  : {self.xmax}")
             logger.debug(f"pos du: {self.network.du_pos[idx]}, {v_dux}")
+            # compute polar angle from polar direction
             vec_dir_du = coord.nwu_cart_to_dir_one(v_dux)
             dir_angle[idx] = vec_dir_du
             # print(idx, np.rad2deg(vec_dir_du))
@@ -214,6 +206,8 @@ class HandlingEfield(Handling3dTraces):
             self.ef_pol[idx] = np.dot(self.traces[idx].T, vec_unit_polar[idx])
         logger.info(f"mean dir {np.rad2deg(np.mean(dir_angle, 0))}")
         self.polar_angle_rad = polars
+        self.dir_angle = dir_angle
+        self.dir_vec = dir_vec
         if degree:
             return np.rad2deg(polars), np.rad2deg(dir_angle), dir_vec
         return polars, dir_angle, dir_vec
@@ -309,6 +303,20 @@ class HandlingEfield(Handling3dTraces):
             a_nb_sple, "Nunber of samples used to fit polar vector", self, scale="lin"
         )
 
+    def get_traces_polar(self):
+        if self.ef_pol == None:
+            self.get_polar_angle()
+        trpol = self.copy(0)
+        trpol.l_axis = self._d_axis_val["pol"]
+        trpol.traces[:,0] = self.ef_pol
+        return trpol
+
+    def get_traces_tan(self):
+        trtan = self.copy(0)
+        trtan.l_axis = self._d_axis_val["tan"]
+        trtan.traces[:,:2] = self.ef_tan
+        return trtan
+        
     def plot_trace_idx(self, idx, to_draw="012"):
         super().plot_trace_idx(idx, to_draw)
         # self.plot_trace_tan_idx(idx)

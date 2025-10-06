@@ -39,7 +39,7 @@ def get_psd(trace, f_samp_mhz, nperseg=0):
     return freq * 1e-6, pxx_den
 
 
-def get_psd_pulse(trace, f_samp_mhz, support_percent=98):
+def get_psd_pulse(trace, f_samp_mhz, support_percent=99.99):
     # define support interval
     marge = (100 - support_percent) / 2
     trace_2 = trace**2
@@ -124,6 +124,8 @@ class Handling3dTraces:
             "cart": ["X", "Y", "Z"],
             "dir": ["SN", "EW", "UP"],
             "shw": ["vxB", "vx(vxB)", "v"],
+            "pol": [r"$e_{polar}$"],
+            "tan": [r"$e_{\zenith}$", r"$e_{\azi}$"],
         }
         # blue for UP because the sky is blue
         # yellow for EW because sun is yellow
@@ -131,7 +133,7 @@ class Handling3dTraces:
         # k for black because the poles are white
         #  and the reverse of white (not visible on plot) is black
         self._color = ["k", "y", "b"]
-        self.axis_name = self._d_axis_val["idx"]
+        self.l_axis = self._d_axis_val["idx"]
         self.network = None
         # computing by user and store in object
         self.t_max = None
@@ -161,7 +163,7 @@ class Handling3dTraces:
         assert traces.shape[1] == 3
         self.traces = traces
         if du_id is None:
-            du_id = list(range(traces.shape[0]))
+            du_idplot_trace_pol_idx = list(range(traces.shape[0]))
         if t_start_ns is None:
             t_start_ns = np.zeros(traces.shape[0], dtype=np.float32)
         self.idx2idt = du_id
@@ -207,7 +209,7 @@ class Handling3dTraces:
         assert isinstance(type_trace, str)
         self.type_trace = type_trace
         self.unit_trace = unit_trace
-        self.axis_name = self._d_axis_val[axis_name]
+        self.l_axis = self._d_axis_val[axis_name]
 
     def set_periodogram(self, size):
         """
@@ -527,7 +529,7 @@ class Handling3dTraces:
 
     def get_psd_trace_idx(self, idx):
         psd = None
-        for idx_axis, axis in enumerate(self.axis_name):
+        for idx_axis, axis in enumerate(self.l_axis):
             freq, pxx_den = get_psd(self.traces[idx, idx_axis], self.f_samp_mhz[idx], self.nperseg)
             if psd is None:
                 psd = np.zeros((3, pxx_den.shape[0]), dtype=np.float32)
@@ -603,7 +605,7 @@ class Handling3dTraces:
         s_title += f"; {self.get_size_trace()} samples"
         plt.title(s_title)
         std_3d = self.get_std_noise(idx)
-        for idx_axis, axis in enumerate(self.axis_name):
+        for idx_axis, axis in enumerate(self.l_axis):
             if str(idx_axis) in to_draw:
                 std_axis = std_3d[idx_axis]
                 plt.plot(
@@ -649,9 +651,9 @@ class Handling3dTraces:
         plt.figure()
         l_len = []
         l_freq = []
-        for idx_axis, axis in enumerate(self.axis_name):
+        for idx_axis, axis in enumerate(self.l_axis):
             if str(idx_axis) in to_draw:
-                i_beg, i_end = get_psd_pulse(self.traces[idx, idx_axis], self.f_samp_mhz[idx], 99.5)
+                i_beg, i_end = get_psd_pulse(self.traces[idx, idx_axis], self.f_samp_mhz[idx], 99.9)
                 l_len.append(i_end - i_beg)
                 freq, pxx_den = get_psd(
                     self.traces[idx, idx_axis, i_beg:i_end], self.f_samp_mhz[idx], 0

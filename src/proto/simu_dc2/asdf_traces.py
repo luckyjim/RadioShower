@@ -7,7 +7,7 @@ import asdf
 from astropy.time import Time
 
 from rshower.basis.traces_event import Handling3dTraces
-from rshower.basis.coord import nwu_cart_to_dir_one
+from rshower.basis.coord import nwu_cart_to_dir_one, nwu_cart_to_dir
 
 
 logger = getLogger(__name__)
@@ -47,6 +47,8 @@ S_dtype_mtraces = [
     ("du_id", "i4"),  # in table dtype_network
     ("start_s", "i8"),
     ("start_ns", "f8"),
+    ("azi", "f4"), # Azimuth
+    ("d_zen", "f4"), # distance zemithal
 ]
 
 
@@ -99,6 +101,19 @@ class AsdfTraces:
         plt.xlabel("Distance Xmax-Core [Km]")
         plt.title(f"Set of {self.nb_events} events")
 
+    def plot_dir(self):
+        vec_cx = self.events["xmax_nwu"] - self.events["core_nwu"]
+        print(vec_cx.shape)
+        azi, zenith = np.rad2deg(nwu_cart_to_dir(vec_cx.T))
+        plt.figure()
+        plt.hist(azi)
+        plt.grid()
+        plt.xlabel("Azimuth")
+        plt.figure()
+        plt.hist(zenith)
+        plt.grid()
+        plt.xlabel("Zenith")
+
 
 class AsdfWriteTraces(AsdfTraces):
     def __init__(self):
@@ -110,10 +125,11 @@ class AsdfWriteTraces(AsdfTraces):
         d_infos["description"] = "Files events/traces from RadioShower library"
         d_infos["version"] = "0.1"
         d_infos["date"] = Time.now().to_value("isot", subfmt="date_hm")
+        d_infos["laboratory"] = "LPNHE/IN2P3/CNRS France"
         d_infos["author"] = "Jean-Marc Colley"
         d_infos["comment"] = ""
         d_infos["history"] = ""
-        d_infos["project"] = "RadioShower"
+        d_infos["project"] = "GRAND RadioShower"
         d_infos["repository"] = "https://github.com/luckyjim/RadioShower"
         self.d_infos = d_infos
         # Metadata
@@ -129,17 +145,25 @@ class AsdfWriteTraces(AsdfTraces):
         if not kind in ["Voc", "Efield"]:
             raise
         self.meta["type_trace"] = kind
+        
+    def set_magnetic_field(self, m_field):
+        d_mag = {}
+        d_mag["inc_deg"] = m_field[0]
+        d_mag["dec_deg"] = m_field[1]
+        d_mag["modul_uT"] = m_field[2]
+        self.meta["mag_field"] = d_mag
 
     def allocate_arrays(self, nb_evts, nb_traces, s_trace, nb_du=400):
-        self.tr3d = np.empty((nb_traces, 3, s_trace), dtype=np.float32)
+        self.traces = np.empty((nb_traces, 3, s_trace), dtype=np.float32)
         self.mtraces = np.zeros(nb_traces, dtype=S_dtype_mtraces)
         self.events = np.zeros(nb_evts, dtype=S_dtype_events)
         self.network = np.zeros(nb_du, dtype=S_dtype_network)
 
     def save_asdf(self, pn_traces, f_zip=False):
+        self.pn_file = pn_traces
         self.d_asdf["infos_file"] = self.d_infos
         self.d_asdf["meta"] = self.meta
-        self.d_asdf["tr3d"] = self.tr3d
+        self.d_asdf["traces"] = self.traces
         self.d_asdf["mtraces"] = self.mtraces
         self.d_asdf["events"] = self.events
         self.d_asdf["network"] = self.network
@@ -155,7 +179,7 @@ class AsdfWriteVolt(AsdfWriteTraces):
         super().__init__()
 
     # CREATE file
-    def upload_all_events(self, l_events, nb_trace):
+    def upload_all_voltage(self, l_events, nb_trace):
         """
         l_events = [[event_signal, dict_params_simu] ]
         """
@@ -171,13 +195,17 @@ class AsdfWriteVolt(AsdfWriteTraces):
         for idx, evt in enumerate(l_events):
             sig = evt[0]
             info = evt[1]
+            efi = evt[2]
             assert isinstance(sig, Handling3dTraces)
             # assert isinstance(noise, Handling3dTraces)
             i_end = i_beg + sig.get_nb_trace()
             # Traces
-            self.tr3d[i_beg:i_end] = sig.traces
+            self.traces[i_beg:i_end] = sig.traces
             self.mtraces["start_ns"][i_beg:i_end] = sig.t_start_ns
             self.mtraces["du_id"][i_beg:i_end] = sig.idx2idt
+            print(efi["dir_xmax"].shape)
+            self.mtraces["azi"][i_beg:i_end] = efi["dir_xmax"][0]
+            self.mtraces["d_zen"][i_beg:i_end] = efi["dir_xmax"][1]
             # Events
             self.events["evt2ftr"][idx] = i_end
             self.events["run_nb"][idx] = info["run_nb"]
@@ -206,20 +234,36 @@ class AsdfWriteVolt(AsdfWriteTraces):
         self.meta["nb_evt"] = nb_evt
         self.meta["nb_trace"] = nb_trace
 
+
 class AsdfWriteEfield(AsdfWriteTraces):
     def __init__(self):
         super().__init__()
-        
-    def set_with_volt(self, f_volt, traces, f_s_mhz):
+
+    def upload_all_efield(self, l_events, nb_traces):
+        """
+        l_events = [[event_signal, dict_params_simu] ]
+        """
+        i_beg = 0
+        self.traces = np.empty((nb_traces, 1, 4096), dtype=np.float32)
+        self.pol_angle = np.empty(nb_traces, dtype=np.float32)
+        for evt in l_events:
+            d_ef = evt[2]
+            ef_pol = d_ef["ef_pol"]
+            i_end = i_beg + ef_pol.shape[0]
+            # Traces
+            self.traces[i_beg:i_end,0] = ef_pol
+            self.pol_angle[i_beg:i_end] = d_ef["angle_pol"]
+            i_beg = i_end
+            
+    def set_with_volt(self, f_volt, f_s_mhz):
         self.meta = f_volt.d_asdf["meta"].copy()
         self.meta["unit"] = r"$\mu V/m$"
         self.meta["f_samp_mhz"] = f_s_mhz
         self.set_kind("Efield")
-        self.tr3d = traces
         self.events = {"$ref": f"{f_volt.pn_file}#events"}
         self.network = {"$ref": f"{f_volt.pn_file}#network"}
         self.mtraces = {"$ref": f"{f_volt.pn_file}#mtraces"}
-        
+        self.d_asdf["pol_angle"] = self.pol_angle
 
 
 class AsdfReadTraces(AsdfTraces):
@@ -227,7 +271,7 @@ class AsdfReadTraces(AsdfTraces):
     def __init__(self, pn_traces):
         self.d_asdf = asdf.open(pn_traces)
         self.d_asdf.find_references()
-        self.tr3d  = self.d_asdf["tr3d"]
+        self.traces = self.d_asdf["traces"]
         self.mtraces = self.d_asdf["mtraces"]
         self.events = self.d_asdf["events"]
         self.network = self.d_asdf["network"]
@@ -237,9 +281,11 @@ class AsdfReadTraces(AsdfTraces):
 
     def get_event(self, idx_evt):
         idx_beg, idx_end = self.get_event_interval(idx_evt)
-        logger.info(idx_beg)
-        logger.info(idx_end)
-        traces = self.tr3d[idx_beg:idx_end]
+        if self.traces.shape[1] == 1:
+            traces = np.empty((idx_end-idx_beg,3,self.traces.shape[2]),dtype= self.traces.dtype)
+            traces[:,0] = np.squeeze(self.traces[idx_beg:idx_end])
+        elif  self.traces.shape[1] == 3:
+            traces = self.traces[idx_beg:idx_end]        
         evt_id = f"IDX={self.events['idx'][idx_evt]}, EVT_NB={self.events['event_nb'][idx_evt]}, RUN_NB={self.events['run_nb'][idx_evt]}"
         event = Handling3dTraces(evt_id)
         event.init_traces(
@@ -264,7 +310,10 @@ class AsdfReadTraces(AsdfTraces):
         if self.meta["type_trace"] == "Voc":
             event.set_unit_axis(r"$\mu V$", "dir", "Voc")
         elif self.meta["type_trace"] == "Efield":
-            event.set_unit_axis(r"$\mu V/m$", "dir", "Efield")
+            if self.traces.shape[1] == 1 :
+                event.set_unit_axis(r"$\mu V/m$", "pol", "Efield")
+            else:
+                event.set_unit_axis(r"$\mu V/m$", "dir", "Efield")
         else:
             print(self.meta)
             raise

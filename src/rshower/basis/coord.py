@@ -5,8 +5,13 @@ Coordinate transformation in **same** frame.
 
 see frame.py module to have frame definition and specific convention of axis and angle
 
+
+Spherical coordinate:
+
 https://en.wikipedia.org/wiki/Spherical_coordinate_system#Definition
-polar angle is distance zenithal
+
+theta is distance zenithal not latitude.
+
 """
 
 from logging import getLogger
