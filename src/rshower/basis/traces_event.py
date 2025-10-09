@@ -163,7 +163,7 @@ class Handling3dTraces:
         assert traces.shape[1] == 3
         self.traces = traces
         if du_id is None:
-            du_idplot_trace_pol_idx = list(range(traces.shape[0]))
+            du_id = list(range(traces.shape[0]))
         if t_start_ns is None:
             t_start_ns = np.zeros(traces.shape[0], dtype=np.float32)
         self.idx2idt = du_id
