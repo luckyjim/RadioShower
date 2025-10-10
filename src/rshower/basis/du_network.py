@@ -3,6 +3,7 @@ Colley Jean-Marc, CNRS/IN2P3/LPNHE
 
 Handling Detector Unit (DU) network, footprint plots
 """
+
 from logging import getLogger
 
 import numpy as np
@@ -302,9 +303,9 @@ class DetectorUnitNetwork:
             norm_user = colors.Normalize(vmin=vmin, vmax=vmax)
         else:
             norm_user = "lin"
-        
-        l_sub = [ax2[1, 0],ax2[0, 1], ax2[1, 1] ]
-        for idx, axis in enumerate(o_tr.l_axis):                
+
+        l_sub = [ax2[1, 0], ax2[0, 1], ax2[1, 1]]
+        for idx, axis in enumerate(o_tr.l_axis):
             ret_scat = subplot(l_sub[idx], v_plot[:, idx], f"{title} {o_tr.l_axis[idx]}", norm_user)
             fig.colorbar(ret_scat, label=unit)
 

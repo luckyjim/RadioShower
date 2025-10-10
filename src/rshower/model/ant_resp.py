@@ -391,15 +391,15 @@ class DetectorUnitAntenna3Axis:
         self.cart_src_du = diff_n
         self.dir_src_du = coord.nwu_cart_to_dir_one(diff_n)
         self.interp_leff.set_dir_source(self.dir_src_du)
-    
+
     def get_leff_pol(self, polar_angle):
         itp = self.interp_leff
         itp.set_angle_polar(polar_angle)
         leff_sn = itp.get_fft_leff_pol(self.sn_leff)
         leff_ew = itp.get_fft_leff_pol(self.ew_leff)
         leff_up = itp.get_fft_leff_pol(self.up_leff)
-        return np.array([leff_sn,leff_ew,leff_up])
-        
+        return np.array([leff_sn, leff_ew, leff_up])
+
     def get_resp_3d_efield_du(self, fft_efield_du):
         """Return fft of antennas response for 3 axis with efield in [XCS] frame
 

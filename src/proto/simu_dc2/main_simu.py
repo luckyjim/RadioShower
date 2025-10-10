@@ -71,7 +71,8 @@ class SimuGrand:
         self.size_chk = 1
         self.out_dir = "/home/jcolley/projet/lucky/data/"
         self.out_dir = "/sps/grand/colley/data/dc2/"
-
+        self.prefix = "volt-ash_"
+        
     def set_out_sampling_size(self, fact_downsample, size_trace=0):
         self.fact_downsample = fact_downsample
         self.size_trace = size_trace
@@ -154,6 +155,10 @@ class SimuGrand:
 
     def process_all_events_parallel_chunk(self, ie_beg, ie_endp1, size_chk=10):
         from joblib import Parallel, delayed, parallel_config
+        
+        f_ef = froot.get_file_event(self.pn_efield)
+        if ie_endp1 < 0:
+            ie_endp1 = f_ef.get_nb_events()
 
         def process_results_chunk(results):
             l_events = []
@@ -179,20 +184,19 @@ class SimuGrand:
         l_events, cpt_du, cpt_du_all = process_results_chunk(results)
         self.cpt_du = cpt_du
         # Create output file
-        f_trsig = l_events[0][0]
+        # f_trsig = l_events[0][0]
         self.f_voc = f_tr.AsdfWriteVolt()
         self.f_voc.set_kind("Voc")
         self.f_voc.meta["infile"] = self.pn_efield
         #
         self.f_voc.upload_all_voltage(l_events, cpt_du)
         # add magnetic field
-        f_ef = froot.get_file_event(self.pn_efield)
         d_simu = f_ef.get_simu_parameters()
         self.f_voc.set_magnetic_field(d_simu["magnetic_field"])
         # name file
         n_ef = self.pn_efield.split("/")[-1]
         ln_asdf = n_ef.split("_")
-        n_asdf = "volt_ash_" + ln_asdf[1] + ".asdf"
+        n_asdf = self.prefix + ln_asdf[1] + ".asdf"
         n_asdf = self.out_dir + n_asdf
         logger.info(f"Save voltage in {n_asdf}")
         self.f_voc.save_asdf(n_asdf, False)
@@ -208,7 +212,7 @@ class SimuGrand:
         f_ef = f_tr.AsdfWriteEfield()
         f_ef.upload_all_efield(l_events, self.cpt_du)
         f_ef.set_with_volt(self.f_voc, 2000)
-        ef_name = f_name.replace("volt_ash", "efield")
+        ef_name = f_name.replace(self.prefix, "efield_")
         f_ef.save_asdf(ef_name, True)
 
     def save_efield_3d(self, f_name):
@@ -256,7 +260,7 @@ if __name__ == "__main__":
         simu.set_out_sampling_size(4, 1024)
         # simu.to_voltage(path_dc2 + f_ef, 400, 402)
         # simu.process_all_events_parallel(pn_efield)
-        simu.process_all_events_parallel_chunk(0, 1000, 10)
+        simu.process_all_events_parallel_chunk(0, -1, 10)
         # simu.process_all_events(pn_efield)
         plt.show()
 

@@ -104,7 +104,6 @@ class SimuDetectorUnitResponse:
         assert isinstance(tr_evt, Handling3dTraces)
         self.o_efield = tr_evt
         self.v_out = np.zeros_like(self.o_efield.traces)
-        self.v_noise = np.zeros_like(self.o_efield.traces)
         logger.debug(self.v_out.shape)
         self.sig_size = self.o_efield.get_size_trace()
         # common frequencies for all processing in Fourier domain
@@ -126,20 +125,24 @@ class SimuDetectorUnitResponse:
             self.fft_rf = rfchain.interpol_RF(self.o_rfchain, self.freqs_out_mhz)
             self.gal.set_lst_freq_size_out(self.params["lst"], self.freqs_out_mhz, size_with_pad)
         # FFT Efield
-        self.fft_efield = sf.rfft(self.o_efield.traces, n=self.size_with_pad)
+        nb_axis = len(tr_evt.l_axis)
+        if nb_axis == 3:
+            self.get_resp_ant = self.o_ant3d.get_resp_3d_efield_du
+            self.fft_efield = sf.rfft(self.o_efield.traces, n=self.size_with_pad)
+            assert self.fft_efield.shape[1] == self.o_efield.traces.shape[1]
+        elif nb_axis == 1:
+            logger.info("EField POLAR")
+            self.get_resp_ant = self.o_ant3d.get_resp_1d_efield_pol
+            self.fft_efield = sf.rfft(self.o_efield.traces[:,0], n=self.size_with_pad)
+        else:
+            raise
         assert self.fft_efield.shape[0] == self.o_efield.traces.shape[0]
-        assert self.fft_efield.shape[1] == self.o_efield.traces.shape[1]
+        
         # lst: local sideral time, galactic noise max at 18h
-        logger.info("Compute galaxy noise for all traces")
         if self.params["flag_noise"]:
+            logger.info("Compute galaxy noise for all traces")
+            self.v_noise = np.zeros_like(self.o_efield.traces)
             self.fft_noise_gal_3d = self.gal.get_rfft_gal_ant(self.o_efield.get_nb_trace())
-        # self.fft_noise_gal_3d = galactic_noise(
-        #     self.params["lst"],
-        #     self.size_with_pad,
-        #     self.freqs_out_mhz,
-        #     self.o_efield.get_nb_trace(),
-        # )
-        # self.fft_noise_gal_3d *= self.params["fact_noise"]
 
     def set_xmax(self, xmax_xcs):
         """
@@ -149,6 +152,14 @@ class SimuDetectorUnitResponse:
         """
         self.o_ant3d.set_pos_source(xmax_xcs)
 
+    def set_polar(self, angle_polar):
+        """
+
+        :param angle_polar: [rad] 
+        :type angle_polar: float 
+        """
+        self.o_ant3d.interp_leff.set_angle_polar(angle_polar)
+        
     ### GETTER / COMPUTER
 
     def compute_du_all(self):
@@ -170,11 +181,11 @@ class SimuDetectorUnitResponse:
         """Simulate one DU
         Simulation DU effect computing for DU at idx
         """
-        logger.info(f"==============>  Processing DU with id: {self.o_efield.idx2idt[idx_du]}")
+        logger.debug(f"==============>  Processing DU with id: {self.o_efield.idx2idt[idx_du]}")
         self.o_ant3d.set_name_pos(
             self.o_efield.idx2idt[idx_du], self.o_efield.network.du_pos[idx_du]
         )
-        fft_3d = self.o_ant3d.get_resp_3d_efield_du(self.fft_efield[idx_du])
+        fft_3d = self.get_resp_ant(self.fft_efield[idx_du])
         fft_3d *= self.fft_rf
         self.v_out[idx_du] = sf.irfft(fft_3d)[:, : self.sig_size]
 
@@ -200,7 +211,7 @@ class SimuDetectorUnitResponse:
         ########################
         # Voltage open circuit
         if self.params["flag_add_leff"]:
-            fft_3d = self.o_ant3d.get_resp_3d_efield_du(self.fft_efield[idx_du])
+            fft_3d = self.get_resp_ant(self.fft_efield[idx_du])
         else:
             fft_3d = self.fft_efield[idx_du].copy()
         fft_noise = self.fft_noise_gal_3d[idx_du]
