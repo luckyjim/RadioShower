@@ -203,7 +203,6 @@ class AsdfWriteVolt(AsdfWriteTraces):
             self.traces[i_beg:i_end] = sig.traces
             self.mtraces["start_ns"][i_beg:i_end] = sig.t_start_ns
             self.mtraces["du_id"][i_beg:i_end] = sig.idx2idt
-            print(efi["dir_xmax"].shape)
             self.mtraces["azi"][i_beg:i_end] = efi["dir_xmax"][0]
             self.mtraces["d_zen"][i_beg:i_end] = efi["dir_xmax"][1]
             # Events
@@ -282,7 +281,7 @@ class AsdfReadTraces(AsdfTraces):
     def get_event(self, idx_evt):
         idx_beg, idx_end = self.get_event_interval(idx_evt)
         if self.traces.shape[1] == 1:
-            traces = np.empty((idx_end-idx_beg,3,self.traces.shape[2]),dtype= self.traces.dtype)
+            traces = np.zeros((idx_end-idx_beg,3,self.traces.shape[2]),dtype= self.traces.dtype)
             traces[:,0] = np.squeeze(self.traces[idx_beg:idx_end])
         elif  self.traces.shape[1] == 3:
             traces = self.traces[idx_beg:idx_end]        
@@ -319,7 +318,7 @@ class AsdfReadTraces(AsdfTraces):
             raise
         event.network.xmax_pos = self.events["xmax_nwu"][idx_evt]
         event.network.core_pos = self.events["core_nwu"][idx_evt]
-        return event, None
+        return event
 
 
 if __name__ == "__main__":

@@ -8,7 +8,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import rshower.num.signal as rss
 
-print("================================= switch SN and WE")
+#print("================================= switch SN and WE")
 
 
 def read_one_column(pn_file, f_0_mhz, step_mhz):

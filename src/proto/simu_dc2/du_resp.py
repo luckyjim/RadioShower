@@ -23,7 +23,7 @@ import rshower.io.rf_fmt as rfchain
 logger = getLogger(__name__)
 
 PN_fmodel = "/home/jcolley/projet/grand_wk/recons/du_model/"
-
+PN_fmodel = "/sps/grand/colley/data/du_model/"
 
 class SimuDetectorUnitResponse:
     """

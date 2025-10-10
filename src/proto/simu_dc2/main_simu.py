@@ -70,6 +70,7 @@ class SimuGrand:
         self.ie_endp1 = 0
         self.size_chk = 1
         self.out_dir = "/home/jcolley/projet/lucky/data/"
+        self.out_dir = "/sps/grand/colley/data/dc2/"
 
     def set_out_sampling_size(self, fact_downsample, size_trace=0):
         self.fact_downsample = fact_downsample
@@ -191,9 +192,9 @@ class SimuGrand:
         # name file
         n_ef = self.pn_efield.split("/")[-1]
         ln_asdf = n_ef.split("_")
-        n_asdf = "volt6_" + ln_asdf[1] + ".asdf"
+        n_asdf = "volt_ash_" + ln_asdf[1] + ".asdf"
         n_asdf = self.out_dir + n_asdf
-        print(n_asdf)
+        logger.info(f"Save voltage in {n_asdf}")
         self.f_voc.save_asdf(n_asdf, False)
         logger.info(f"DU select   : {cpt_du}/{cpt_du_all}")
         logger.info(f"Event select: {len(l_events)}/{nb_evt}")
@@ -201,13 +202,13 @@ class SimuGrand:
         # remove all traces
         self.save_efield_pol(l_events, n_asdf)
         logger.info(f"-----> Chrono duration (h:m:s): {datetime.now()-START}")
-        print(f"-----> Chrono duration (h:m:s): {datetime.now()-START}")
+        
 
     def save_efield_pol(self, l_events, f_name):
         f_ef = f_tr.AsdfWriteEfield()
         f_ef.upload_all_efield(l_events, self.cpt_du)
         f_ef.set_with_volt(self.f_voc, 2000)
-        ef_name = f_name.replace("volt", "efield")
+        ef_name = f_name.replace("volt_ash", "efield")
         f_ef.save_asdf(ef_name, True)
 
     def save_efield_3d(self, f_name):
@@ -240,6 +241,7 @@ if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO, format=TPL_FMT_LOGGER, datefmt="%d %H:%M:%S")
     #
     path_data = "/home/jcolley/projet/grand_wk/data/root/dc2/"
+    path_data = "/sps/grand/DC2Training/"
     path_dc2 = path_data + "ZHAireS/sim_Xiaodushan_20221025_220000_RUN0_CD_ZHAireS_0000/"
     f_adc = "adc_29-24992_L1_0000.root"
     f_ef = "efield_29-24992_L0_0000.root"
