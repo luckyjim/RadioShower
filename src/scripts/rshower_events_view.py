@@ -93,7 +93,7 @@ def main():
         if args.index >= d_events.nb_events:
             logger.error(f"index events must < {d_events.nb_events}")
             return
-        o_tevent, _ = d_events.get_event(args.index)
+        o_tevent = d_events.get_event(args.index)
         # o_tevent.set_noise_interval(624,1024)
     if args.info:
         d_events.plot_hist_du()
