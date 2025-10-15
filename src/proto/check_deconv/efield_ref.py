@@ -13,7 +13,7 @@ import grand.dataio.root_files as froot
 from rshower.io.events.grand_io_fmt import convert_3dtrace_grandlib
 from rshower.basis.traces_event import Handling3dTraces, get_psd
 from rshower.basis.efield_event import HandlingEfield
-from proto.simu_dc2.main_simu import get_efield_ref_values
+from proto.simu_dc2.simu_ash import get_efield_ref_values
 
 logger = getLogger(__name__)
 
