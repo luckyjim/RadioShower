@@ -92,7 +92,7 @@ def relative_voltage_evt(evt):
     # ===== 2)
     nb_tr = evt.get_nb_trace()
     rel_opti = np.zeros((nb_tr, 7), dtype=np.float32)
-    # format : xmax_1_2_3, xmin_1_2_3, v_ref
+    # format : xmax_1_2_3, xmin_1_2_3, v_ref:
     for idx in range(nb_tr):
         for axis in range(3):
             traces = evt.traces[idx, axis]
@@ -132,6 +132,53 @@ class ModelDirectionVoltage:
             d_zen = f_ash.mtraces["d_zen"][idx_beg:idx_end]
             l_events.append([rel_opti, azi, d_zen])
         return l_events
+
+    def process_events(self, ie_beg, ie_endp1):
+        """
+        numpy array format:
+          index event, xmax_1_2_3, xmin_1_2_3, v_ref, azimuth [deg], dist_zenith [deg]
+        """
+        # manage index begin, end
+        f_ef = f_tr.AsdfReadTraces(self.pn_vash, False)
+        if ie_endp1 < 0:
+            ie_endp1 = f_ef.get_nb_events()
+        self.ie_endp1 = ie_endp1
+        START = datetime.now()
+        print("1 CPU")
+        size_chk = ie_endp1 - ie_beg
+        self.size_chk = size_chk
+        l_events = self.process_chunk_file(ie_beg)
+        # collect result in unique numpy array
+        idx_beg, idx_end = f_ef.get_chunk_event_interval(ie_beg, ie_endp1 - 1)
+        nb_tr = idx_end - idx_beg
+        dataset = np.zeros((nb_tr, 10), dtype=np.float32)
+        i_beg = 0
+        i_evt = 0
+        for res in l_events:
+            nb_du = res[0].shape[0]
+            i_end = i_beg + nb_du
+            dataset[i_beg:i_end, 0] = i_evt * np.ones(nb_du)
+            dataset[i_beg:i_end, 1:8] = res[0]
+            dataset[i_beg:i_end, 8] = res[1]
+            dataset[i_beg:i_end, 9] = res[2]
+            i_beg = i_end
+            i_evt += 1
+        print(nb_tr, i_evt, i_end)
+        print(dataset[:, 7].mean(), dataset[:, 7].std())
+        in_f = pathlib.Path(self.pn_vash)
+        out_name = str(in_f.name).replace("volt", "dirvolt")
+        out_name = out_name.replace(".asdf", "")
+        np.save(self.out_dir + out_name, dataset)
+        logger.info(f"-----> Chrono duration (h:m:s): {datetime.now()-START}")
+        print(f"-----> Chrono duration (h:m:s): {datetime.now()-START}")
+
+
+if __name__ == "__main__":
+    path_asdf = "/home/jcolley/projet/lucky/data/"
+    f_ash = "volt-ash_39-24951.asdf"
+    pn_ash = path_asdf + f_ash
+    dirv = ModelDirectionVoltage(pn_ash)
+    dirv.process_events(0, -1)
 
     # def process_all_events_parallel_chunk(self, ie_beg, ie_endp1, size_chk=10):
     #     from joblib import Parallel, delayed, parallel_config
@@ -186,49 +233,3 @@ class ModelDirectionVoltage:
     #     np.save(self.out_dir + out_name, dataset)
     #     logger.info(f"-----> Chrono duration (h:m:s): {datetime.now()-START}")
     #     print(f"-----> Chrono duration (h:m:s): {datetime.now()-START}")
-
-    def process_events(self, ie_beg, ie_endp1):
-        """
-        numpy array format:
-          index event, xmax_1_2_3, xmin_1_2_3, v_ref, azimuth [deg], dist_zenith [deg]
-        """
-        # manage index begin, end
-        f_ef = f_tr.AsdfReadTraces(self.pn_vash, False)
-        if ie_endp1 < 0:
-            ie_endp1 = f_ef.get_nb_events()
-        self.ie_endp1 = ie_endp1
-        START = datetime.now()
-        print("1 CPU")
-        size_chk = ie_endp1 - ie_beg
-        self.size_chk = size_chk
-        l_events = self.process_chunk_file(ie_beg)
-        # collect result in unique numpy array
-        idx_beg, idx_end = f_ef.get_chunk_event_interval(ie_beg, ie_endp1-1)
-        nb_tr = idx_end - idx_beg
-        dataset = np.zeros((nb_tr, 10), dtype=np.float32)
-        i_beg = 0
-        i_evt = 0
-        for res in l_events:
-            nb_du = res[0].shape[0]
-            i_end = i_beg + nb_du
-            dataset[i_beg:i_end, 0] = i_evt * np.ones(nb_du)
-            dataset[i_beg:i_end, 1:8] = res[0]
-            dataset[i_beg:i_end, 8] = res[1]
-            dataset[i_beg:i_end, 9] = res[2]
-            i_beg = i_end
-            i_evt += 1
-        print(nb_tr, i_evt, i_end)
-        print(dataset[:,7].mean(), dataset[:,7].std())
-        in_f = pathlib.Path(self.pn_vash)
-        out_name = str(in_f.name).replace("volt", "dirvolt")
-        out_name = out_name.replace(".asdf", "")
-        np.save(self.out_dir + out_name, dataset)
-        logger.info(f"-----> Chrono duration (h:m:s): {datetime.now()-START}")
-        print(f"-----> Chrono duration (h:m:s): {datetime.now()-START}")
-
-if __name__ == "__main__":
-    path_asdf = "/home/jcolley/projet/lucky/data/"
-    f_ash = "volt-ash_39-24951.asdf"
-    pn_ash = path_asdf + f_ash
-    dirv = ModelDirectionVoltage(pn_ash)
-    dirv.process_events(0, -1)
