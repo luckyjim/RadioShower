@@ -3,21 +3,16 @@
 Created on 25 mai 2025
 
 @author: jcolley
-
-
 """
+
 from logging import getLogger
 import logging
 from datetime import datetime
 
 import numpy as np
 import matplotlib.pyplot as plt
-from astropy.time import Time
 
-
-from rshower.io.events.grand_io_fmt import convert_3dtrace_grandlib
-from rshower.basis.traces_event import Handling3dTraces, get_psd
-from rshower.basis.efield_event import HandlingEfield
+from rshower.basis.traces_event import Handling3dTraces
 from proto.simu_dc2.du_resp import SimuDetectorUnitResponse
 import proto.simu_dc2.asdf_traces as f_tr
 
@@ -32,9 +27,9 @@ def efield_remove_cherenkov(tref):
     assert isinstance(tref, Handling3dTraces)
     idx_rd = np.random.randint(0, tref.get_nb_trace(), 1)
     shape_cp = tref.traces.shape
-    tref.traces = np.repeat(tref.traces[idx_rd],tref.get_nb_trace(),axis=0)
+    tref.traces = np.repeat(tref.traces[idx_rd], tref.get_nb_trace(), axis=0)
     assert shape_cp == tref.traces.shape
-    #print(tref.traces.shape)
+    # print(tref.traces.shape)
     a_ref = np.max(np.linalg.norm(tref.traces[0], axis=1))
     diff2 = tref.network.xmax_pos - tref.network.du_pos
     diff2 *= diff2
@@ -91,7 +86,7 @@ class SimuBackground:
                 new_polar = tref.d_simu["angle_polar"] + self.gen_polar_angle
             assert isinstance(tref, Handling3dTraces)
             cpt_du_all += tref.get_nb_trace()
-            #tref.plot_footprint_val_max()
+            # tref.plot_footprint_val_max()
             self.simu.set_xmax(tref.d_simu["xmax_nwu"])
             self.simu.set_data_efield(tref)
             self.simu.set_polar(new_polar)
@@ -110,7 +105,7 @@ class SimuBackground:
 
     def process_all_events_parallel_chunk(self, ie_beg, ie_endp1, size_chk=10):
         from joblib import Parallel, delayed, parallel_config
-        
+
         f_ef = f_tr.AsdfReadTraces(self.pn_efield, False)
         if ie_endp1 < 0:
             ie_endp1 = f_ef.get_nb_events()
@@ -149,7 +144,7 @@ class SimuBackground:
         d_data["f_s_mhz"] = f_trsig.f_samp_mhz[0]
         f_bkg.set_with_efield(f_ef, d_data)
         f_bkg.save_asdf(n_asdf, False)
-        
+
         logger.info(f"-----> Chrono duration (h:m:s): {datetime.now()-START}")
         print(f"-----> Chrono duration (h:m:s): {datetime.now()-START}")
 
@@ -170,15 +165,14 @@ if __name__ == "__main__":
         sbkg = SimuBackground(pn_efield)
         sbkg.prefix = "volt-bgk-0_"
         sbkg.gen_polar_angle = np.deg2rad(0)
-        #sbkg.gen_polar_angle = "rand"
+        # sbkg.gen_polar_angle = "rand"
         sbkg.simu.params["fact_padding"] = 2.0
         sbkg.set_out_sampling_size(4, 1024)
         sbkg.ie_endp1 = 435
         sbkg.size_chk = 2
-        #ret = sbkg.process_event_in_file_chunk(10)
+        # ret = sbkg.process_event_in_file_chunk(10)
         sbkg.process_all_events_parallel_chunk(0, -1, 10)
         plt.show()
-
 
     #
     # MAIN

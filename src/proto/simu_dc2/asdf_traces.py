@@ -64,6 +64,7 @@ class AsdfTraces:
         return idx_du, nb_du_in_event[idx_du]
 
     def get_event_interval(self, idx_evt):
+        """return index of trace of event idx_evt in ASDF file"""
         if idx_evt == 0:
             idx_beg = 0
         else:
