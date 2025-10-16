@@ -73,6 +73,16 @@ class AsdfTraces:
         idx_end = self.events["evt2ftr"][idx_evt]
         return idx_beg, idx_end
 
+    def get_chunk_event_interval(self, i_b, i_e):
+        """return index of trace of event idx_evt in ASDF file"""
+        if i_b == 0:
+            idx_beg = 0
+        else:
+            idx_beg = self.events["evt2ftr"][i_b - 1]
+        # end is the begin of next
+        idx_end = self.events["evt2ftr"][i_e]
+        return idx_beg, idx_end
+
     # PLOTS
     def plot_hist_du(self):
         plt.figure()
