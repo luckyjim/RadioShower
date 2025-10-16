@@ -139,7 +139,7 @@ class ModelDirectionVoltage:
           index event, xmax_1_2_3, xmin_1_2_3, v_ref, azimuth [deg], dist_zenith [deg]
         """
         # manage index begin, end
-        f_ef = f_tr.AsdfReadTraces(self.pn_vash, False)
+        f_ef = f_tr.AsdfReadTraces(self.pn_vash)
         if ie_endp1 < 0:
             ie_endp1 = f_ef.get_nb_events()
         self.ie_endp1 = ie_endp1

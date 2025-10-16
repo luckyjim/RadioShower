@@ -11,7 +11,6 @@ from rshower.basis.traces_event import Handling3dTraces
 from rshower.basis.coord import nwu_cart_to_dir_one, nwu_cart_to_dir
 
 
-
 logger = getLogger(__name__)
 
 
@@ -318,7 +317,10 @@ class AsdfWriteEfield(AsdfWriteTraces):
 class AsdfReadTraces(AsdfTraces):
 
     def __init__(self, pn_traces, find_ref=True):
-        
+        """
+        find_ref=False sometimes necessary to copy reference
+        """
+
         self.d_asdf = asdf.open(pn_traces)
         self.n_file = pathlib.Path(pn_traces).name
         if find_ref:
@@ -330,7 +332,7 @@ class AsdfReadTraces(AsdfTraces):
         self.network = self.d_asdf["network"]
         self.meta = self.d_asdf["meta"]
         self.nb_events = len(self.events)
-    
+
     def get_nb_traces(self):
         return self.meta["nb_traces"]
 

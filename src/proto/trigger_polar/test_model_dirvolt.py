@@ -23,10 +23,10 @@ def test_process_evt():
     evt.init_traces(traces)
     mdv = ModelDirectionVoltage("")
     res = mdv.process_evt(evt)
-    print(res[:,:6]*res[0,-1])
+    print(res[:, :6] * res[0, -1])
     res_true = np.array([[31, 62, 11, -11, -22, -31], [11, 22, 31, -31, -62, -11]])
     print(res_true)
-    assert np.allclose(res[:,:6]*res[0,-1], res_true)
+    assert np.allclose(res[:, :6] * res[0, -1], res_true)
     print(res)
 
 
