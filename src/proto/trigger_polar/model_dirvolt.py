@@ -6,10 +6,13 @@ import pathlib
 from logging import getLogger
 import logging
 from datetime import datetime
+import re
 
 import numpy as np
+import healpy as hp
 import matplotlib.pyplot as plt
 from numba import guvectorize, float32, int32, njit
+from scipy.interpolate import griddata
 
 from rshower.basis.traces_event import Handling3dTraces, get_psd
 from rshower.basis.efield_event import HandlingEfield
@@ -21,7 +24,7 @@ logger = getLogger(__name__)
 
 @njit
 # @guvectorize([(float32[:], int32[:])], '(n)->(2)', nopython=True)
-#   ne fonctionne pas, problème de signature avec 2 à la compilation
+#   ne fonctionne pas, problème de signature avec ->(2) à la compilation
 # en version njit pas de gain énorme en appelant min et max de numpy ...
 def argminmax_trace(tra, amm):
     nb_s = tra.shape[1]
@@ -105,12 +108,14 @@ def relative_voltage_evt(evt):
     # ===== 4)
     rel_opti /= v_ref
     # assert np.all(rel_opti <= 1)
-    # assert np.all(rel_opti >= -1)
+    # assert np.all(rel_opti >= -1) See you soon!
     rel_opti[:, 6] = v_ref[:, 0]
     return rel_opti
 
 
-class ModelDirectionVoltage:
+class DirectionVoltageParameters:
+    """Extract parameters for model direction voltage amplitude"""
+
     def __init__(self, pn_vash):
         self.pn_vash = pn_vash
         self.ie_endp1 = 0  #
@@ -136,6 +141,7 @@ class ModelDirectionVoltage:
     def process_events(self, ie_beg, ie_endp1):
         """
         numpy array format:
+          0           ,     1,2,3,      4,5,6, 7    , 8            , 9
           index event, xmax_1_2_3, xmin_1_2_3, v_ref, azimuth [deg], dist_zenith [deg]
         """
         # manage index begin, end
@@ -173,12 +179,201 @@ class ModelDirectionVoltage:
         print(f"-----> Chrono duration (h:m:s): {datetime.now()-START}")
 
 
+class ModelDirectionVoltage:
+    """Estimation amplitude voltage and validation"""
+
+    def __init__(self, nside=16):
+        self.nside = nside
+        self.npix = hp.nside2npix(nside)
+        self.ds_prefix = r"^dirvolt-ash"
+        self.valid_done = False
+
+    def _define_healpix_pixel(self):
+        rad_dir = np.deg2rad(self.ds_diramp[:, 8:]).T
+        self.hpix = hp.ang2pix(self.nside, rad_dir[1], rad_dir[0])
+
+    def _define_hit(self, hpix):
+        hit = np.zeros(self.npix, dtype=np.int32)
+        for pix in hpix:
+            hit[pix] += 1
+        self.hit = hit
+
+    def init_collect_dataset(self, ds_dir):
+        self.ds_dir = ds_dir
+        pattern = re.compile(r"^dirvolt-ash")
+        rep = pathlib.Path(ds_dir)
+        ds_diramp = None
+        cpt_file = 0
+        for m_f in rep.iterdir():
+            print(m_f)
+            if m_f.is_file() and pattern.search(m_f.name):
+                f_ds = str(m_f.absolute())
+                m_ds = np.load(f_ds)
+                if ds_diramp is None:
+                    ds_diramp = m_ds
+                else:
+                    ds_diramp = np.vstack((ds_diramp, m_ds))
+                cpt_file += 1
+                print(ds_diramp.shape)
+                # if cpt_file == 9:
+                #     break
+        self.ds_diramp = ds_diramp
+        self.ds_tra = self.ds_diramp
+        self._define_healpix_pixel()
+        self._define_hit(self.hpix)
+
+    def partitioning_dataset(self, ash_faction, f_shuffle=False):
+        assert ash_faction <= 1.0
+        fidx_vld = int(self.ds_diramp.shape[0] * ash_faction)
+        if f_shuffle:
+            perm = np.arange(self.ds_diramp.shape[0])
+            np.random.shuffle(perm)
+            print(perm[:10])
+            #print(self.ds_diramp.mean(),self.ds_diramp.std(), np.median(self.ds_diramp))
+            self.ds_diramp = self.ds_diramp[perm]
+            #print(self.ds_diramp.mean(),self.ds_diramp.std(), np.median(self.ds_diramp))
+        self._define_healpix_pixel()
+        # redefine hit
+        self.ds_tra = self.ds_diramp[:fidx_vld]
+        self._define_hit(self.hpix[:fidx_vld])
+        # data set validation
+        self.ds_vld = self.ds_diramp[fidx_vld:]
+        self.fidx_vld = fidx_vld
+
+    def estimate_relvolt(self, ampdir, method="ngp"):
+        """
+        :param diramp: v_ref, azimuth [deg], dist_zenith [deg]
+        :param method:
+        """
+        #  check if pix associated to dir isn't empty
+        #  use NGP method
+        print()
+        hpix = hp.ang2pix(self.nside, np.deg2rad(ampdir[:, 2]), np.deg2rad(ampdir[:, 1]))
+        if method == "ngp":
+            relvolt = griddata(
+                self.ds_tra[:, 7:10], self.ds_tra[:, 1:7], ampdir, method="nearest", rescale=True
+            )
+        else:
+            raise
+        print(ampdir.shape, relvolt.shape)
+        ds_hit = self.hit[hpix]
+        print(ds_hit)
+        return relvolt, ds_hit
+
+    def estimate_dist(self, dataset):
+        relvolt, hit = self.estimate_relvolt(dataset[:, 7:10])
+        idx_ok = np.argwhere(hit >= 4)
+        nb_vlt = dataset.shape[0]
+        if len(idx_ok) != nb_vlt:
+            print(f"{nb_vlt-len(idx_ok)} traces don't well defined with model")
+            dataset_ok = np.squeeze(dataset[idx_ok])
+            relvolt = np.squeeze(relvolt[idx_ok])
+            print(relvolt.shape)
+            hit = np.squeeze(hit[idx_ok])
+        else:
+            dataset_ok = dataset
+        norm_dif = np.linalg.norm(relvolt - dataset_ok[:, 1:7], axis=-1)
+        print(relvolt[:5])
+        print(dataset_ok[:5, 1:7])
+        print(norm_dif.shape)
+        print(norm_dif.shape, norm_dif.mean(), norm_dif.max(), norm_dif.std())
+        self.valid_done = True
+        nb_bin = 100
+        hist, bin_edges = np.histogram(norm_dif, nb_bin)
+        dist_vld = hist / hist.sum()
+        return norm_dif, bin_edges, dist_vld
+
+    def validation_dist(self):
+        # loop on ds_val
+        #   estimate_amplvolt
+        #   compute true error and norm and store it
+        # plot histogram normalize
+        relvolt, hit = self.estimate_relvolt(self.ds_vld[:, 7:10])
+        idx_ok = np.argwhere(hit >= 4)
+        nb_vlt = self.ds_vld.shape[0]
+        if len(idx_ok) != nb_vlt:
+            print(f"{nb_vlt-len(idx_ok)} traces don't well defined with model")
+            self.ds_vld = np.squeeze(self.ds_vld[idx_ok])
+            relvolt = np.squeeze(relvolt[idx_ok])
+            print(relvolt.shape)
+            hit = np.squeeze(hit[idx_ok])
+        norm_dif = np.linalg.norm(relvolt - self.ds_vld[:, 1:7], axis=-1)
+        print(relvolt[:5])
+        print(self.ds_vld[:5, 1:7])
+        print(norm_dif.shape)
+        print(norm_dif.shape, norm_dif.mean(), norm_dif.max(), norm_dif.std())
+        self.valid_done = True
+        nb_bin = 100
+        hist, bin_edges = np.histogram(norm_dif, nb_bin)
+        dist_vld = hist / hist.sum()
+        if False:
+            plt.figure()
+            plt.plot(bin_edges[1:], dist_vld)
+            # plt.ylim(0, 0.2)
+            plt.xlim(0, 1.2)
+            plt.yscale("log")
+            plt.grid()
+        return norm_dif, bin_edges, dist_vld
+
+    def estimate_proba(self, dir_xmax, relvolt):
+        assert self.valid_done
+
+
+def test_ModelDirectionVoltage():
+    mdv = ModelDirectionVoltage()
+    mdv.init_collect_dataset("/home/jcolley/projet/lucky/data/v2/")
+    plt.figure()
+    # plt.ylim(0, 0.2)
+    nb_ite = 10
+    for ite in range(nb_ite):
+        mdv.partitioning_dataset(0.8, True)
+        norm_dif, bin_edges, dist_vld = mdv.validation_dist()
+        plt.plot(bin_edges[1:], dist_vld, label=f"random {ite}")
+    plt.legend()
+    plt.xlim(0, 1.2)
+    #plt.yscale("log")
+    plt.grid()
+    plt.title(
+        f"Relative voltage model along the Xmax direction\nTrue error distribution for {nb_ite} random validation dataset"
+    )
+    plt.xlabel(f"Norm true error, dataset validation is {mdv.ds_vld.shape[0]} traces")
+
+
+def dist_dataset90(pn_ds90):
+    m_ds = np.load(pn_ds90)
+    assert m_ds.shape[1] == 10
+    mdv = ModelDirectionVoltage()
+    mdv.init_collect_dataset("/home/jcolley/projet/lucky/data/v2/")
+    _, bin_edges90, dist90 = mdv.estimate_dist(m_ds)
+    mdv.partitioning_dataset(0.8, True)
+    _, bin_edges, dist_vld = mdv.validation_dist()
+    plt.figure()
+    plt.plot(bin_edges[1:], dist_vld, label=f"Air shower dataset validation, {mdv.ds_vld.shape[0]} traces")
+    plt.plot(bin_edges90[1:], dist90, label=f"+90° to the polar angle of air shower, {m_ds.shape[0]} traces")
+    plt.legend()
+    #plt.xlim(0, 1.2)
+    #plt.yscale("log")
+    plt.grid()
+    plt.title(
+        f"Relative voltage model along the Xmax direction\nTrue error distribution"
+    )
+    plt.xlabel("Norm true error")
+      
+    
+
+
 if __name__ == "__main__":
-    path_asdf = "/home/jcolley/projet/lucky/data/"
-    f_ash = "volt-ash_39-24951.asdf"
-    pn_ash = path_asdf + f_ash
-    dirv = ModelDirectionVoltage(pn_ash)
-    dirv.process_events(0, -1)
+    # path_asdf = "/home/jcolley/projet/lucky/data/"
+    # f_ash = "volt-ash_39-24951.asdf"
+    # pn_ash = path_asdf + f_ash
+    # dirv = DirectionVoltageParameters(pn_ash)
+    # dirv.process_events(0, -1)
+    np.random.seed(10)
+    test_ModelDirectionVoltage()
+    dist_dataset90("/home/jcolley/projet/lucky/data/v2/dirvolt-bgk-90_0-24984.npy")
+    dist_dataset90("/home/jcolley/projet/lucky/data/v2/dirvolt-bgk-90_5-24938.npy")
+    dist_dataset90("/home/jcolley/projet/lucky/data/v2/dirvolt-bgk-90_9-24930.npy")
+    plt.show()
 
     # def process_all_events_parallel_chunk(self, ie_beg, ie_endp1, size_chk=10):
     #     from joblib import Parallel, delayed, parallel_config

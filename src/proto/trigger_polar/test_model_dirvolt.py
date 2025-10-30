@@ -21,7 +21,7 @@ def test_process_evt():
     # max 11, min -31
     traces[1] = -traces[0]
     evt.init_traces(traces)
-    mdv = ModelDirectionVoltage("")
+    mdv = DirectionVoltageParameters("")
     res = mdv.process_evt(evt)
     print(res[:, :6] * res[0, -1])
     res_true = np.array([[31, 62, 11, -11, -22, -31], [11, 22, 31, -31, -62, -11]])
