@@ -2,6 +2,8 @@
 Created on 16 oct. 2025
 
 @author: jcolley
+
+Do processing for all files available
 """
 
 import pathlib

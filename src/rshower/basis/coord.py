@@ -33,7 +33,7 @@ def nwu_cart_to_dir(xyz):
     :param xyz: cartesian vector
     :type xyz: float (3,n)
 
-    :return: angle direction: azimuth, distance zenithal
+    :return: [rad] angle direction: azimuth, distance zenithal
     :rtype: float (2,n)
     """
     assert xyz.shape[0] == 3
