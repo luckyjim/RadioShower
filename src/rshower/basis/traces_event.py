@@ -31,7 +31,7 @@ def get_psd(trace, f_samp_mhz, nperseg=0):
     :param nperseg: number of sample by periodogram
     """
     if nperseg == 0:
-        nperseg = trace.shape[0]
+        nperseg = trace.shape[0] / 8
 
     freq, pxx_den = ssig.welch(
         trace, f_samp_mhz * 1e6, nperseg=nperseg, window="taylor", scaling="density"
@@ -39,7 +39,7 @@ def get_psd(trace, f_samp_mhz, nperseg=0):
     return freq * 1e-6, pxx_den
 
 
-def get_psd_pulse(trace, f_samp_mhz, support_percent=99.99):
+def get_idx_pulse(trace, f_samp_mhz, support_percent=99.99):
     # define support interval
     marge = (100 - support_percent) / 2
     trace_2 = trace**2
@@ -71,6 +71,12 @@ def get_psd_pulse(trace, f_samp_mhz, support_percent=99.99):
     # plt.ylabel("Amplitude")
     # plt.grid(True)
     return i_beg, i_end
+
+
+def get_psd_pulse(trace, f_samp_mhz, support_percent=99.99):
+    i_beg, i_end = get_idx_pulse(trace, f_samp_mhz, support_percent)
+    freq, pxx_den = get_psd(trace[i_beg:i_end], f_samp_mhz, i_end - i_beg)
+    return freq, pxx_den
 
 
 class Handling3dTraces:
@@ -110,6 +116,7 @@ class Handling3dTraces:
         nb_du = 0
         nb_sample = 0
         self.nperseg = 0
+        self.func_psd = get_psd_pulse
         self.traces = np.zeros((nb_du, 3, nb_sample))
         self.idx2idt = range(nb_du)
         self.t_start_ns = np.zeros((nb_du), dtype=np.int64)
@@ -146,7 +153,7 @@ class Handling3dTraces:
 
     ### INIT/SETTER
 
-    def init_traces(self, traces, du_id=None, t_start_ns=None, f_samp_mhz=2000):
+    def init_traces(self, traces, du_id=None, t_start_ns=None, f_samp_mhz=2000, f_noise=False):
         """
 
         :param traces: array traces 3D
@@ -178,6 +185,8 @@ class Handling3dTraces:
         assert len(du_id) == t_start_ns.shape[0]
         self.set_periodogram(self.get_size_trace())
         self._define_t_samples()
+        if f_noise:
+            self.func_psd = get_psd
 
     def init_network(self, du_pos):
         """
@@ -575,7 +584,7 @@ class Handling3dTraces:
         ln = ax1.scatter(data_xd[0], data_xd[1], data_xd[2])
         ax1.axis("equal")
         s_title = f"{self.type_trace}, DU {self.idx2idt[idx]} (idx={idx})"
-        s_title += f"\n$F_{{sampling}}$={self.f_samp_mhz[idx]} MHz"
+        s_title += f"\n$F_{{sampling}}$={self.f_samp_mhz[idx]:.1f} MHz"
         s_title += f"; {self.get_size_trace()} samples"
         ax1.set_title(s_title)
         ax1.grid()
@@ -601,7 +610,7 @@ class Handling3dTraces:
         self._define_t_samples()
         plt.figure()
         s_title = f"{self.type_trace}, DU {self.idx2idt[idx]} (idx={idx})"
-        s_title += f"\n$F_{{sampling}}$={self.f_samp_mhz[idx]} MHz"
+        s_title += f"\n$F_{{sampling}}$={self.f_samp_mhz[idx]:.1f} MHz"
         s_title += f"; {self.get_size_trace()} samples"
         plt.title(s_title)
         std_3d = self.get_std_noise(idx)
@@ -653,16 +662,12 @@ class Handling3dTraces:
         l_freq = []
         for idx_axis, axis in enumerate(self.l_axis):
             if str(idx_axis) in to_draw:
-                i_beg, i_end = get_psd_pulse(self.traces[idx, idx_axis], self.f_samp_mhz[idx], 99.9)
-                l_len.append(i_end - i_beg)
-                freq, pxx_den = get_psd(
-                    self.traces[idx, idx_axis, i_beg:i_end], self.f_samp_mhz[idx], 0
-                )
-                l_freq.append(f"{freq[1]:.2f},")
+                trace = self.traces[idx, idx_axis]
+                freq, pxx_den = self.func_psd(trace, self.f_samp_mhz[idx])
                 plt.semilogy(freq[2:], pxx_den[2:], self._color[idx_axis], label=axis)
                 # plt.plot(freq[2:] * 1e-6, pxx_den[2:], self._color[idx_axis], label=axis)
         m_title = f"Power spectrum density of {self.type_trace}, DU {self.idx2idt[idx]} (idx={idx})"
-        m_title += f"\nPeriodogram has {l_len} samples, delta freq {l_freq}MHz"
+        m_title += f"\nPeriodogram has {(len(freq)-1)*2} samples, delta freq {freq[1]:.2f}MHz"
         plt.title(m_title)
         plt.ylabel(rf"({self.unit_trace})$^2$/Hz")
         plt.xlabel(f"MHz\n{self.name}")
