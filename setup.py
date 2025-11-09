@@ -3,7 +3,7 @@ import os
 
 # Lecture de la version sans importer le module
 def read_version():
-    version_file = os.path.join("src", "rshower", "__init__.py")
+    version_file = os.path.join("src_lib", "rshower", "__init__.py")
     with open(version_file) as f:
         for line in f:
             if line.startswith("__version__"):
