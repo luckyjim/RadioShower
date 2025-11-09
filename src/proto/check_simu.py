@@ -83,7 +83,7 @@ def compare_simu_du_tan(i_e=0):
     tref, d_simu, ant3d, rf_fft = loading_simu_file_in(i_e)
     tr_tan = do_simu_in_tan_frame(tref, d_simu, ant3d, rf_fft)
     ident_du = tr_du.idx2idt[0]
-    ident_du = 102
+    ident_du = 206
     print(tr_du.idt2idx[ident_du])
     print(tr_tan.idt2idx[ident_du])
     tr_tan.plot_trace_du(ident_du)
@@ -99,7 +99,7 @@ def compare_simu_du_polar(i_e=0):
     tref, d_simu, ant3d, rf_fft = loading_simu_file_in(i_e)
     tr_pol = do_simu_in_polar_frame(tref, d_simu, ant3d, rf_fft)
     ident_du = tr_du.idx2idt[0]
-    ident_du = 100
+    ident_du = 206
     print(tr_du.idt2idx[ident_du])
     print(tr_pol.idt2idx[ident_du])
     tr_pol.plot_trace_du(ident_du)
@@ -275,7 +275,7 @@ def do_simu_in_tan_frame(tref, d_simu, ant3d, rf_fft):
         fft_ef = sf.rfft(ef_tan[:2], axis=-1)
         fft_voc = ant3d.get_resp_2d_efield_tan(fft_ef)
         tr_out.traces[idx] = sf.irfft(fft_voc * rf_out)
-    tr_out.plot_footprint_val_max()
+    #tr_out.plot_footprint_val_max()
     # tr_out.plot_trace_idx(165)
     return tr_out
 
@@ -362,7 +362,7 @@ def do_simu_in_du_frame(tref, d_simu, ant3d, rf_fft):
     tref.set_xmax(d_simu["FIX_xmax_pos"])
     tref.network.core_pos = d_simu["shower_core_pos"]
     tref.remove_trace_low_signal(75)
-    tref.plot_footprint_val_max()
+    #tref.plot_footprint_val_max()
     tr_out = tref.copy(0)
     tr_out.__class__ = tre.Handling3dTraces
     assert isinstance(tr_out, tre.Handling3dTraces)
@@ -426,16 +426,16 @@ def view_effect_polar(i_e):
 if __name__ == "__main__":
     i_e = 774  # 75km, azi 306°
     # i_e = 766  #  6 km
-    i_e = 764  # 70km, azi=107
+    #i_e = 764  # 70km, azi=107
     # i_e = 762 # 8km
     # i_e = 759 # 234km, azi=11, >40
-    # i_e = 755  # ok !! pacmac
-    # i_e = 755
+    i_e = 755  # ok !! pacmac
+    #i_e = 755
     # plot_input_data(i_e)
-    # compare_simu_du_tan(i_e)
-    # compare_simu_du_polar(i_e)
+    compare_simu_du_tan(i_e)
+    compare_simu_du_polar(i_e)
     # compare_simu_polar_dc2(i_e)
     # compare_simu_tan_dc2(i_e)
-    compare_simu_du_dc2(i_e)
-    # view_effect_polar(i_e)
+    #compare_simu_du_dc2(i_e)
+    #view_effect_polar(i_e)
     plt.show()

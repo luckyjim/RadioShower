@@ -8,13 +8,13 @@ Goal of refactoring:
 * clearify FFT normalization
 * clearify method of noise generation
 
-So 
-* Separate ASD computing (galactic_ant_asd.py) and noise generation (galactic_ant_component.py) 
+So
+* Separate ASD computing (galactic_ant_asd.py) and noise generation (galactic_ant_component.py)
 * Add class to perform the computing of ASD only one time during simulation
 
 AND also
 * Replace cubic interpolation by linear, more safe
-* Simply check between what content of model galactic noise files and what we used finally 
+* Simply check between what content of model galactic noise files and what we used finally
 * Add plot function in same module
 """
 
@@ -39,24 +39,34 @@ class GalacticAntComponent:
         self.f_mod = None
         self.asd_mod = None
         self.asd = None
+        self.lst = -1
+        self.size_out = -1
+        
 
     def _interpolate_asd(self):
         # define LST
         asd_mod = self.asd_mod[:, :, self.lst]
         nb_freq = len(self.freqs_mhz)
         asd = np.zeros((nb_freq, 3))
-        asd[:, 0] = interpol_at_new_x(self.f_mod[:, 0], asd_mod[:, 0], self.freqs_mhz, "linear")
-        asd[:, 1] = interpol_at_new_x(self.f_mod[:, 0], asd_mod[:, 1], self.freqs_mhz, "linear")
-        asd[:, 2] = interpol_at_new_x(self.f_mod[:, 0], asd_mod[:, 2], self.freqs_mhz, "linear")
+        asd[:, 0] = interpol_at_new_x(self.f_mod, asd_mod[:, 0], self.freqs_mhz, "linear")
+        asd[:, 1] = interpol_at_new_x(self.f_mod, asd_mod[:, 1], self.freqs_mhz, "linear")
+        asd[:, 2] = interpol_at_new_x(self.f_mod, asd_mod[:, 2], self.freqs_mhz, "linear")
         self.asd = asd
 
     def set_model_file(self, pn_model):
         m_asd = np.load(pn_model)
         self.f_mod = m_asd["fq"]
         self.asd_mod = m_asd["asd"]
+        print(self.f_mod.shape, self.asd_mod.shape)
 
     def set_lst_freq_size_out(self, lst, freqs_mhz, size_out):
         """Define LST, out frequency, size of trace"""
+        if (
+            int(lst) == self.lst
+            and np.allclose(freqs_mhz, self.freqs_mhz)
+            and size_out == self.size_out
+        ):
+            return
         self.lst = int(lst)
         assert self.lst >= 0 and self.lst < 24
         self.freqs_mhz = freqs_mhz
@@ -102,7 +112,7 @@ class GalacticAntComponent:
 
     def plot_psd_model(self, lst):
         plt.figure()
-        plt.title(f"Model PSD galactic component at LST {self.lst}")
+        plt.title(f"Model PSD galactic component at LST {lst}")
         plt.semilogy(self.f_mod[1:-2], self.asd_mod[1:-2, 0, lst] ** 2, label="axis 0")
         plt.semilogy(self.f_mod[1:-2], self.asd_mod[1:-2, 1, lst] ** 2, label="axis 1")
         plt.semilogy(self.f_mod[1:-2], self.asd_mod[1:-2, 2, lst] ** 2, label="axis 2")
@@ -167,13 +177,15 @@ class GalacticAntComponent:
 
 
 if __name__ == "__main__":
-    gen_gal = GalacticAntComponent("GP300")
+    PN_fmodel = "/home/jcolley/projet/grand_wk/recons/du_model/"
+    gen_gal = GalacticAntComponent()
+    gen_gal.set_model_file(PN_fmodel + "/ASD_galaxy_ant_HFSS.npy")
     size_out = 4096 * 2
     fs_hz = 2_000_000_000
     freqs_mhz = sf.rfftfreq(size_out, 1 / fs_hz) * 1e-6
     print(freqs_mhz[-1])
-    gen_gal.set_lst_freq_size_out(2, freqs_mhz, size_out)
-    gen_gal.plot_psd_model(2)
+    gen_gal.set_lst_freq_size_out(0, freqs_mhz, size_out)
+    gen_gal.plot_psd_model(1)
     # gen_gal.plot_psd_inter()
     # gen_gal.plot_psd_trace()
     # gen_gal.plot_check_trace(0)
@@ -182,9 +194,10 @@ if __name__ == "__main__":
     # gen_gal.plot_trace_gal()
     traces = gen_gal.get_traces_gal_ant(10)
     from grand.basis.traces_event import Handling3dTraces
+
     evt = Handling3dTraces("Simulation galactic component")
     evt.init_traces(traces, f_samp_mhz=fs_hz * 1e-6)
-    evt.set_unit_axis("$\mu V$", "dir", "galactic")
+    evt.set_unit_axis(r"$\mu V$", "dir", "galactic")
     evt.plot_trace_idx(5)
     evt.plot_psd_trace_idx(5)
     plt.show()

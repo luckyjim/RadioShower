@@ -3,6 +3,7 @@ Colley Jean-Marc, CNRS/IN2P3/LPNHE
 
 Handling Detector Unit (DU) network, footprint plots
 """
+
 from logging import getLogger
 
 import numpy as np
@@ -189,8 +190,8 @@ class DetectorUnitNetwork:
             if event.button is MouseButton.LEFT and event.dblclick:
                 # logger.info(f"on_click {event.xdata}, {event.ydata}")
                 if traces:
-                    traces.plot_trace_idx(cur_idx_plot)
                     traces.plot_psd_trace_idx(cur_idx_plot)
+                    traces.plot_trace_idx(cur_idx_plot)
                     plt.show()
                 plt.draw()
 
@@ -302,12 +303,11 @@ class DetectorUnitNetwork:
             norm_user = colors.Normalize(vmin=vmin, vmax=vmax)
         else:
             norm_user = "lin"
-        ret_scat = subplot(ax2[1, 0], v_plot[:, 0], f"{title} {o_tr.axis_name[0]}", norm_user)
-        fig.colorbar(ret_scat, label=unit)
-        ret_scat = subplot(ax2[0, 1], v_plot[:, 1], f"{title} {o_tr.axis_name[1]}", norm_user)
-        fig.colorbar(ret_scat, label=unit)
-        ret_scat = subplot(ax2[1, 1], v_plot[:, 2], f"{title} {o_tr.axis_name[2]}", norm_user)
-        fig.colorbar(ret_scat, label=unit)
+
+        l_sub = [ax2[1, 0], ax2[0, 1], ax2[1, 1]]
+        for idx, axis in enumerate(o_tr.l_axis):
+            ret_scat = subplot(l_sub[idx], v_plot[:, idx], f"{title} {o_tr.l_axis[idx]}", norm_user)
+            fig.colorbar(ret_scat, label=unit)
 
     def plot_footprint_time(self, a_time, a3_values, title=""):  # pragma: no cover
         """Interactive plot, footprint max value for time defined by user with slider widget

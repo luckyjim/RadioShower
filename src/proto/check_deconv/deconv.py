@@ -16,7 +16,7 @@ from rshower.num.wiener import WienerDeconvolution
 from rshower.model.ant_resp import DetectorUnitAntenna3Axis
 from rshower.io.leff_fmt import get_leff_default
 
-from proto.simu_dc2.main_simu import DataSimuFile
+from proto.simu_dc2.simu_ash import DataSimuFile
 
 PN_fmodel = "/home/jcolley/projet/grand_wk/recons/du_model/"
 
