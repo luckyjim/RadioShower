@@ -18,6 +18,7 @@ import rshower.basis.coord as coord
 from rshower.basis.traces_event import Handling3dTraces, get_psd
 from rshower.basis.efield_event import HandlingEfield
 import proto.simu_dc2.asdf_traces as f_tr
+from rshower.simu.gal_resp import GalacticRespDetectorGenerator
 
 
 logger = getLogger(__name__)
@@ -187,10 +188,10 @@ class ModelDirectionVoltage:
         self.nside = nside
         self.npix = hp.nside2npix(nside)
         self.ds_prefix = r"^dirvolt-ash"
-        
+
     def _define_healpix_pixel(self):
         rad_dir = np.deg2rad(self.ds_diramp[:, 8:])
-        self.hpix = hp.ang2pix(self.nside, rad_dir[:,1], rad_dir[:,0])
+        self.hpix = hp.ang2pix(self.nside, rad_dir[:, 1], rad_dir[:, 0])
 
     def _define_hit(self, hpix):
         hit = np.zeros(self.npix, dtype=np.int32)
@@ -217,9 +218,9 @@ class ModelDirectionVoltage:
                 print(ds_diramp.shape)
                 if cpt_file == 9:
                     break
-        #rng = np.random.default_rng()
+        # rng = np.random.default_rng()
         print(ds_diramp.shape)
-        #np.random.shuffle(ds_diramp)
+        # np.random.shuffle(ds_diramp)
         print(ds_diramp.shape)
         self.ds_diramp_ref = ds_diramp.copy()
         self.check = np.sort(self.ds_diramp_ref.sum(axis=1))
@@ -227,13 +228,11 @@ class ModelDirectionVoltage:
         self.ds_tra = self.ds_diramp
         self._define_healpix_pixel()
         self._define_hit(self.hpix)
-        
-    
 
     def partitioning_dataset(self, ash_faction, f_shuffle=False, f_roll=False):
         assert ash_faction <= 1.0
         fidx_vld = int(self.ds_diramp.shape[0] * ash_faction)
-        print("fidx_vld:",fidx_vld,self.ds_diramp.shape)
+        print("fidx_vld:", fidx_vld, self.ds_diramp.shape)
         if f_shuffle:
             rng = np.random.default_rng()
             size = int(self.ds_diramp.shape[0])
@@ -244,7 +243,7 @@ class ModelDirectionVoltage:
             self.ds_diramp = self.ds_diramp[perm]
             # print(self.ds_diramp.mean(),self.ds_diramp.std(), np.median(self.ds_diramp))
         elif f_roll:
-            offset = int((1-ash_faction)*self.ds_diramp.shape[0])
+            offset = int((1 - ash_faction) * self.ds_diramp.shape[0])
             self.ds_diramp = np.roll(self.ds_diramp, offset, axis=0)
         check = np.sort(self.ds_diramp_ref.sum(axis=1))
         assert np.allclose(check, self.check)
@@ -298,7 +297,7 @@ class ModelDirectionVoltage:
         print(norm_dif.shape, norm_dif.mean(), norm_dif.max(), norm_dif.std())
         nb_bin = 250
         hist, bin_edges = np.histogram(norm_dif, nb_bin)
-        dist_vld = hist /(bin_edges[1]-bin_edges[0])
+        dist_vld = hist / (bin_edges[1] - bin_edges[0])
         dist_vld /= dist_vld.sum()
         return norm_dif, bin_edges, dist_vld
 
@@ -325,7 +324,7 @@ class ModelDirectionVoltage:
         self.valid_done = True
         nb_bin = 250
         hist, bin_edges = np.histogram(norm_dif, nb_bin, (0, 0.6))
-        dist_vld = hist / (bin_edges[1]- bin_edges[0])
+        dist_vld = hist / (bin_edges[1] - bin_edges[0])
         dist_vld /= dist_vld.sum()
         if False:
             plt.figure()
@@ -367,14 +366,22 @@ class ModelDirectionVoltage:
         y_vec[:nb_val] = dist_vld
         plt.figure()
         plt.title("Histogram normalized and fit\ndataset validation with ~Jack Knife")
-        plt.plot(bin_middle, dist_vld, label=f"rand 0 {dist_vld.sum()} , {dist_vld.shape[0]} {self.ds_vld.shape}")
+        plt.plot(
+            bin_middle,
+            dist_vld,
+            label=f"rand 0 {dist_vld.sum()} , {dist_vld.shape[0]} {self.ds_vld.shape}",
+        )
         for ite in range(1, nb_rand):
             self.partitioning_dataset(0.90, f_shuffle=True)
             _, _, dist_vld = self.get_true_error_distrib_validation()
             x_vec[ite * nb_val : (ite + 1) * nb_val] = bin_middle
             dist_vld[-2:] = 0
             y_vec[ite * nb_val : (ite + 1) * nb_val] = dist_vld
-            plt.plot(bin_middle, dist_vld, label=f"rand {ite} {dist_vld.sum()}, {dist_vld.shape[0]} {self.ds_vld.shape}")
+            plt.plot(
+                bin_middle,
+                dist_vld,
+                label=f"rand {ite} {dist_vld.sum()}, {dist_vld.shape[0]} {self.ds_vld.shape}",
+            )
         plt.xlabel("Norm of true error")
         # spline representation
         idx_sort = np.argsort(x_vec)
@@ -411,7 +418,7 @@ class ModelDirectionVoltage:
         idx_end = np.argwhere(x_vec > self.dist_emax)
         y_vec[idx_end] = 0
         w_vec[idx_end] = 1000
-        self.cspl = splrep(x_vec, y_vec, w_vec, k=3, s=nb_val * ite , t=x_node)
+        self.cspl = splrep(x_vec, y_vec, w_vec, k=3, s=nb_val * ite, t=x_node)
         self.dist_surf_tot = splint(0, self.dist_emax, self.cspl)
         print("integral spline:", self.dist_surf_tot)
         p_01 = splint(0.01, self.dist_emax, self.cspl)
@@ -473,7 +480,8 @@ class ModelDirectionVoltage:
         print("norm_residu", norm_residu)
         print("proba_ash", proba_ash)
         if f_plot:
-            evt.network.plot_footprint_1d(
+            evtc = evt.copy()
+            evtc.network.plot_footprint_1d(
                 proba_ash,
                 f"Proba polar air shower compatibility",
                 evt,
@@ -490,8 +498,8 @@ class ModelDirectionVoltage:
                 if out[idx] < 0:
                     out[idx] = 0
         else:
-            out = max(0,splint(norm_res, self.dist_emax, self.cspl))
-            
+            out = max(0, splint(norm_res, self.dist_emax, self.cspl))
+
         return out / self.dist_surf_tot
 
 
@@ -526,14 +534,14 @@ def dist_dataset90(pn_ds90):
     mdv = ModelDirectionVoltage()
     mdv.init_collect_dataset("/home/jcolley/projet/lucky/data/v2/")
     _, bin_edges90, dist90 = mdv.get_residu_distrib(m_ds)
-    delta90 = bin_edges90[1]- bin_edges90[0]
+    delta90 = bin_edges90[1] - bin_edges90[0]
     mdv.partitioning_dataset(0.9, True)
     _, bin_edges, dist_vld = mdv.get_true_error_distrib_validation()
-    deltadist =bin_edges[1]- bin_edges[0] 
+    deltadist = bin_edges[1] - bin_edges[0]
     plt.figure()
     plt.plot(
         bin_edges[1:],
-        dist_vld, 
+        dist_vld,
         label=f"Air shower dataset validation, {mdv.ds_vld.shape[0]} traces, {dist_vld.sum():.1f}",
     )
     plt.plot(
@@ -543,7 +551,7 @@ def dist_dataset90(pn_ds90):
     )
     plt.legend()
     # plt.xlim(0, 1.2)
-    #plt.yscale("log")
+    # plt.yscale("log")
     plt.grid()
     plt.title(f"Relative voltage model along the Xmax direction\nTrue error distribution")
     plt.xlabel("Norm true error")
@@ -570,10 +578,18 @@ def test_spline():
 
 
 def check_estimate_proba_evt():
+    import scipy.fft as sf
+
+    PN_fmodel = "/home/jcolley/projet/grand_wk/recons/du_model/"
+    # PN_fmodel = "/sps/grand/colley/data/du_model/"
+    # fix file model
+    pn_tf_detector = PN_fmodel + "TF_RF_Chain_DC2.1rc.npy"
+    pn_asd_galactic = PN_fmodel + "ASD_galaxy_ant_HFSS.npy"
+    gresp = GalacticRespDetectorGenerator(pn_tf_detector, pn_asd_galactic)
     # Model proba
     p_model = ModelDirectionVoltage()
     p_model.init_collect_dataset("/home/jcolley/projet/lucky/data/v2/")
-    p_model.partitioning_dataset(0.9,f_shuffle=True )
+    p_model.partitioning_dataset(0.9, f_shuffle=True)
     p_model.compute_spline_model_validation(20)
     # Dataset training witestimate_proba_evthout shuffle
     rv_model = ModelDirectionVoltage()
@@ -582,14 +598,44 @@ def check_estimate_proba_evt():
     rv_model.set_spline_model_validation(p_model.cspl, p_model.dist_surf_tot, p_model.dist_emax)
     #
     path_asdf = "/home/jcolley/projet/lucky/data/v2/"
-    #f_ash = path_asdf + "volt-ash_39-24951.asdf"
-    #f_ash = path_asdf + "volt-bgk-rnd_0-24984.asdf"
-    f_ash = path_asdf + "volt-bgk-90_0-24984.asdf"
-    #f_ash = path_asdf + "volt-ash_46-24976.asdf"
+    # f_ash = path_asdf + "volt-ash_39-24951.asdf"
+    # f_ash = path_asdf + "volt-bgk-rnd_0-24984.asdf"
+    #f_ash = path_asdf + "volt-bgk-90_0-24984.asdf"
+    f_ash = path_asdf + "volt-ash_46-24976.asdf"
     events = f_tr.AsdfReadTraces(f_ash)
-    for idx in range(20):
-        evt = events.get_event(120+idx)
+    # test filter
+    evt = events.get_event(120)
+    assert isinstance(evt, Handling3dTraces)
+    gresp.set_paramters_simu(evt.f_samp_mhz[0], evt.get_size_trace())
+    gresp.add_galactic_component(evt)
+    evt.plot_footprint_val_max()
+    evt_filter = evt.copy()
+    assert isinstance(evt_filter, Handling3dTraces)
+    evt_filter.apply_bandpass(20, 100, True)
+    evt_filter.plot_footprint_val_max()
+    return 
+
+    nb_evt = 1
+    for idx in range(nb_evt):
+        evt = events.get_event(120 + idx)
+        assert isinstance(evt, Handling3dTraces)
         rv_model.estimate_proba_evt(evt, True)
+    evt1 = evt.copy()
+    evt1.get_tmax_vmax()
+    evt1.plot_footprint_val_max()
+    #
+    f_s = evt.f_samp_mhz[0] / 1e-6
+    a_freq = sf.rfftfreq(evt.get_size_trace(), 1 / f_s) * 1e-6
+    for idx in range(nb_evt):
+        evtn = events.get_event(120 + idx)
+        gresp.set_paramters_simu(a_freq, evtn.get_size_trace(), evtn.get_nb_trace())
+        noise = gresp.get_galactic_traces(18)
+        print(noise.shape)
+        print(evtn.traces.shape)
+        evtn.traces += noise
+        rv_model.estimate_proba_evt(evtn, True)
+    evtn.get_tmax_vmax()
+    evtn.plot_footprint_val_max()
 
 
 if __name__ == "__main__":
@@ -601,10 +647,10 @@ if __name__ == "__main__":
     # test_spline()
     np.random.seed(10)
     check_estimate_proba_evt()
-    #test_ModelDirectionVoltage()
-    #dist_dataset90("/home/jcolley/projet/lucky/data/v2/dirvolt-bkg-90_0-24984.npy")
-    #dist_dataset90("/home/jcolley/projet/lucky/data/v2/dirvolt-bkg-90_5-24938.npy")
-    #dist_dataset90("/home/jcolley/projet/lucky/data/v2/dirvolt-bkg-90_9-24930.npy")
+    # test_ModelDirectionVoltage()
+    # dist_dataset90("/home/jcolley/projet/lucky/data/v2/dirvolt-bkg-90_0-24984.npy")
+    # dist_dataset90("/home/jcolley/projet/lucky/data/v2/dirvolt-bkg-90_5-24938.npy")
+    # dist_dataset90("/home/jcolley/projet/lucky/data/v2/dirvolt-bkg-90_9-24930.npy")
     plt.show()
 
     # def process_all_events_parallel_chunk(self, ie_beg, ie_endp1, size_chk=10):

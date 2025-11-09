@@ -39,7 +39,7 @@ def get_psd(trace, f_samp_mhz, nperseg=0):
     return freq * 1e-6, pxx_den
 
 
-def get_idx_pulse(trace, f_samp_mhz, support_percent=99.99):
+def get_idx_pulse(trace, support_percent=99.99):
     # define support interval
     marge = (100 - support_percent) / 2
     trace_2 = trace**2
@@ -73,8 +73,8 @@ def get_idx_pulse(trace, f_samp_mhz, support_percent=99.99):
     return i_beg, i_end
 
 
-def get_psd_pulse(trace, f_samp_mhz, support_percent=99.99):
-    i_beg, i_end = get_idx_pulse(trace, f_samp_mhz, support_percent)
+def get_psd_pulse(trace, f_samp_mhz, support_percent=99):
+    i_beg, i_end = get_idx_pulse(trace, support_percent)
     freq, pxx_den = get_psd(trace[i_beg:i_end], f_samp_mhz, i_end - i_beg)
     return freq, pxx_den
 
@@ -150,6 +150,9 @@ class Handling3dTraces:
         self.a2n = 8192.0 / 9e5
 
     ### INTERNAL
+    def _reset_max(self):
+        self.t_max = None
+        self.v_max = None
 
     ### INIT/SETTER
 
@@ -230,6 +233,14 @@ class Handling3dTraces:
 
     ### OPERATIONS
 
+    def apply_lowpass(self, cutoff_mhz, order=5):
+        normal_cutoff = cutoff_mhz / (self.f_samp_mhz[0] / 2)
+        coeff_b, coeff_a = ssig.butter(order, normal_cutoff, btype="low", analog=False)
+        # coef = ssig.firwin(numtaps, cutoff_mhz * 1e-6, fs=self.f_samp_mhz * 1e6, pass_zero="lowpass")
+        filtered = ssig.filtfilt(coeff_b, coeff_a, self.traces)
+        self.traces = filtered.real
+        self._reset_max()
+
     def apply_bandpass(self, fr_min, fr_max, causal=True, order=9):
         """
         band filter with butterfly window
@@ -247,8 +258,7 @@ class Handling3dTraces:
             coeff_b, coeff_a = ssig.butter(order, [low, high], btype="bandpass", fs=f_hz)
             filtered = ssig.filtfilt(coeff_b, coeff_a, self.traces)
         self.traces = filtered.real
-        self.t_max = None
-        self.v_max = None
+        self._reset_max()
 
     def _define_t_samples(self):
         """
@@ -302,8 +312,7 @@ class Handling3dTraces:
         if self.network:
             self.network = copy.deepcopy(self.network)
             self.network.keep_only_du_with_index(l_idx)
-        self.t_max = None
-        self.v_max = None
+        self._reset_max()
 
     def reduce_nb_trace(self, new_nb_du):
         """reduces the number of traces to the first <new_nb_du>
@@ -385,8 +394,7 @@ class Handling3dTraces:
             elif new_traces == 0:
                 new_traces = np.zeros_like(self.traces)
             my_copy.traces = new_traces
-            self.t_max = None
-            self.v_max = None
+            self._reset_max()
         return my_copy
 
     ### GETTER

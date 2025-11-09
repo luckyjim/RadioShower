@@ -8,13 +8,13 @@ Goal of refactoring:
 * clearify FFT normalization
 * clearify method of noise generation
 
-So 
-* Separate ASD computing (galactic_ant_asd.py) and noise generation (galactic_ant_component.py) 
+So
+* Separate ASD computing (galactic_ant_asd.py) and noise generation (galactic_ant_component.py)
 * Add class to perform the computing of ASD only one time during simulation
 
 AND also
 * Replace cubic interpolation by linear, more safe
-* Simply check between what content of model galactic noise files and what we used finally 
+* Simply check between what content of model galactic noise files and what we used finally
 * Add plot function in same module
 """
 
@@ -39,6 +39,9 @@ class GalacticAntComponent:
         self.f_mod = None
         self.asd_mod = None
         self.asd = None
+        self.lst = -1
+        self.size_out = -1
+        
 
     def _interpolate_asd(self):
         # define LST
@@ -54,10 +57,16 @@ class GalacticAntComponent:
         m_asd = np.load(pn_model)
         self.f_mod = m_asd["fq"]
         self.asd_mod = m_asd["asd"]
-        print( self.f_mod.shape, self.asd_mod.shape)
+        print(self.f_mod.shape, self.asd_mod.shape)
 
     def set_lst_freq_size_out(self, lst, freqs_mhz, size_out):
         """Define LST, out frequency, size of trace"""
+        if (
+            int(lst) == self.lst
+            and np.allclose(freqs_mhz, self.freqs_mhz)
+            and size_out == self.size_out
+        ):
+            return
         self.lst = int(lst)
         assert self.lst >= 0 and self.lst < 24
         self.freqs_mhz = freqs_mhz
@@ -170,7 +179,7 @@ class GalacticAntComponent:
 if __name__ == "__main__":
     PN_fmodel = "/home/jcolley/projet/grand_wk/recons/du_model/"
     gen_gal = GalacticAntComponent()
-    gen_gal.set_model_file(PN_fmodel+ "/ASD_galaxy_ant_HFSS.npy")
+    gen_gal.set_model_file(PN_fmodel + "/ASD_galaxy_ant_HFSS.npy")
     size_out = 4096 * 2
     fs_hz = 2_000_000_000
     freqs_mhz = sf.rfftfreq(size_out, 1 / fs_hz) * 1e-6
@@ -185,9 +194,10 @@ if __name__ == "__main__":
     # gen_gal.plot_trace_gal()
     traces = gen_gal.get_traces_gal_ant(10)
     from grand.basis.traces_event import Handling3dTraces
+
     evt = Handling3dTraces("Simulation galactic component")
     evt.init_traces(traces, f_samp_mhz=fs_hz * 1e-6)
-    evt.set_unit_axis("$\mu V$", "dir", "galactic")
+    evt.set_unit_axis(r"$\mu V$", "dir", "galactic")
     evt.plot_trace_idx(5)
     evt.plot_psd_trace_idx(5)
     plt.show()
