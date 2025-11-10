@@ -21,7 +21,7 @@ from rshower.io.events.grand_io_fmt import convert_3dtrace_grandlib
 from rshower.basis.traces_event import Handling3dTraces, get_psd
 from rshower.basis.efield_event import HandlingEfield
 from proto.simu_dc2.du_resp import SimuDetectorUnitResponse
-import proto.simu_dc2.asdf_traces as f_tr
+import rshower.io.events.asdf_traces as f_tr
 
 from datetime import datetime
 

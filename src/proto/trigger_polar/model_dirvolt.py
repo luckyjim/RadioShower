@@ -17,7 +17,7 @@ from scipy.interpolate import griddata, make_splrep, BSpline, splrep, splev, spl
 import rshower.basis.coord as coord
 from rshower.basis.traces_event import Handling3dTraces, get_psd
 from rshower.basis.efield_event import HandlingEfield
-import proto.simu_dc2.asdf_traces as f_tr
+import rshower.io.events.asdf_traces as f_tr
 from rshower.simu.gal_resp import GalacticRespDetectorGenerator
 
 

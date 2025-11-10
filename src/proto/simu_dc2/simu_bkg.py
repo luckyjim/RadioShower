@@ -14,7 +14,7 @@ import matplotlib.pyplot as plt
 
 from rshower.basis.traces_event import Handling3dTraces
 from proto.simu_dc2.du_resp import SimuDetectorUnitResponse
-import proto.simu_dc2.asdf_traces as f_tr
+import rshower.io.events.asdf_traces as f_tr
 
 
 logger = getLogger(__name__)

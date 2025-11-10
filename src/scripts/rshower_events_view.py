@@ -12,7 +12,7 @@ from pathlib import Path
 import pprint
 
 import rshower.manage_log as mlg
-from proto.simu_dc2.asdf_traces import AsdfReadTraces
+from rshower.io.events.asdf_traces import AsdfReadTraces
 
 
 # specific logger definition for script because __mane__ is "__main__" !
