@@ -82,7 +82,7 @@ def manage_args():
 def main():
     #
     logger.info("Example script to deal with 3D traces.")
-
+    o_tevent = None
     args = manage_args()
     d_events = AsdfReadTraces(args.file.name)
     # d_events = GrandEventsSelectedFmt01(args.file.name)
@@ -96,6 +96,8 @@ def main():
         o_tevent = d_events.get_event(args.index)
         # o_tevent.set_noise_interval(624,1024)
     if args.info:
+        if not o_tevent:
+            o_tevent = d_events.get_event(0)
         d_events.plot_hist_du()
         d_events.plot_hist_xcore()
         d_events.plot_hist_xmax()
@@ -108,6 +110,7 @@ def main():
     # if args.trace_image:
     #     o_tevent.plot_all_traces_as_image()
     if args.footprint:
+        if 
         o_tevent.plot_footprint_4d_max()
         o_tevent.plot_footprint_val_max()
     if args.time_val:
