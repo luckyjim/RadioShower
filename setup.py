@@ -36,6 +36,7 @@ setup(
         "Topic :: Scientific/Engineering :: Physics",
     ],
     scripts=["src/scripts/zhaires_view.py",
+             "src/scripts/rshower_events_view.py",
              "src/scripts/grand_events_view.py",
              "src/scripts/plot_tmax_vmax.py"],
 )
