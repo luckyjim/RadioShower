@@ -13,6 +13,9 @@ def read_version():
 my_requires = [
     "requests",
     'importlib-metadata; python_version<"3.10"',
+    "astropy",
+    "jax",
+    "healpy",
     "asdf",
     "h5py",
     "matplotlib",
