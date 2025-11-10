@@ -5,5 +5,6 @@
 rshower_package=$(realpath $(dirname ${BASH_SOURCE}))
 
 export RSHOWER_ROOT=$rshower_package
+export PYTHONPATH=$rshower_package/src_lib:$PYTHONPATH
 export PYTHONPATH=$rshower_package/src:$PYTHONPATH
 export PATH=$rshower_package/src/scripts:$rshower_package/quality:$PATH

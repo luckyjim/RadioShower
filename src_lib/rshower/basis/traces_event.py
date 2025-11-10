@@ -186,10 +186,11 @@ class Handling3dTraces:
         assert isinstance(self.t_start_ns, np.ndarray)
         assert traces.shape[0] == len(du_id)
         assert len(du_id) == t_start_ns.shape[0]
-        self.set_periodogram(self.get_size_trace())
         self._define_t_samples()
         if f_noise:
-            self.func_psd = get_psd
+            self.set_psd_noise(10)
+        else:
+            self.set_psd_pulse()
 
     def init_network(self, du_pos):
         """
@@ -229,7 +230,24 @@ class Handling3dTraces:
         :param size: size of periodogram
         """
         assert size > 0
+        raise
         self.nperseg = size
+
+    def set_psd_noise(self, nb_period):
+        self.trace_with_pulse = False
+        self.nperseg = 2 * self.get_size_trace() // nb_period
+
+    def set_psd_pulse(self, percent=None):
+        self.trace_with_pulse = True
+        if percent:
+            self.psd_percent = percent
+        else:
+            if self.traces[0, 0, :10].std() == 0:
+                # no noise case
+                print("Pulse no noise")
+                self.psd_percent = 99.99
+            else:
+                self.psd_percent = 99
 
     ### OPERATIONS
 
@@ -545,13 +563,21 @@ class Handling3dTraces:
         return common_time, extended_traces
 
     def get_psd_trace_idx(self, idx):
-        psd = None
-        for idx_axis, axis in enumerate(self.l_axis):
-            freq, pxx_den = get_psd(self.traces[idx, idx_axis], self.f_samp_mhz[idx], self.nperseg)
-            if psd is None:
-                psd = np.zeros((3, pxx_den.shape[0]), dtype=np.float32)
-            psd[idx_axis] = pxx_den
-        return freq, psd
+        l_psd = []
+        if self.trace_with_pulse:
+            for idx_axis, axis in enumerate(self.l_axis):
+                trace = self.traces[idx, idx_axis]
+                i_beg, i_end = get_idx_pulse(trace, self.psd_percent)
+                print(i_beg, i_end)
+                freq, pxx_den = get_psd(trace[i_beg:i_end], self.f_samp_mhz[idx], i_end - i_beg)
+                l_psd.append([freq, pxx_den])
+        else:
+            for idx_axis, axis in enumerate(self.l_axis):
+                freq, pxx_den = get_psd(
+                    self.traces[idx, idx_axis], self.f_samp_mhz[idx], self.nperseg
+                )
+                l_psd.append([freq, pxx_den])
+        return l_psd
 
     def to_digit(self, in_place=False, int_type=np.int16):
         if in_place:
@@ -668,10 +694,11 @@ class Handling3dTraces:
         plt.figure()
         l_len = []
         l_freq = []
+        l_psd = self.get_psd_trace_idx(idx)
         for idx_axis, axis in enumerate(self.l_axis):
             if str(idx_axis) in to_draw:
-                trace = self.traces[idx, idx_axis]
-                freq, pxx_den = self.func_psd(trace, self.f_samp_mhz[idx])
+                freq = l_psd[idx_axis][0]
+                pxx_den = l_psd[idx_axis][1]
                 plt.semilogy(freq[2:], pxx_den[2:], self._color[idx_axis], label=axis)
                 # plt.plot(freq[2:] * 1e-6, pxx_den[2:], self._color[idx_axis], label=axis)
         m_title = f"Power spectrum density of {self.type_trace}, DU {self.idx2idt[idx]} (idx={idx})"

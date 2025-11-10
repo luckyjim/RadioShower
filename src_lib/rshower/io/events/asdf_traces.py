@@ -359,6 +359,7 @@ class AsdfReadTraces(AsdfTraces):
             self.mtraces["du_id"][idx_beg:idx_end],
             self.mtraces["start_ns"][idx_beg:idx_end],
             self.meta["f_samp_mhz"],
+            f_noise=False
         )
         vec_cx = self.events["xmax_nwu"][idx_evt] - self.events["core_nwu"][idx_evt]
         dist_xmax = np.linalg.norm(vec_cx) / 1000
