@@ -248,7 +248,7 @@ class Handling3dTraces:
                 self.psd_percent = 99.99
             else:
                 print("Pulse with noise")
-                self.psd_percent = 90
+                self.psd_percent = 95
                 #self.set_psd_noise(10)
 
     ### OPERATIONS
