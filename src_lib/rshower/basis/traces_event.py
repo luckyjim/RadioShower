@@ -23,18 +23,20 @@ logger = getLogger(__name__)
 G_3d_widget = None
 
 
-def get_psd(trace, f_samp_mhz, nperseg=0):
+def get_psd(trace, f_samp_mhz, nperseg, average="mean"):
     """Reference estimation of power spectrum density by Welch's method
 
     :param trace: floatX(nb_sample,)
     :param f_samp_mhz: frequency sampling
     :param nperseg: number of sample by periodogram
     """
-    if nperseg == 0:
-        nperseg = trace.shape[0] / 8
-
     freq, pxx_den = ssig.welch(
-        trace, f_samp_mhz * 1e6, nperseg=nperseg, window="taylor", scaling="density"
+        trace,
+        f_samp_mhz * 1e6,
+        nperseg=nperseg,
+        window="taylor",
+        scaling="density",
+        average=average,
     )
     return freq * 1e-6, pxx_den
 
@@ -52,7 +54,7 @@ def get_idx_pulse(trace, support_percent=99.99):
             i_beg = idx - 1
             break
     threshold = (100 - marge) / 100
-    #print("Back search:", threshold)
+    # print("Back search:", threshold)
     for idx in range(len(trace)):
         # print(idx, c_sum_nor[-idx])
         if c_sum_nor[-idx - 1] < threshold:
@@ -156,7 +158,9 @@ class Handling3dTraces:
 
     ### INIT/SETTER
 
-    def init_traces(self, traces, du_id=None, t_start_ns=None, f_samp_mhz=2000, f_noise=False):
+    def init_traces(
+        self, traces, du_id=None, t_start_ns=None, f_saaveragemp_mhz=2000, f_noise=False
+    ):
         """
 
         :param traces: array traces 3D
@@ -242,14 +246,14 @@ class Handling3dTraces:
         if percent:
             self.psd_percent = percent
         else:
-            if self.traces[0, 0, :10].std() == 0:
+            if np.all(self.traces[0, :, :10] == 0):
                 # no noise case
-                print("Pulse no noise")
                 self.psd_percent = 99.99
             else:
-                print("Pulse with noise")
-                self.psd_percent = 95
-                #self.set_psd_noise(10)
+                logger.warning("Pulse with noise, use all trace")
+                # need specific processing to separate noise and pulse ...
+                # use all trace to psd of noise and pulse
+                self.set_psd_noise(6)
 
     ### OPERATIONS
 
