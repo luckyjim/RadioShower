@@ -45,22 +45,22 @@ def get_idx_pulse(trace, support_percent=99.99):
     trace_2 = trace**2
     c_sum = (trace_2).cumsum()
     c_sum_nor = c_sum / c_sum[-1]
-    print(c_sum_nor)
+    print(support_percent)
     threshold = marge / 100
     for idx in range(len(trace)):
         if c_sum_nor[idx] > threshold:
             i_beg = idx - 1
             break
     threshold = (100 - marge) / 100
-    print("Back search:", threshold)
+    #print("Back search:", threshold)
     for idx in range(len(trace)):
         # print(idx, c_sum_nor[-idx])
         if c_sum_nor[-idx - 1] < threshold:
             i_end = len(trace) - idx - 1
             break
     print(i_beg, i_end)
-    print(c_sum_nor[i_beg - 1 : i_beg + 2])
-    print(c_sum_nor[i_end - 1 : i_end + 2])
+    # print(c_sum_nor[i_beg - 1 : i_beg + 2])
+    # print(c_sum_nor[i_end - 1 : i_end + 2])
     # # --- Tracés ---
     # plt.figure(figsize=(10,4))
     # plt.plot(trace_2)
@@ -247,7 +247,9 @@ class Handling3dTraces:
                 print("Pulse no noise")
                 self.psd_percent = 99.99
             else:
-                self.psd_percent = 99
+                print("Pulse with noise")
+                self.psd_percent = 85
+                #self.set_psd_noise(10)
 
     ### OPERATIONS
 
