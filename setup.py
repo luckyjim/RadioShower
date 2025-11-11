@@ -40,6 +40,5 @@ setup(
     ],
     scripts=["src/scripts/zhaires_view.py",
              "src/scripts/rshower_view.py",
-             "src/scripts/grand_view.py",
              "src/scripts/plot_tmax_vmax.py"],
 )
