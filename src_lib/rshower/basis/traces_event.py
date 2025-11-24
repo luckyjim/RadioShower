@@ -159,7 +159,7 @@ class Handling3dTraces:
     ### INIT/SETTER
 
     def init_traces(
-        self, traces, du_id=None, t_start_ns=None, f_saaveragemp_mhz=2000, f_noise=False
+        self, traces, du_id=None, t_start_ns=None, f_samp_mhz=2000, f_noise=False
     ):
         """
 
