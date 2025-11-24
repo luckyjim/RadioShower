@@ -193,7 +193,7 @@ if __name__ == "__main__":
     # gen_gal.plot_check_trace(2)
     # gen_gal.plot_trace_gal()
     traces = gen_gal.get_traces_gal_ant(10)
-    from grand.basis.traces_event import Handling3dTraces
+    from rshower.basis.traces_event import Handling3dTraces
 
     evt = Handling3dTraces("Simulation galactic component")
     evt.init_traces(traces, f_samp_mhz=fs_hz * 1e-6)
