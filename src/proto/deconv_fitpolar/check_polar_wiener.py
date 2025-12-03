@@ -19,7 +19,7 @@ import sys
 
 print(sys.path)
 
-import proto.polar_wiener as pw
+import proto.deconv_fitpolar.polar_angle_wiener as pw
 
 pn_fmodel = "/home/jcolley/projet/grand_wk/recons/du_model"
 

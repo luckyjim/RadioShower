@@ -47,7 +47,7 @@ def get_idx_pulse(trace, support_percent=99.99):
     trace_2 = trace**2
     c_sum = (trace_2).cumsum()
     c_sum_nor = c_sum / c_sum[-1]
-    print(support_percent)
+    # print(support_percent)
     threshold = marge / 100
     for idx in range(len(trace)):
         if c_sum_nor[idx] > threshold:
@@ -60,7 +60,7 @@ def get_idx_pulse(trace, support_percent=99.99):
         if c_sum_nor[-idx - 1] < threshold:
             i_end = len(trace) - idx - 1
             break
-    print(i_beg, i_end)
+    # print(i_beg, i_end)
     # print(c_sum_nor[i_beg - 1 : i_beg + 2])
     # print(c_sum_nor[i_end - 1 : i_end + 2])
     # # --- Tracés ---
@@ -158,9 +158,7 @@ class Handling3dTraces:
 
     ### INIT/SETTER
 
-    def init_traces(
-        self, traces, du_id=None, t_start_ns=None, f_samp_mhz=2000, f_noise=False
-    ):
+    def init_traces(self, traces, du_id=None, t_start_ns=None, f_samp_mhz=2000, f_noise=False):
         """
 
         :param traces: array traces 3D
@@ -250,7 +248,7 @@ class Handling3dTraces:
                 # no noise case
                 self.psd_percent = 99.99
             else:
-                logger.warning("Pulse with noise, use all trace")
+                logger.info("Pulse with noise, use all trace")
                 # need specific processing to separate noise and pulse ...
                 # use all trace to psd of noise and pulse
                 self.set_psd_noise(6)
@@ -291,15 +289,11 @@ class Handling3dTraces:
         if self.t_samples.size == 0:
             delta_ns = 1e3 / self.f_samp_mhz
             nb_sample = self.traces.shape[2]
-            # to use numpy broadcast I need to transpose
-            t_trace = (
-                np.outer(
-                    np.arange(0, nb_sample, dtype=np.float64),
-                    delta_ns * np.ones(self.traces.shape[0]),
-                )
-                + self.t_start_ns
+            t_trace = np.outer(
+                delta_ns * np.ones(self.traces.shape[0]),
+                np.arange(0, nb_sample, dtype=np.float64)
             )
-            self.t_samples = t_trace.transpose()
+            self.t_samples = t_trace + self.t_start_ns[:, None]
             logger.info(f"shape t_samples =  {self.t_samples.shape}")
 
     def keep_only_trace_with_ident(self, l_idt):
@@ -574,7 +568,7 @@ class Handling3dTraces:
             for idx_axis, axis in enumerate(self.l_axis):
                 trace = self.traces[idx, idx_axis]
                 i_beg, i_end = get_idx_pulse(trace, self.psd_percent)
-                print(i_beg, i_end)
+                # print(i_beg, i_end)
                 freq, pxx_den = get_psd(trace[i_beg:i_end], self.f_samp_mhz[idx], i_end - i_beg)
                 l_psd.append([freq, pxx_den])
         else:

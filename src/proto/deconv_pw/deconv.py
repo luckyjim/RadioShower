@@ -16,9 +16,10 @@ from rshower.num.wiener import WienerDeconvolution
 from rshower.model.ant_resp import DetectorUnitAntenna3Axis
 from rshower.io.leff_fmt import get_leff_default
 
-from proto.simu_dc2.simu_ash import DataSimuFile
+from rshower.io.events.asdf_traces import AsdfReadTraces
 
 PN_fmodel = "/home/jcolley/projet/grand_wk/recons/du_model/"
+PN_vash = "/home/jcolley/projet/lucky/data/v2/volt-ash_0-24984.asdf"
 
 G_rfc = rfchain.read_TF_numpy_fmt(PN_fmodel + "/TF_RF_Chain_DC2.1rc.npy")
 
@@ -26,10 +27,9 @@ G_rfc = rfchain.read_TF_numpy_fmt(PN_fmodel + "/TF_RF_Chain_DC2.1rc.npy")
 logger = getLogger(__name__)
 
 
-def load_event(pn_asdf="../simu_dc2/test_10.asdf", i_e=400, kind="measure"):
-    df = DataSimuFile()
-    df.read_asdf(pn_asdf)
-    evt, ef_ref = df.get_event(i_e, kind)
+def load_event(pn_asdf=PN_vash, i_e=400):
+    df = AsdfReadTraces(pn_asdf)
+    evt, ef_ref = df.get_event(i_e)
     return evt, ef_ref
 
 
@@ -180,7 +180,7 @@ def check_deconv_noise_no_weiner(i_e=0, fact_sample=0, size_trace=0):
     load data model
     deconv
     """
-    evt, ef_ref = load_event(i_e=i_e, kind="measure")
+    evt, ef_ref = load_event(i_e=i_e)
     assert isinstance(evt, Handling3dTraces)
     if fact_sample != 0:
         evt.downsize_sampling(fact_sample)

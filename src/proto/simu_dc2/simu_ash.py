@@ -4,7 +4,7 @@ Created on 25 mai 2025
 
 @author: jcolley
 
-
+Simulation of GRAND DC2 with dataset ZHAireS
 """
 from logging import getLogger
 import logging
@@ -18,7 +18,7 @@ from astropy.time import Time
 import grand.dataio.root_files as froot
 
 from rshower.io.events.grand_io_fmt import convert_3dtrace_grandlib
-from rshower.basis.traces_event import Handling3dTraces, get_psd
+from rshower.basis.traces_event import Handling3dTraces, get_psd_pulse
 from rshower.basis.efield_event import HandlingEfield
 from proto.simu_dc2.du_resp import SimuDetectorUnitResponse
 import rshower.io.events.asdf_traces as f_tr
@@ -42,10 +42,10 @@ def get_efield_ref_values(tref):
     polars, _, _ = tref.get_polar_angle()
     # logger.info(tref.traces.shape)
     # logger.info(tref.f_samp_mhz.shape)
-    freq, psd = get_psd(tref.ef_pol[0], tref.f_samp_mhz[0])
+    freq, psd = get_psd_pulse(tref.ef_pol[0], tref.f_samp_mhz[0], 99.9)
     psd_all = np.empty((tref.get_nb_trace(), len(psd)), dtype=psd.dtype)
     for i_du in range(tref.get_nb_trace()):
-        freq, psd_all[i_du] = get_psd(tref.ef_pol[i_du], tref.f_samp_mhz[0])
+        freq, psd_all[i_du] = get_psd_pulse(tref.ef_pol[i_du], tref.f_samp_mhz[0], 99.9)
     # logger.info(freq.shape)
     # logger.info(psd_all.shape)
     delta_f = float(freq[1])
@@ -75,7 +75,7 @@ class SimuGrand:
         
     def set_out_sampling_size(self, fact_downsample, size_trace=0):
         self.fact_downsample = fact_downsample
-        self.size_trace = size_trace
+        self.size_trace = size_trace, 99.9
 
     def download_resize(self, evt):
         assert isinstance(evt, Handling3dTraces)

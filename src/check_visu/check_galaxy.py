@@ -5,7 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from rshower.io.gal_psd_fmt import read_grand_galaxy_vout2
-from proto.galaxy import GalaxyModelVolt
+from proto.check_dc2root.galaxy import GalaxyModelVolt
 import rshower.num.signal as rs_s
 import rshower.manage_log as mlg
 

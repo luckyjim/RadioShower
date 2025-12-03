@@ -49,7 +49,7 @@ S_dtype_mtraces = [
     ("start_s", "i8"),
     ("start_ns", "f8"),
     ("azi", "f4"),  # Azimuth
-    ("d_zen", "f4"),  # distance zemithal
+    ("d_zen", "f4"),  # distance zenithal
 ]
 
 
