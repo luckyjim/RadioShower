@@ -1,10 +1,10 @@
-from logging import getLogger
 import os.path
+from logging import getLogger
 
 import h5py
 import numpy as np
-
 from rshower.basis.efield_event import HandlingEfield
+
 from .zhaires_base import ZhairesSingleEventBase
 from .zhaires_txt import ZhairesSingleEventText, get_simu_xmax
 
@@ -82,5 +82,5 @@ class ZhairesSingleEventHdf5(ZhairesSingleEventBase):
         o_tevent.info_shower = f"Xmax dist {i_sim['x_max']['dist']:.1f}km, (azi, zenith): {i_sim['shower_azimuth']:.1f}, {i_sim['shower_zenith']:.1f}deg"
         o_tevent.set_unit_axis(r"$\mu$V/m", "cart", "EField")
         o_tevent.set_xmax(get_simu_xmax(self.d_info))
-        o_tevent.network.core_pos = np.array([0,0,0])        
+        o_tevent.network.core_pos = np.array([0, 0, 0])
         return o_tevent

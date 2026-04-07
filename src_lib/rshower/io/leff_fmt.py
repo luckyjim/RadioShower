@@ -1,19 +1,19 @@
-"""
-"""
+""" """
+
 import os.path
 from logging import getLogger
 
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 
 logger = getLogger(__name__)
 
 
 def _get_leff(path_leff, l_files):
     """Return dictionary with 3 antenna Leff
-     0: EW
-     1: SN
-     2: UP
+    0: EW
+    1: SN
+    2: UP
     """
     path_ant = os.path.join(path_leff, l_files[0])
     leff_ew = AntennaLeffStorage()
@@ -106,7 +106,9 @@ class AntennaLeffStorage:
 
     def plot_leff_xx(self, leff, axis):
         plt.figure()
-        plt.title(f"e{axis} Leff {self.name} at direction (phi={self.i_phi}, theta={self.i_theta})")
+        plt.title(
+            f"e{axis} Leff {self.name} at direction (phi={self.i_phi}, theta={self.i_theta})"
+        )
         plt.plot(self.freq_mhz, leff.real, "--", label="Leff real")
         plt.plot(self.freq_mhz, leff.imag, "--", label="Leff imag")
         plt.plot(self.freq_mhz, np.abs(leff), label="|Leff|")

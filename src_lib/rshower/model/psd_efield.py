@@ -6,12 +6,10 @@ Created on 24 nov. 2025
 
 from logging import getLogger
 
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 from lmfit import Minimizer, Parameters, report_fit
-
 from rshower.basis.traces_event import Handling3dTraces
-
 
 logger = getLogger(__name__)
 
@@ -38,7 +36,9 @@ def modelPSD_4params(freqs, m_p, a_p, alpha_p, sigma):
 
 def cost_func_log_residu(params, freqs, log_psd):
     par = params.valuesdict()
-    model = modelPSD_4params(freqs, par["r_max"], par["r_a"], par["r_alpha"], par["sigma"])
+    model = modelPSD_4params(
+        freqs, par["r_max"], par["r_a"], par["r_alpha"], par["sigma"]
+    )
     res = log_psd - np.log(model)
     # print(log_psd[:2])    #print(np.log(model[:2]))    #print(np.sum(res**2))
     return res
@@ -53,8 +53,8 @@ def init_fit(freq, data):
     else:
         f_k = freq[np.min(idx_noise)]
     # print("F knee:", f_k)
-    #r_a = np.log(sig0**2 / r_m1**2) / (f_k)
-    r_a = np.log(r_m1**2/sig0**2 ) / (f_k)
+    # r_a = np.log(sig0**2 / r_m1**2) / (f_k)
+    r_a = np.log(r_m1**2 / sig0**2) / (f_k)
     r_a = np.sqrt(r_a)
     return r_m1, r_a, 1, sig0
 
@@ -97,7 +97,9 @@ def test_fit():
         psd_pars.add("sigma", sig0)
 
     par = psd_pars.valuesdict()
-    model0 = modelPSD_4params(freq, par["r_max"], par["r_a"], par["r_alpha"], par["sigma"])
+    model0 = modelPSD_4params(
+        freq, par["r_max"], par["r_a"], par["r_alpha"], par["sigma"]
+    )
     # r_a
     plt.figure()
     plt.title("Fit PSD")
@@ -114,7 +116,9 @@ def test_fit():
     print(r_a)
     # calculate final result
     p_est = result.params.valuesdict()
-    final = modelPSD_4params(freq, p_est["r_max"], p_est["r_a"], p_est["r_alpha"], p_est["sigma"])
+    final = modelPSD_4params(
+        freq, p_est["r_max"], p_est["r_a"], p_est["r_alpha"], p_est["sigma"]
+    )
     # write error report
     report_fit(result)
     # try to plot results
@@ -127,7 +131,9 @@ def test_AirShowerEfieldPSDmodel_fit():
     import rshower.io.events.asdf_traces as f_tr
 
     f_ef = f_tr.AsdfReadTraces("/home/jcolley/projet/lucky/data/efield_39-24951.asdf")
-    f_volt = f_tr.AsdfReadTraces("/home/jcolley/projet/lucky/data/volt-ash_39-24951.asdf")
+    f_volt = f_tr.AsdfReadTraces(
+        "/home/jcolley/projet/lucky/data/volt-ash_39-24951.asdf"
+    )
     # evt = f_ef.get_event(121)
     # evt = f_ef.get_event(400)
     # evt = f_ef.get_event(350)
@@ -157,7 +163,6 @@ def test_AirShowerEfieldPSDmodel_fit():
 
 
 class AirShowerEfieldPSDmodel:
-
     def __init__(self):
         pass
 
@@ -195,11 +200,16 @@ class AirShowerEfieldPSDmodel:
                     freq,
                     psd_fit,
                     "y",
-                    label="fit: " + f"Max={m1:.1e}, a={coef:.1e}" + r", $\alpha$" + f"={alpha:.2f}",
+                    label="fit: "
+                    + f"Max={m1:.1e}, a={coef:.1e}"
+                    + r", $\alpha$"
+                    + f"={alpha:.2f}",
                 )
                 plt.legend()
             redchi = result.redchi
-            ret = np.array([par["r_max"], par["r_a"], par["r_alpha"], par["sigma"], redchi])
+            ret = np.array(
+                [par["r_max"], par["r_a"], par["r_alpha"], par["sigma"], redchi]
+            )
             return ret
         else:
             logger.error(result.message)
@@ -213,8 +223,8 @@ class AirShowerEfieldPSDmodel:
         for idx in range(nb_tr):
             self.fit_pars[idx] = self.fit_idx(idx)
         nb_ok = len(np.argwhere(self.fit_pars[:, 0] > 0))
-        #print(self.fit_pars)
-        #print(f"{nb_ok}/{nb_tr}")
+        # print(self.fit_pars)
+        # print(f"{nb_ok}/{nb_tr}")
 
     def plot_residu(self, threshold=0.3):
         # i_ok = np.argwhere(self.fit_pars[4]> threshold)
@@ -228,5 +238,5 @@ class AirShowerEfieldPSDmodel:
 
 if __name__ == "__main__":
     test_fit()
-    #test_AirShowerEfieldPSDmodel_fit()
+    # test_AirShowerEfieldPSDmodel_fit()
     plt.show()

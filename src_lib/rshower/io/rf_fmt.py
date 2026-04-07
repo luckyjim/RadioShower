@@ -4,8 +4,8 @@ Global RF chain transfer function
 
 import os.path
 
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 import rshower.num.signal as rss
 
 

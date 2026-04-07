@@ -1,11 +1,9 @@
-"""
+""" """
 
-"""
 import os.path
 from logging import getLogger
 
 import numpy as np
-
 
 logger = getLogger(__name__)
 
@@ -31,7 +29,9 @@ def read_grand_galaxy_vout2(n_path):
     """
     n_file = "galaxyVout2_per_Hz_gp13_25-250_MHz_new_lna_20dB.npy"
     logger.info(f"Read file {n_file}")
-    idx2freq, gal ,idx2sideral_h = read_galaxy_psd_integrated(os.path.join(n_path, n_file), 25, 1)
+    idx2freq, gal, idx2sideral_h = read_galaxy_psd_integrated(
+        os.path.join(n_path, n_file), 25, 1
+    )
     gal = np.moveaxis(gal, 0, 2)
     assert idx2freq[-1] == 250
     return idx2freq, gal, idx2sideral_h

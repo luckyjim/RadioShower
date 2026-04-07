@@ -1,16 +1,13 @@
-"""
-
-"""
+""" """
 
 from logging import getLogger
 
+import matplotlib.pyplot as plt
 import numpy as np
 import scipy.fft as sf
 from scipy import interpolate
-import matplotlib.pyplot as plt
 
 from .signal import interpol_at_new_x
-
 
 logger = getLogger(__name__)
 
@@ -188,9 +185,9 @@ class WienerDeconvolution:
         self.idx_min = 0
         self.a_freq_mhz = None
         self.sig_size = None
-    
+
     def set_f_sample(self, f_mhz):
-        self.f_hz = f_mhz*1e6
+        self.f_hz = f_mhz * 1e6
 
     def set_flag_ifftshift(self, flag):
         self.f_ifftshift = flag
@@ -252,7 +249,9 @@ class WienerDeconvolution:
         self.rfft_m_band = np.zeros_like(rfft_m)
         self.rfft_m_band = rfft_m[self.r_freq]
         # coeff normalisation of se is sig_size
-        wiener = (self.rfft_ker_c * psd_sig) / (self.ker_pow2 * psd_sig + self.psd_noise)
+        wiener = (self.rfft_ker_c * psd_sig) / (
+            self.ker_pow2 * psd_sig + self.psd_noise
+        )
         fft_sig = np.zeros_like(rfft_m)
         fft_sig[self.r_freq] = rfft_m[self.r_freq] * wiener[self.r_freq]
         sig = sf.irfft(fft_sig)
@@ -286,7 +285,11 @@ class WienerDeconvolution:
             my_plot = plt.loglog
         else:
             my_plot = plt.semilogy
-        my_plot(freq_hz[1:], (self.ker_pow2*self.psd_sig_est)[1:], label="PSD signal guess, normal")
+        my_plot(
+            freq_hz[1:],
+            (self.ker_pow2 * self.psd_sig_est)[1:],
+            label="PSD signal guess, normal",
+        )
         my_plot(freq_hz[1:], self.psd_sig_est[1:], label="PSD signal guess")
         my_plot(freq_hz[1:], self.psd_noise[1:], label="PSD noise guess")
         plt.grid()

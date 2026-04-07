@@ -18,11 +18,10 @@ AND also
 * Add plot function in same module
 """
 
+import matplotlib.pyplot as plt
 import numpy as np
 import scipy.fft as sf
 import scipy.signal as ss
-import matplotlib.pyplot as plt
-
 from rshower.num.signal import interpol_at_new_x
 
 
@@ -41,16 +40,21 @@ class GalacticAntComponent:
         self.asd = None
         self.lst = -1
         self.size_out = -1
-        
 
     def _interpolate_asd(self):
         # define LST
         asd_mod = self.asd_mod[:, :, self.lst]
         nb_freq = len(self.freqs_mhz)
         asd = np.zeros((nb_freq, 3))
-        asd[:, 0] = interpol_at_new_x(self.f_mod, asd_mod[:, 0], self.freqs_mhz, "linear")
-        asd[:, 1] = interpol_at_new_x(self.f_mod, asd_mod[:, 1], self.freqs_mhz, "linear")
-        asd[:, 2] = interpol_at_new_x(self.f_mod, asd_mod[:, 2], self.freqs_mhz, "linear")
+        asd[:, 0] = interpol_at_new_x(
+            self.f_mod, asd_mod[:, 0], self.freqs_mhz, "linear"
+        )
+        asd[:, 1] = interpol_at_new_x(
+            self.f_mod, asd_mod[:, 1], self.freqs_mhz, "linear"
+        )
+        asd[:, 2] = interpol_at_new_x(
+            self.f_mod, asd_mod[:, 2], self.freqs_mhz, "linear"
+        )
         self.asd = asd
 
     def set_model_file(self, pn_model):
@@ -63,7 +67,7 @@ class GalacticAntComponent:
         """Define LST, out frequency, size of trace"""
         if (
             int(lst) == self.lst
-            and freqs_mhz[1] ==  self.freqs_mhz[1]
+            and freqs_mhz[1] == self.freqs_mhz[1]
             and size_out == self.size_out
         ):
             return
@@ -150,7 +154,11 @@ class GalacticAntComponent:
         nperseg = 1024
         trace = self.get_traces_gal_ant(1)[0]
         freq, psd = ss.welch(
-            trace[axis], window="hann", fs=self.fs_hz, scaling="density", nperseg=nperseg
+            trace[axis],
+            window="hann",
+            fs=self.fs_hz,
+            scaling="density",
+            nperseg=nperseg,
         )
         freq *= 1e-6
         plt.figure()
