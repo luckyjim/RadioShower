@@ -43,7 +43,7 @@ jobs:
             git config --global user.name "Ruff formatter"
             git config --global user.email "formatter@ruff.org"
             git add src_lib
-            git commit -m "GitHub CI format code"
+            git commit -m "Ruff format code and import"
             git status
             git branch -vv
             git remote -v
