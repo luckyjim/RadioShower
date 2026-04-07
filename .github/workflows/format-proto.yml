@@ -32,6 +32,9 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.MY_TOKEN }}
         run: |
+          echo "Current branch: ${{ github.ref_name }}"
+          echo "Repo: ${{ github.repository }}"
+          echo "Token length: ${#GITHUB_TOKEN}"        
           ruff check --select I --fix src_lib
           ruff format --config quality/ruff.toml src_lib
           if [ -n "$(git status --porcelain)" ]; then
@@ -39,6 +42,9 @@ jobs:
             git config --global user.email "github.ci@example.com"
             git add src_lib
             git commit -m "GitHub CI format code"
+            git status
+            git branch -vv
+            git remote -v
             git remote -v set-url origin https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}.git
             git push
           else
