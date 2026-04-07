@@ -6,15 +6,14 @@ Handling a set of 3D traces
 
 from logging import getLogger
 
-import numpy as np
-import scipy.linalg as splg
 import matplotlib.pyplot as plt
-from matplotlib import colors
-
-from rshower.basis.traces_event import Handling3dTraces
-import rshower.num.signal as sns
-from rshower.basis.frame import FrameDuFrameTan
+import numpy as np
 import rshower.basis.coord as coord
+import rshower.num.signal as sns
+import scipy.linalg as splg
+from matplotlib import colors
+from rshower.basis.frame import FrameDuFrameTan
+from rshower.basis.traces_event import Handling3dTraces
 
 logger = getLogger(__name__)
 
@@ -139,7 +138,8 @@ class HandlingEfield(Handling3dTraces):
         max_sample = np.take_along_axis(self.traces, i_max[:, None], axis=2)
         max_sample = np.squeeze(max_sample)
         assert np.allclose(
-            np.linalg.norm(max_sample, axis=1), np.squeeze(np.take_along_axis(norm, i_max, axis=1))
+            np.linalg.norm(max_sample, axis=1),
+            np.squeeze(np.take_along_axis(norm, i_max, axis=1)),
         )
         # TODO: can be replace by np.vecdot with numpy 2.0
         for idx in range(self.get_nb_trace()):
@@ -184,7 +184,9 @@ class HandlingEfield(Handling3dTraces):
         assert isinstance(self.xmax, np.ndarray)
         # in DU frame
         vec_unit_polar = self.get_polar_vec()
-        self.ef_pol = np.empty((self.get_nb_trace(), self.get_size_trace()), dtype=np.float32)
+        self.ef_pol = np.empty(
+            (self.get_nb_trace(), self.get_size_trace()), dtype=np.float32
+        )
         polars = np.empty(self.get_nb_trace(), dtype=np.float32)
         dir_angle = np.empty((self.get_nb_trace(), 2), dtype=np.float32)
         # dir_vec : direction to Xmax, unit vector
@@ -266,7 +268,9 @@ class HandlingEfield(Handling3dTraces):
         plt.xlim(-max_tr, max_tr)
         s_xlabel = r"$e_{\theta} => $, vertical polarization."
         if self.polar_angle_rad is not None:
-            s_xlabel += f"\nPolar angle estimated {np.rad2deg(self.polar_angle_rad[idx]):.1f}°"
+            s_xlabel += (
+                f"\nPolar angle estimated {np.rad2deg(self.polar_angle_rad[idx]):.1f}°"
+            )
         plt.xlabel(s_xlabel)
         plt.ylabel(r"$e_{\phi}$ =>, horizontal polarization.")
         plt.ylim(-max_tr, max_tr)
@@ -278,7 +282,9 @@ class HandlingEfield(Handling3dTraces):
 
     def plot_polar_angle(self):
         polars, dir_angle, _ = self.get_polar_angle(True)
-        self.network.plot_footprint_1d(polars, "Polar angle, degree", self, scale="lin", unit="deg")
+        self.network.plot_footprint_1d(
+            polars, "Polar angle, degree", self, scale="lin", unit="deg"
+        )
 
     def plot_polar_check_fit(self, threshold=40):
         nb_du = len(self.idt2idx)
@@ -294,7 +300,11 @@ class HandlingEfield(Handling3dTraces):
             )
         self.network.plot_footprint_4d(self, a_vec_pol, "Unit polar vector", False)
         self.network.plot_footprint_1d(
-            a_stat[:, 0], "Mean of polar angle fit residu", self, scale="lin", unit="deg"
+            a_stat[:, 0],
+            "Mean of polar angle fit residu",
+            self,
+            scale="lin",
+            unit="deg",
         )
         self.network.plot_footprint_1d(
             a_stat[:, 1], "Std of polar angle fit residu", self, scale="lin", unit="deg"
@@ -308,15 +318,15 @@ class HandlingEfield(Handling3dTraces):
             self.get_polar_angle()
         trpol = self.copy(0)
         trpol.l_axis = self._d_axis_val["pol"]
-        trpol.traces[:,0] = self.ef_pol
+        trpol.traces[:, 0] = self.ef_pol
         return trpol
 
     def get_traces_tan(self):
         trtan = self.copy(0)
         trtan.l_axis = self._d_axis_val["tan"]
-        trtan.traces[:,:2] = self.ef_tan
+        trtan.traces[:, :2] = self.ef_tan
         return trtan
-        
+
     def plot_trace_idx(self, idx, to_draw="012"):
         super().plot_trace_idx(idx, to_draw)
         # self.plot_trace_tan_idx(idx)

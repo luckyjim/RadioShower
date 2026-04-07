@@ -1,14 +1,12 @@
-"""
-
-"""
+""" """
 
 from logging import getLogger
 
+import matplotlib.pyplot as plt
 import numpy as np
-from scipy.signal import hilbert, butter, lfilter, freqz, filtfilt
 import scipy.fft as sf
 from scipy import interpolate
-import matplotlib.pyplot as plt
+from scipy.signal import butter, filtfilt, freqz, hilbert, lfilter
 
 logger = getLogger(__name__)
 
@@ -291,7 +289,6 @@ def filter_butter_band_causal_hc(t_series, fr_min, fr_max, f_sample, f_plot=Fals
     return filtered.T
 
 
-
 def get_peakamptime_norm_hilbert(a2_time, a3_trace):
     """
     Get peak Hilbert amplitude norm of trace (v_max) and its time t_max without interpolation
@@ -309,7 +306,12 @@ def get_peakamptime_norm_hilbert(a2_time, a3_trace):
     t_max = np.take_along_axis(a2_time, idx_max, axis=1)
     v_max = np.take_along_axis(norm_hilbert_amp, idx_max, axis=1)
     # remove dimension (np.squeeze) to have ~vector ie shape is (n,) instead (n,1)
-    return np.squeeze(t_max,axis=1), np.squeeze(v_max,axis=1), np.squeeze(idx_max,axis=1), norm_hilbert_amp
+    return (
+        np.squeeze(t_max, axis=1),
+        np.squeeze(v_max, axis=1),
+        np.squeeze(idx_max, axis=1),
+        norm_hilbert_amp,
+    )
 
 
 def get_fastest_size_rfft(sig_size, f_samp_mhz, padding_fact=1):
@@ -340,7 +342,9 @@ def interpol_at_new_x(a_x, a_y, new_x, kind="linear"):
     :return: F(new_x) (float, (M)): interpolation of F at new_x
     """
     assert a_x.shape[0] > 0
-    func_interpol = interpolate.interp1d(a_x, a_y, kind, bounds_error=False, fill_value=(0.0, 0.0))
+    func_interpol = interpolate.interp1d(
+        a_x, a_y, kind, bounds_error=False, fill_value=(0.0, 0.0)
+    )
     return func_interpol(new_x)
 
 
@@ -375,5 +379,3 @@ def halfcplx_fullcplx(v_half, even=True):
     if even:
         return np.concatenate((v_half, np.flip(np.conj(v_half[1:-1]))))
     return np.concatenate((v_half, np.flip(np.conj(v_half[1:]))))
-
-

@@ -7,10 +7,8 @@ Created on 6 avr. 2023
 import os.path
 from logging import getLogger
 
-
 from .zhaires_hdf5 import ZhairesSingleEventHdf5
 from .zhaires_txt import ZhairesSingleEventText
-
 
 logger = getLogger(__name__)
 

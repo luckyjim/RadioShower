@@ -1,15 +1,15 @@
 """
 Colley Jean-Marc, CNRS/IN2P3/LPNHE
 """
-from logging import getLogger
+
 import copy
+from logging import getLogger
 
-import numpy as np
 import matplotlib.pyplot as plt
-
-from rshower.basis.traces_event import Handling3dTraces
+import numpy as np
 import rshower.basis.efield_event as efe
 import rshower.basis.traces_event as tre
+from rshower.basis.traces_event import Handling3dTraces
 
 logger = getLogger(__name__)
 
@@ -33,10 +33,10 @@ def convert_3dtrace_grandlib(in_tr, f_efield=False):
     tro.init_network(in_tr.network.du_pos)
     try:
         tro.xmax_pos = in_tr.xmax_pos
-        tro.core_pos= in_tr.core_pos
+        tro.core_pos = in_tr.core_pos
     except:
         pass
-        
+
     return tro
 
 
@@ -190,7 +190,7 @@ class GrandEventsSelectedFmt01:
         )
         unit = "ADU"
         if adu2volt:
-            fact = np.float64(0.9 / 2 ** 13)
+            fact = np.float64(0.9 / 2**13)
             event.traces = fact * event.traces.astype(np.float64)
             unit = "Volt"
         event.init_network(self.du_coord[m_slice, 1:])

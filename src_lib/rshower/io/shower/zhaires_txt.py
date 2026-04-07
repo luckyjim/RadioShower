@@ -11,16 +11,16 @@ Read ZHAires text Outputs simulation, can be convert:
 
 """
 
-import re
 import os.path
-from logging import getLogger
+import pprint
+import re
 import tarfile
 import tempfile
-import pprint
+from logging import getLogger
 
 import numpy as np
-
 from rshower.basis.efield_event import HandlingEfield
+
 from .zhaires_base import ZhairesSingleEventBase, get_simu_xmax
 
 logger = getLogger(__name__)
@@ -109,9 +109,9 @@ class ZhairesSummaryFileVers28:
 class ZhairesSummaryFileVers28b(ZhairesSummaryFileVers28):
     def __init__(self, file_sry="", str_sry=""):
         super().__init__(file_sry, str_sry)
-        self.d_re[
-            "x_max"
-        ] = rf"Pos. Max.:\s+(?P<alt>{REAL})\s+(?P<dist>{REAL})\s+(?P<x>{REAL})\s+(?P<y>{REAL})\s+(?P<z>{REAL})\s+"
+        self.d_re["x_max"] = (
+            rf"Pos. Max.:\s+(?P<alt>{REAL})\s+(?P<dist>{REAL})\s+(?P<x>{REAL})\s+(?P<y>{REAL})\s+(?P<z>{REAL})\s+"
+        )
 
 
 # add here all version of ZHaireS summary file
@@ -232,5 +232,5 @@ class ZhairesSingleEventText(ZhairesSingleEventBase):
         o_tevent.info_shower = f"Xmax dist {i_sim['x_max']['dist']:.1f}km, (azi, zenith): {i_sim['shower_azimuth']:.1f}, {i_sim['shower_zenith']:.1f}deg"
         o_tevent.set_unit_axis(r"$\mu$V/m", "cart", "EField")
         o_tevent.set_xmax(get_simu_xmax(self.d_info))
-        o_tevent.network.core_pos = np.array([0,0,0])
+        o_tevent.network.core_pos = np.array([0, 0, 0])
         return o_tevent

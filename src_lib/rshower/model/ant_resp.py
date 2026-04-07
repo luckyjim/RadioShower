@@ -13,7 +13,6 @@ from logging import getLogger
 
 import matplotlib.pyplot as plt
 import numpy as np
-
 import rshower.basis.coord as coord
 
 # from rshower.io.leff_fmt import AntennaLeffStorage
@@ -115,7 +114,9 @@ class PreComputeInterpolFreq:
         self.c_sup = (freq_in_band - freq_in_mhz[self.idx_itp]) / d_freq_in
         if self.idx_itp[-1] + 1 == freq_in_mhz.shape[0]:
             # https://github.com/grand-mother/collaboration-issues/issues/30
-            logger.info(f" ** Specfic processing when f_in = k * f_out else IndexError **")
+            logger.info(
+                f" ** Specfic processing when f_in = k * f_out else IndexError **"
+            )
             self.idx_itp[-1] -= 1
             # in this case last c_sup must be zero
             # check it !
@@ -234,7 +235,8 @@ class LengthEffectiveInterpolation:
         # leff_itp_sph = np.array([leff_tp.leff_theta[ip0, it0], leff_tp.leff_phi[ip0, it0]])
         pre = self.o_pre
         leff_itp = (
-            pre.c_inf * leff_itp_sph[:, pre.idx_itp] + pre.c_sup * leff_itp_sph[:, pre.idx_itp + 1]
+            pre.c_inf * leff_itp_sph[:, pre.idx_itp]
+            + pre.c_sup * leff_itp_sph[:, pre.idx_itp + 1]
         )
 
         # now add zeros outside leff frequency band and unpack leff theta , phi
@@ -262,7 +264,9 @@ class LengthEffectiveInterpolation:
         )
         plt.plot(self.o_pre.freq_out_mhz, self.l_phi.real, ".-.", label="Leff phi real")
         plt.plot(self.o_pre.freq_out_mhz, self.l_phi.imag, label="Leff phi imag")
-        plt.plot(self.o_pre.freq_out_mhz, self.l_theta.real, ".-.", label="Leff theta real")
+        plt.plot(
+            self.o_pre.freq_out_mhz, self.l_theta.real, ".-.", label="Leff theta real"
+        )
         plt.plot(self.o_pre.freq_out_mhz, self.l_theta.imag, label="Leff theta imag")
         idx_phi = int(self.dir_src_deg[0])
         idx_theta = int(self.dir_src_deg[1])
@@ -345,7 +349,9 @@ class DetectorUnitAntenna3Axis:
         self.up_leff = d_leff["up"]
         self.leff = [d_leff["sn"], d_leff["ew"], d_leff["up"]]
         logger.debug("Hypothesis : all leff storage have same array angle phi, theta")
-        self.interp_leff.set_sampling_angle(self.sn_leff.theta_deg, self.sn_leff.phi_deg)
+        self.interp_leff.set_sampling_angle(
+            self.sn_leff.theta_deg, self.sn_leff.phi_deg
+        )
 
     def set_name_pos(self, name, pos_xcs):
         """
@@ -393,10 +399,10 @@ class DetectorUnitAntenna3Axis:
         self.interp_leff.set_dir_source(self.dir_src_du)
 
     def get_leff_pol(self, polar_angle):
-        '''
-        
+        """
+
         :param polar_angle: RAD
-        '''
+        """
         itp = self.interp_leff
         itp.set_angle_polar(polar_angle)
         leff_sn = itp.get_fft_leff_pol(self.sn_leff)
