@@ -240,8 +240,8 @@ def plot_polar_angle_max(evt, l_cost, idx_cost, type_cost, band=[0, 359], title=
         min_angle = np.argmin(data) + band[0]
         l_min.append(min_angle)
         plt.plot(min_angle, max_val[idx], "*", markersize=15, label=evt.idx2idt[idx])
-    p_med = np.median(l_mvolt-ash_0-24984.asdfin)
-    plt.axvline(x=p_med, label=f"Median {p_med:.1f}")
+    #p_med = np.median(l_mvolt-ash_0-24984.asdfin)
+    #plt.axvline(x=p_med, label=f"Median {p_med:.1f}")
     plt.xlabel("Polar angle estimation, deg")
     plt.ylabel(f"Max value of trace in {evt.unit_trace}")
     # plt.xlim([150,190])
