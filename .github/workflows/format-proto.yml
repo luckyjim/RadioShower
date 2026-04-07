@@ -29,12 +29,20 @@ jobs:
           pip install ruff
 
       - name: Format
+        env:
+          GITHUB_TOKEN: ${{ secrets.token-ci-rshower }}
+
         run: |
           ruff check --select I --fix src_lib
           ruff format --config quality/ruff.toml src_lib
-          git config --global user.name "GitHub CI"
-          git config --global user.email "github.ci@example.com"
-          git add src_lib
-          git commit -m "GitHub CI format code"
-          git push
+          if [ -n "$(git status --porcelain)" ]; then
+            git config --global user.name "GitHub CI"
+            git config --global user.email "github.ci@example.com"
+            git add src_lib
+            git commit -m "GitHub CI format code"
+            git remote set-url origin https://x-access-token:$GITHUB_TOKEN@github.com/${{ github.repository }}
+            git push
+          else
+            echo "No format."
+          fi
 
