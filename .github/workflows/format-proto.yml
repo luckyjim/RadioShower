@@ -34,19 +34,13 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.TOKEN_CI }}
         run: |
-          echo "Current branch: ${{ github.ref_name }}"
-          echo "Repo: ${{ github.repository }}"
-          echo "Token length: ${#GITHUB_TOKEN}"        
-          ruff check --select I --fix src_lib,src
-          ruff format --config quality/ruff.toml src_lib,src
+          ruff check --select I --fix src_lib src
+          ruff format --config quality/ruff.toml src_lib src
           if [ -n "$(git status --porcelain)" ]; then
             git config --global user.name "Ruff formatter"
             git config --global user.email "formatter@ruff.org"
             git add src_lib
             git commit -m "Ruff format code and import"
-            git status
-            git branch -vv
-            git remote -v
             git remote set-url origin https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}.git
             git push
           else
