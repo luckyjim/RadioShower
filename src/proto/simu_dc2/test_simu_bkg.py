@@ -6,7 +6,6 @@ Created on 9 oct. 2025
 
 from proto.simu_dc2.simu_bkg import *
 
-
 p_efield = "/home/jcolley/projet/lucky/data/"
 pn_efield = p_efield + "efield6_39-24951.asdf"
 

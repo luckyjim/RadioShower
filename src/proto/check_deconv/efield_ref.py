@@ -4,16 +4,17 @@ Created on 29 mai 2025
 @author: jcolley
 """
 
-from logging import getLogger
 import logging
 import pprint
+from logging import getLogger
 
-import numpy as np
-import matplotlib.pyplot as plt
 import grand.dataio.root_files as froot
-from rshower.io.events.grand_io_fmt import convert_3dtrace_grandlib
-from rshower.basis.traces_event import Handling3dTraces, get_psd
+import matplotlib.pyplot as plt
+import numpy as np
 from rshower.basis.efield_event import HandlingEfield
+from rshower.basis.traces_event import Handling3dTraces, get_psd
+from rshower.io.events.grand_io_fmt import convert_3dtrace_grandlib
+
 from proto.simu_dc2.simu_ash import get_efield_ref_values
 
 logger = getLogger(__name__)

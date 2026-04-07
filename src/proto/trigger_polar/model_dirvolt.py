@@ -2,24 +2,23 @@
 """
 Colley Jean-Marc
 """
-import pathlib
-from logging import getLogger
-import logging
-from datetime import datetime
-import re
 
-import numpy as np
+import logging
+import pathlib
+import re
+from datetime import datetime
+from logging import getLogger
+
 import healpy as hp
 import matplotlib.pyplot as plt
-from numba import guvectorize, float32, int32, njit
-from scipy.interpolate import griddata, make_splrep, BSpline, splrep, splev, splint
-
+import numpy as np
 import rshower.basis.coord as coord
-from rshower.basis.traces_event import Handling3dTraces, get_psd
-from rshower.basis.efield_event import HandlingEfield
 import rshower.io.events.asdf_traces as f_tr
+from numba import float32, guvectorize, int32, njit
+from rshower.basis.efield_event import HandlingEfield
+from rshower.basis.traces_event import Handling3dTraces, get_psd
 from rshower.simu.gal_resp import GalacticRespDetectorGenerator
-
+from scipy.interpolate import BSpline, griddata, make_splrep, splev, splint, splrep
 
 logger = getLogger(__name__)
 
@@ -177,8 +176,8 @@ class DirectionVoltageParameters:
         out_name = str(in_f.name).replace("volt", "dirvolt")
         out_name = out_name.replace(".asdf", "")
         np.save(self.out_dir + out_name, dataset)
-        logger.info(f"-----> Chrono duration (h:m:s): {datetime.now()-START}")
-        print(f"-----> Chrono duration (h:m:s): {datetime.now()-START}")
+        logger.info(f"-----> Chrono duration (h:m:s): {datetime.now() - START}")
+        print(f"-----> Chrono duration (h:m:s): {datetime.now() - START}")
 
 
 class ModelDirectionVoltage:
@@ -265,10 +264,16 @@ class ModelDirectionVoltage:
         """
         #  check if pix associated to dir isn't empty
         #  use NGP method
-        hpix = hp.ang2pix(self.nside, np.deg2rad(ampdir[:, 2]), np.deg2rad(ampdir[:, 1]))
+        hpix = hp.ang2pix(
+            self.nside, np.deg2rad(ampdir[:, 2]), np.deg2rad(ampdir[:, 1])
+        )
         if method == "ngp":
             relvolt = griddata(
-                self.ds_tra[:, 7:10], self.ds_tra[:, 1:7], ampdir, method="nearest", rescale=True
+                self.ds_tra[:, 7:10],
+                self.ds_tra[:, 1:7],
+                ampdir,
+                method="nearest",
+                rescale=True,
             )
         else:
             raise
@@ -283,7 +288,9 @@ class ModelDirectionVoltage:
         idx_ok = np.argwhere(hit >= 4)
         nb_vlt = dataset.shape[0]
         if len(idx_ok) != nb_vlt:
-            print(f"{nb_vlt-len(idx_ok)}/{nb_vlt} traces don't well defined with model")
+            print(
+                f"{nb_vlt - len(idx_ok)}/{nb_vlt} traces don't well defined with model"
+            )
             dataset_ok = np.squeeze(dataset[idx_ok])
             relvolt = np.squeeze(relvolt[idx_ok])
             print(relvolt.shape)
@@ -311,7 +318,9 @@ class ModelDirectionVoltage:
         idx_ok = np.argwhere(hit >= 4)
         nb_vlt = self.ds_vld.shape[0]
         if len(idx_ok) != nb_vlt:
-            print(f"validation {nb_vlt-len(idx_ok)}/{nb_vlt} traces don't well defined with model")
+            print(
+                f"validation {nb_vlt - len(idx_ok)}/{nb_vlt} traces don't well defined with model"
+            )
             self.ds_vld = np.squeeze(self.ds_vld[idx_ok])
             relvolt = np.squeeze(relvolt[idx_ok])
             print(relvolt.shape)
@@ -396,7 +405,22 @@ class ModelDirectionVoltage:
         print(x_vec[-5:])
         print(y_vec[-5:])
         x_node = np.array(
-            [0.003, 0.008, 0.01, 0.012, 0.015, 0.017, 0.02, 0.03, 0.07, 0.1, 0.2, 0.3, 0.4, 0.5]
+            [
+                0.003,
+                0.008,
+                0.01,
+                0.012,
+                0.015,
+                0.017,
+                0.02,
+                0.03,
+                0.07,
+                0.1,
+                0.2,
+                0.3,
+                0.4,
+                0.5,
+            ]
         )
         # x_node = np.array(
         #     [
@@ -553,7 +577,9 @@ def dist_dataset90(pn_ds90):
     # plt.xlim(0, 1.2)
     # plt.yscale("log")
     plt.grid()
-    plt.title(f"Relative voltage model along the Xmax direction\nTrue error distribution")
+    plt.title(
+        f"Relative voltage model along the Xmax direction\nTrue error distribution"
+    )
     plt.xlabel("Norm true error")
     plt.ylabel("Normalized histogram (integral is 1)")
 
@@ -595,12 +621,14 @@ def check_estimate_proba_evt():
     rv_model = ModelDirectionVoltage()
     rv_model.init_collect_dataset("/home/jcolley/projet/lucky/data/v2/")
     rv_model.partitioning_dataset(0.9, f_shuffle=True)
-    rv_model.set_spline_model_validation(p_model.cspl, p_model.dist_surf_tot, p_model.dist_emax)
+    rv_model.set_spline_model_validation(
+        p_model.cspl, p_model.dist_surf_tot, p_model.dist_emax
+    )
     #
     path_asdf = "/home/jcolley/projet/lucky/data/v2/"
     # f_ash = path_asdf + "volt-ash_39-24951.asdf"
     # f_ash = path_asdf + "volt-bgk-rnd_0-24984.asdf"
-    #f_ash = path_asdf + "volt-bgk-90_0-24984.asdf"
+    # f_ash = path_asdf + "volt-bgk-90_0-24984.asdf"
     f_ash = path_asdf + "volt-ash_46-24976.asdf"
     events = f_tr.AsdfReadTraces(f_ash)
     # test filter
@@ -613,7 +641,7 @@ def check_estimate_proba_evt():
     assert isinstance(evt_filter, Handling3dTraces)
     evt_filter.apply_bandpass(20, 100, True)
     evt_filter.plot_footprint_val_max()
-    return 
+    return
 
     nb_evt = 1
     for idx in range(nb_evt):

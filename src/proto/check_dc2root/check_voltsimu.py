@@ -5,23 +5,20 @@ Check simulation Efield to Voltage with polarization
 import copy
 import pprint
 
-import uproot
-import numpy as np
-import scipy.fft as sf
-
 import grand.dataio.root_files as froot
 import matplotlib.pyplot as plt
-from grand.basis.traces_event import Handling3dTraces
-
+import numpy as np
 import rshower.basis.efield_event as efe
 import rshower.basis.traces_event as tre
-from rshower.basis.frame import FrameDuFrameTan
-from rshower.io.leff_fmt import get_leff_default
 import rshower.io.rf_fmt as rfchain
-from rshower.io.events.grand_io_fmt import convert_3dtrace_grandlib
-from rshower.model.ant_resp import DetectorUnitAntenna3Axis
+import scipy.fft as sf
+import uproot
+from grand.basis.traces_event import Handling3dTraces
 from numpy import isin
-
+from rshower.basis.frame import FrameDuFrameTan
+from rshower.io.events.grand_io_fmt import convert_3dtrace_grandlib
+from rshower.io.leff_fmt import get_leff_default
+from rshower.model.ant_resp import DetectorUnitAntenna3Axis
 
 # DATA
 # No noise

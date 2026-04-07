@@ -2,11 +2,9 @@
 
 from logging import getLogger
 
-import numpy as np
 import matplotlib.pyplot as plt
-
+import numpy as np
 from rshower.num.signal import interpol_at_new_x
-
 
 logger = getLogger(__name__)
 

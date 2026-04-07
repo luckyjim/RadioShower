@@ -4,21 +4,19 @@ Created on 25 nov. 2025
 @author: jcolley
 """
 
-from pathlib import Path
-from logging import getLogger
-import sys
 import re
+import sys
+from logging import getLogger
+from pathlib import Path
 
-import numpy as np
-from scipy.signal import hilbert
 import matplotlib.pyplot as plt
-from sklearn.neighbors import BallTree
-
-from rshower.basis.traces_event import Handling3dTraces
+import numpy as np
 import rshower.io.events.asdf_traces as f_tr
-from rshower.simu.gal_resp import GalacticRespDetectorGenerator
-from rshower.model.psd_efield import AirShowerEfieldPSDmodel, modelPSD_4params
 from rshower.basis.traces_event import Handling3dTraces
+from rshower.model.psd_efield import AirShowerEfieldPSDmodel, modelPSD_4params
+from rshower.simu.gal_resp import GalacticRespDetectorGenerator
+from scipy.signal import hilbert
+from sklearn.neighbors import BallTree
 
 logger = getLogger
 

@@ -6,10 +6,10 @@ Created on 17 oct. 2025
 
 import pathlib
 import re
-import matplotlib.pyplot as plt
 
-import numpy as np
 import healpy as hp
+import matplotlib.pyplot as plt
+import numpy as np
 
 NSIDE = 32
 NPIX = hp.nside2npix(NSIDE)
@@ -87,13 +87,13 @@ def plot_std_ra(a_ampldir, a_pix):
     a_std = np.zeros((NPIX, 6), dtype=np.float32)
     a_mean = np.zeros((NPIX, 6), dtype=np.float32)
     a_pix2 = a_pix.copy()
-    a_ampl = a_ampldir[:,1:7].copy()
+    a_ampl = a_ampldir[:, 1:7].copy()
     cpt = 0
     while True:
-        #print(a_ampl.shape)
+        # print(a_ampl.shape)
         idx_p = np.argwhere(a_pix2 == a_pix2[0])
         cpt += len(idx_p)
-        #print(len(idx_p))
+        # print(len(idx_p))
         a_ampl_p = a_ampl[idx_p]
         a_std[a_pix2[0]] = np.std(a_ampl_p, axis=0)
         a_mean[a_pix2[0]] = np.mean(a_ampl_p, axis=0)
@@ -103,9 +103,9 @@ def plot_std_ra(a_ampldir, a_pix):
             break
     print(cpt)
     for aaxis in range(6):
-        idx_0 = np.argwhere(a_std[:,aaxis] == 0.0)
+        idx_0 = np.argwhere(a_std[:, aaxis] == 0.0)
         a_std[idx_0, aaxis] = hp.UNSEEN
-        masked_m = np.ma.masked_values(a_std[:,aaxis] , hp.UNSEEN)
+        masked_m = np.ma.masked_values(a_std[:, aaxis], hp.UNSEEN)
         hp.projview(
             masked_m,
             title=f"direction Air Shower at {a_pix.shape[0]} DUs",
@@ -120,9 +120,9 @@ def plot_std_ra(a_ampldir, a_pix):
             projection_type="mollweide",
         )
     for aaxis in range(6):
-        idx_0 = np.argwhere(a_mean[:,aaxis] == 0.0)
+        idx_0 = np.argwhere(a_mean[:, aaxis] == 0.0)
         a_mean[idx_0, aaxis] = hp.UNSEEN
-        masked_m = np.ma.masked_values(a_mean[:,aaxis] , hp.UNSEEN)
+        masked_m = np.ma.masked_values(a_mean[:, aaxis], hp.UNSEEN)
         hp.projview(
             masked_m,
             title=f"direction Air Shower at {a_pix.shape[0]} DUs",
@@ -134,9 +134,8 @@ def plot_std_ra(a_ampldir, a_pix):
             xlabel="longitude",
             ylabel="elevation",
             cb_orientation="horizontal",
-            projection_type="polar", 
+            projection_type="polar",
         )
-    
 
 
 def plot_hit(adir, to_rad=True):
@@ -231,7 +230,7 @@ def concatenate_dataset():
     a_pix = hp.ang2pix(NSIDE, rad_dir[1], rad_dir[0])
 
     plot_hit(v_dir[:, 8:], True)
-    #plot_std_ra(v_dir, a_pix)
+    # plot_std_ra(v_dir, a_pix)
 
 
 if __name__ == "__main__":
@@ -239,5 +238,5 @@ if __name__ == "__main__":
     # healpy_test()
     # check_plot()
     concatenate_dataset()
-    #plot_hit()
+    # plot_hit()
     plt.show()

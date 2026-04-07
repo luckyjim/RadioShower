@@ -5,15 +5,13 @@ Created on 22 August 2024
 @author: jcolley
 """
 
-
 import argparse
-import matplotlib.pyplot as plt
-from pathlib import Path
 import pprint
+from pathlib import Path
 
+import matplotlib.pyplot as plt
 import rshower.manage_log as mlg
 from rshower.io.events.grand_io_fmt import GrandEventsSelectedFmt01
-
 
 # specific logger definition for script because __mane__ is "__main__" !
 logger = mlg.get_logger_for_script(__file__)
@@ -21,8 +19,11 @@ logger = mlg.get_logger_for_script(__file__)
 # define a handler for logger : standard only
 mlg.create_output_for_logger("error", log_stdout=True)
 
+
 def manage_args():
-    parser = argparse.ArgumentParser(description="Muliti events viewer from GRAND network GP13")
+    parser = argparse.ArgumentParser(
+        description="Muliti events viewer from GRAND network GP13"
+    )
     parser.add_argument(
         "file", help="path and name of file GRAND", type=argparse.FileType("r")
     )
@@ -94,7 +95,7 @@ def main():
             logger.error(f"index events must < {d_event.nb_events}")
             return
         o_tevent = d_event.get_3dtraces(args.index)
-        o_tevent.set_noise_interval(624,1024)
+        o_tevent.set_noise_interval(624, 1024)
     if args.info:
         str_info = d_event.get_info()
         print(f"{str_info}")
@@ -122,7 +123,7 @@ def main():
         tr_du = o_tevent.traces[idx_du]
         t_tr = o_tevent.t_samples[idx_du]
         for idx in range(o_tevent.get_size_trace()):
-            print(f"{t_tr[idx]} {tr_du[0,idx]} {tr_du[1,idx]} {tr_du[2,idx]}")
+            print(f"{t_tr[idx]} {tr_du[0, idx]} {tr_du[1, idx]} {tr_du[2, idx]}")
 
 
 if __name__ == "__main__":
@@ -132,4 +133,3 @@ if __name__ == "__main__":
     # =============================================
     plt.show()
     logger.info(mlg.string_end_script())
-

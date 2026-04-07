@@ -4,23 +4,20 @@ Created on 13 sept. 2024
 @author: jcolley
 """
 
-import pickle
 import os.path
+import pickle
 import pprint
 
-import numpy as np
 import grand.dataio.root_files as froot
-
-from rshower.basis.coord import nwu_cart_to_sph_one, nwu_cart_to_dir
+import numpy as np
+from rshower.basis.coord import nwu_cart_to_dir, nwu_cart_to_sph_one
+from rshower.basis.efield_event import HandlingEfield, fit_vec_linear_polar_l2, plt
 from rshower.basis.traces_event import Handling3dTraces
-from rshower.basis.efield_event import HandlingEfield, plt, fit_vec_linear_polar_l2
-from rshower.io.rf_fmt import read_TF3_fmt
-from rshower.io.leff_fmt import get_leff_default
 from rshower.io.events.grand_io_fmt import get_info_shower
+from rshower.io.leff_fmt import get_leff_default
+from rshower.io.rf_fmt import read_TF3_fmt
 from rshower.io.shower.zhaires_master import ZhairesMaster
-
 from rshower.model.ant_resp import DetectorUnitAntenna3Axis
-
 
 # GRAND
 path_dc2 = "/home/jcolley/projet/grand_wk/data/root/dc2/ZHAireS/sim_Xiaodushan_20221025_220000_RUN0_CD_ZHAireS_0000/"

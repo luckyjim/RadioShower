@@ -4,13 +4,13 @@ Created on 28 nov. 2025
 @author: jcolley
 """
 
-from pathlib import Path
 from logging import getLogger
+from pathlib import Path
 
-import numpy as np
-from scipy.signal import hilbert
 import matplotlib.pyplot as plt
+import numpy as np
 from matplotlib import colors
+from scipy.signal import hilbert
 
 
 def plot_hist_params_old(pn_model):

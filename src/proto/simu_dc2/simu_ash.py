@@ -7,25 +7,20 @@ Created on 25 mai 2025
 Simulation of GRAND DC2 with dataset ZHAireS
 """
 
-from logging import getLogger
 import logging
-
-
-import numpy as np
-import matplotlib.pyplot as plt
-from astropy.time import Time
-
+from datetime import datetime
+from logging import getLogger
 
 import grand.dataio.root_files as froot
-
-from rshower.io.events.grand_io_fmt import convert_3dtrace_grandlib
-from rshower.basis.traces_event import Handling3dTraces, get_psd_pulse
-from rshower.basis.efield_event import HandlingEfield
-from proto.simu_dc2.du_resp import SimuDetectorUnitResponse
+import matplotlib.pyplot as plt
+import numpy as np
 import rshower.io.events.asdf_traces as f_tr
+from astropy.time import Time
+from rshower.basis.efield_event import HandlingEfield
+from rshower.basis.traces_event import Handling3dTraces, get_psd_pulse
+from rshower.io.events.grand_io_fmt import convert_3dtrace_grandlib
 
-from datetime import datetime
-
+from proto.simu_dc2.du_resp import SimuDetectorUnitResponse
 
 logger = getLogger(__name__)
 
