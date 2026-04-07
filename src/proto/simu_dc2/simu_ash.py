@@ -6,25 +6,21 @@ Created on 25 mai 2025
 
 Simulation of GRAND DC2 with dataset ZHAireS
 """
-from logging import getLogger
+
 import logging
-
-
-import numpy as np
-import matplotlib.pyplot as plt
-from astropy.time import Time
-
+from datetime import datetime
+from logging import getLogger
 
 import grand.dataio.root_files as froot
-
-from rshower.io.events.grand_io_fmt import convert_3dtrace_grandlib
-from rshower.basis.traces_event import Handling3dTraces, get_psd_pulse
-from rshower.basis.efield_event import HandlingEfield
-from proto.simu_dc2.du_resp import SimuDetectorUnitResponse
+import matplotlib.pyplot as plt
+import numpy as np
 import rshower.io.events.asdf_traces as f_tr
+from astropy.time import Time
+from rshower.basis.efield_event import HandlingEfield
+from rshower.basis.traces_event import Handling3dTraces, get_psd_pulse
+from rshower.io.events.grand_io_fmt import convert_3dtrace_grandlib
 
-from datetime import datetime
-
+from proto.simu_dc2.du_resp import SimuDetectorUnitResponse
 
 logger = getLogger(__name__)
 
@@ -72,7 +68,7 @@ class SimuGrand:
         self.out_dir = "/home/jcolley/projet/lucky/data/"
         self.out_dir = "/sps/grand/colley/data/dc2/"
         self.prefix = "volt-ash_"
-        
+
     def set_out_sampling_size(self, fact_downsample, size_trace=0):
         self.fact_downsample = fact_downsample
         self.size_trace = size_trace, 99.9
@@ -97,7 +93,9 @@ class SimuGrand:
             f_ef.load_event_idx(i_e)
             tref_gd = f_ef.get_obj_handling3dtraces()
             d_simu = f_ef.get_simu_parameters()
-            logger.info(f"Load {i_e} => run/evt : {f_ef.run_number}/{f_ef.event_number}")
+            logger.info(
+                f"Load {i_e} => run/evt : {f_ef.run_number}/{f_ef.event_number}"
+            )
             tref = convert_3dtrace_grandlib(tref_gd, True)
             assert isinstance(tref, HandlingEfield)
             cpt_du_all += tref.get_nb_trace()
@@ -155,7 +153,7 @@ class SimuGrand:
 
     def process_all_events_parallel_chunk(self, ie_beg, ie_endp1, size_chk=10):
         from joblib import Parallel, delayed, parallel_config
-        
+
         f_ef = froot.get_file_event(self.pn_efield)
         if ie_endp1 < 0:
             ie_endp1 = f_ef.get_nb_events()
@@ -178,9 +176,13 @@ class SimuGrand:
         n_chk = nb_evt // size_chk
         if nb_evt % size_chk:
             n_chk += 1  # add 1 for the rest
-        parallel_config(n_jobs=4, backend="loky", inner_max_num_threads=1, return_as="list")
+        parallel_config(
+            n_jobs=4, backend="loky", inner_max_num_threads=1, return_as="list"
+        )
         func_process = self.process_event_in_file_chunk
-        results = Parallel()(delayed(func_process)(ie_beg + i * size_chk) for i in range(n_chk))
+        results = Parallel()(
+            delayed(func_process)(ie_beg + i * size_chk) for i in range(n_chk)
+        )
         l_events, cpt_du, cpt_du_all = process_results_chunk(results)
         self.cpt_du = cpt_du
         # Create output file
@@ -202,11 +204,10 @@ class SimuGrand:
         self.f_voc.save_asdf(n_asdf, False)
         logger.info(f"DU select   : {cpt_du}/{cpt_du_all}")
         logger.info(f"Event select: {len(l_events)}/{nb_evt}")
-        logger.info(f"-----> Chrono duration (h:m:s): {datetime.now()-START}")
+        logger.info(f"-----> Chrono duration (h:m:s): {datetime.now() - START}")
         # remove all traces
         self.save_efield_pol(l_events, n_asdf)
-        logger.info(f"-----> Chrono duration (h:m:s): {datetime.now()-START}")
-        
+        logger.info(f"-----> Chrono duration (h:m:s): {datetime.now() - START}")
 
     def save_efield_pol(self, l_events, f_name):
         f_ef = f_tr.AsdfWriteEfield()
@@ -241,15 +242,23 @@ if __name__ == "__main__":
 
     #
     logger = getLogger(__name__)
-    TPL_FMT_LOGGER = "%(asctime)s.%(msecs)03d %(levelname)5s [%(name)s %(lineno)d] %(message)s"
-    logging.basicConfig(level=logging.INFO, format=TPL_FMT_LOGGER, datefmt="%d %H:%M:%S")
+    TPL_FMT_LOGGER = (
+        "%(asctime)s.%(msecs)03d %(levelname)5s [%(name)s %(lineno)d] %(message)s"
+    )
+    logging.basicConfig(
+        level=logging.INFO, format=TPL_FMT_LOGGER, datefmt="%d %H:%M:%S"
+    )
     #
     path_data = "/home/jcolley/projet/grand_wk/data/root/dc2/"
     path_data = "/sps/grand/DC2Training/"
-    path_dc2 = path_data + "ZHAireS/sim_Xiaodushan_20221025_220000_RUN0_CD_ZHAireS_0000/"
+    path_dc2 = (
+        path_data + "ZHAireS/sim_Xiaodushan_20221025_220000_RUN0_CD_ZHAireS_0000/"
+    )
     f_adc = "adc_29-24992_L1_0000.root"
     f_ef = "efield_29-24992_L0_0000.root"
-    path_dc2 = path_data + "ZHAireS/sim_Xiaodushan_20221025_220000_RUN0_CD_ZHAireS_0001/"
+    path_dc2 = (
+        path_data + "ZHAireS/sim_Xiaodushan_20221025_220000_RUN0_CD_ZHAireS_0001/"
+    )
     f_adc = "adc_29-24992_L1_0000.root"
     f_ef = "efield_39-24951_L0_0000.root"
 

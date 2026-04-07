@@ -7,23 +7,22 @@ Created on 4 avr. 2023
 from logging import getLogger
 
 import numpy as np
+import rshower.io.rf_fmt as rfchain
 import scipy.fft as sf
-
 
 # from galaxy_alone import galactic_noise
 from grand.sim.detector.rf_chain import RFChain
-
 from rshower.basis.traces_event import Handling3dTraces
-from rshower.num.signal import get_fastest_size_rfft
+from rshower.io.leff_fmt import get_leff_default
 from rshower.model.ant_resp import DetectorUnitAntenna3Axis
 from rshower.model.galatic_ant import GalacticAntComponent
-from rshower.io.leff_fmt import get_leff_default
-import rshower.io.rf_fmt as rfchain
+from rshower.num.signal import get_fastest_size_rfft
 
 logger = getLogger(__name__)
 
 PN_fmodel = "/home/jcolley/projet/grand_wk/recons/du_model/"
-#PN_fmodel = "/sps/grand/colley/data/du_model/"
+# PN_fmodel = "/sps/grand/colley/data/du_model/"
+
 
 class SimuDetectorUnitResponse:
     """
@@ -76,7 +75,9 @@ class SimuDetectorUnitResponse:
         # object contents Efield and network information
         self.o_efield = Handling3dTraces()
         # self.o_rfchain = RFChain()
-        self.o_rfchain = rfchain.read_TF_numpy_fmt(PN_fmodel + "/TF_RF_Chain_DC2.1rc.npy")
+        self.o_rfchain = rfchain.read_TF_numpy_fmt(
+            PN_fmodel + "/TF_RF_Chain_DC2.1rc.npy"
+        )
         self.o_ant3d = DetectorUnitAntenna3Axis(get_leff_default(PN_fmodel))
         # object of class ShowerEvent
         self.o_shower = None
@@ -117,13 +118,17 @@ class SimuDetectorUnitResponse:
             logger.debug(self.size_with_pad)
             logger.debug(self.sig_size)
             # precompute interpolation for all antennas
-            logger.info("Precompute weight for linear interpolation of Leff in frequency")
+            logger.info(
+                "Precompute weight for linear interpolation of Leff in frequency"
+            )
             self.o_ant3d.set_freq_out_mhz(self.freqs_out_mhz)
             # compute total transfer function of RF chain
             # self.o_rfchain.compute_for_freqs(self.freqs_out_mhz)
             # self.fft_rf = self.o_rfchain.get_tf()
             self.fft_rf = rfchain.interpol_RF(self.o_rfchain, self.freqs_out_mhz)
-            self.gal.set_lst_freq_size_out(self.params["lst"], self.freqs_out_mhz, size_with_pad)
+            self.gal.set_lst_freq_size_out(
+                self.params["lst"], self.freqs_out_mhz, size_with_pad
+            )
         # FFT Efield
         nb_axis = len(tr_evt.l_axis)
         if nb_axis == 3:
@@ -133,16 +138,18 @@ class SimuDetectorUnitResponse:
         elif nb_axis == 1:
             logger.info("EField POLAR")
             self.get_resp_ant = self.o_ant3d.get_resp_1d_efield_pol
-            self.fft_efield = sf.rfft(self.o_efield.traces[:,0], n=self.size_with_pad)
+            self.fft_efield = sf.rfft(self.o_efield.traces[:, 0], n=self.size_with_pad)
         else:
             raise
         assert self.fft_efield.shape[0] == self.o_efield.traces.shape[0]
-        
+
         # lst: local sideral time, galactic noise max at 18h
         if self.params["flag_noise"]:
             logger.info("Compute galaxy noise for all traces")
             self.v_noise = np.zeros_like(self.o_efield.traces)
-            self.fft_noise_gal_3d = self.gal.get_rfft_gal_ant(self.o_efield.get_nb_trace())
+            self.fft_noise_gal_3d = self.gal.get_rfft_gal_ant(
+                self.o_efield.get_nb_trace()
+            )
 
     def set_xmax(self, xmax_xcs):
         """
@@ -155,11 +162,11 @@ class SimuDetectorUnitResponse:
     def set_polar(self, angle_polar):
         """
 
-        :param angle_polar: [rad] 
-        :type angle_polar: float 
+        :param angle_polar: [rad]
+        :type angle_polar: float
         """
         self.o_ant3d.interp_leff.set_angle_polar(angle_polar)
-        
+
     ### GETTER / COMPUTER
 
     def compute_du_all(self):
@@ -181,7 +188,9 @@ class SimuDetectorUnitResponse:
         """Simulate one DU
         Simulation DU effect computing for DU at idx
         """
-        logger.debug(f"==============>  Processing DU with id: {self.o_efield.idx2idt[idx_du]}")
+        logger.debug(
+            f"==============>  Processing DU with id: {self.o_efield.idx2idt[idx_du]}"
+        )
         self.o_ant3d.set_name_pos(
             self.o_efield.idx2idt[idx_du], self.o_efield.network.du_pos[idx_du]
         )
@@ -202,7 +211,9 @@ class SimuDetectorUnitResponse:
         :param idx_du: index of DU in array traces
         :type  idx_du: int
         """
-        logger.info(f"==============>  Processing DU with id: {self.o_efield.idx2idt[idx_du]}")
+        logger.info(
+            f"==============>  Processing DU with id: {self.o_efield.idx2idt[idx_du]}"
+        )
         self.o_ant3d.set_name_pos(
             self.o_efield.idx2idt[idx_du], self.o_efield.network.du_pos[idx_du]
         )

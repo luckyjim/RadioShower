@@ -1,15 +1,13 @@
-from logging import getLogger
 import logging
 import pathlib
+from logging import getLogger
 
-import numpy as np
-import matplotlib.pyplot as plt
 import asdf
+import matplotlib.pyplot as plt
+import numpy as np
 from astropy.time import Time
-
+from rshower.basis.coord import nwu_cart_to_dir, nwu_cart_to_dir_one
 from rshower.basis.traces_event import Handling3dTraces
-from rshower.basis.coord import nwu_cart_to_dir_one, nwu_cart_to_dir
-
 
 logger = getLogger(__name__)
 
@@ -54,7 +52,6 @@ S_dtype_mtraces = [
 
 
 class AsdfTraces:
-
     def get_nb_du_in_event_sort(self):
         nb_du_in_event = np.empty_like(self.events["evt2ftr"])
         nb_du_in_event[1:] = np.diff(self.events["evt2ftr"])
@@ -315,7 +312,6 @@ class AsdfWriteEfield(AsdfWriteTraces):
 
 
 class AsdfReadTraces(AsdfTraces):
-
     def __init__(self, pn_traces, find_ref=True):
         """
         find_ref=False sometimes necessary to copy reference
@@ -325,7 +321,9 @@ class AsdfReadTraces(AsdfTraces):
         self.n_file = pathlib.Path(pn_traces).name
         if find_ref:
             self.d_asdf.find_references()
-            self.idt2idx = {idt: idx for idx, idt in enumerate(self.d_asdf["network"]["du_id"])}
+            self.idt2idx = {
+                idt: idx for idx, idt in enumerate(self.d_asdf["network"]["du_id"])
+            }
         self.traces = self.d_asdf["traces"]
         self.mtraces = self.d_asdf["mtraces"]
         self.events = self.d_asdf["events"]
@@ -343,7 +341,9 @@ class AsdfReadTraces(AsdfTraces):
         d_simu = {}
         idx_beg, idx_end = self.get_event_interval(idx_evt)
         if self.traces.shape[1] == 1:
-            traces = np.zeros((idx_end - idx_beg, 3, self.traces.shape[2]), dtype=self.traces.dtype)
+            traces = np.zeros(
+                (idx_end - idx_beg, 3, self.traces.shape[2]), dtype=self.traces.dtype
+            )
             traces[:, 0] = np.squeeze(self.traces[idx_beg:idx_end])
             d_simu["angle_polar"] = self.d_asdf["pol_angle"][idx_beg:idx_end].mean()
         elif self.traces.shape[1] == 3:
@@ -400,11 +400,17 @@ class AsdfReadTraces(AsdfTraces):
 if __name__ == "__main__":
     #
     logger = getLogger(__name__)
-    TPL_FMT_LOGGER = "%(asctime)s.%(msecs)03d %(levelname)5s [%(name)s %(lineno)d] %(message)s"
-    logging.basicConfig(level=logging.INFO, format=TPL_FMT_LOGGER, datefmt="%d %H:%M:%S")
+    TPL_FMT_LOGGER = (
+        "%(asctime)s.%(msecs)03d %(levelname)5s [%(name)s %(lineno)d] %(message)s"
+    )
+    logging.basicConfig(
+        level=logging.INFO, format=TPL_FMT_LOGGER, datefmt="%d %H:%M:%S"
+    )
     #
     path_data = "/home/jcolley/projet/grand_wk/data/root/dc2/"
-    path_dc2 = path_data + "ZHAireS/sim_Xiaodushan_20221025_220000_RUN0_CD_ZHAireS_0000/"
+    path_dc2 = (
+        path_data + "ZHAireS/sim_Xiaodushan_20221025_220000_RUN0_CD_ZHAireS_0000/"
+    )
     f_adc = "adc_29-24992_L1_0000.root"
     self = "efield_29-24992_L0_0000.root"
 

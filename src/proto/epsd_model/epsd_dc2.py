@@ -4,21 +4,19 @@ Created on 25 nov. 2025
 @author: jcolley
 """
 
-from pathlib import Path
-from logging import getLogger
-import sys
 import re
+import sys
+from logging import getLogger
+from pathlib import Path
 
-import numpy as np
-from scipy.signal import hilbert
 import matplotlib.pyplot as plt
-from sklearn.neighbors import BallTree
-
-from rshower.basis.traces_event import Handling3dTraces
+import numpy as np
 import rshower.io.events.asdf_traces as f_tr
-from rshower.simu.gal_resp import GalacticRespDetectorGenerator
-from rshower.model.psd_efield import AirShowerEfieldPSDmodel, modelPSD_4params
 from rshower.basis.traces_event import Handling3dTraces
+from rshower.model.psd_efield import AirShowerEfieldPSDmodel, modelPSD_4params
+from rshower.simu.gal_resp import GalacticRespDetectorGenerator
+from scipy.signal import hilbert
+from sklearn.neighbors import BallTree
 
 logger = getLogger
 
@@ -39,7 +37,9 @@ s_epsd = [
 
 
 def proto_vmax():
-    f_volt = f_tr.AsdfReadTraces("/home/jcolley/projet/lucky/data/volt-ash_39-24951.asdf")
+    f_volt = f_tr.AsdfReadTraces(
+        "/home/jcolley/projet/lucky/data/volt-ash_39-24951.asdf"
+    )
     i_e = 301
     volt = f_volt.get_event(i_e)
     volt.plot_footprint_val_max()
@@ -77,7 +77,9 @@ def proto_vmax():
 
 def proto_duration():
     """duration trop  bruite"""
-    f_volt = f_tr.AsdfReadTraces("/home/jcolley/projet/lucky/data/volt-ash_39-24951.asdf")
+    f_volt = f_tr.AsdfReadTraces(
+        "/home/jcolley/projet/lucky/data/volt-ash_39-24951.asdf"
+    )
     i_e = 303
     volt = f_volt.get_event(i_e)
     # volt.plot_footprint_val_max()
@@ -205,7 +207,9 @@ def check_EfieldModelDataset():
     m_p, a_p, alpha_p, sigma, _ = emodel.ds_tra["p_psd"][ind[0]]
     plt.plot(freqs, modelPSD_4params(freqs, m_p, a_p, alpha_p, sigma), label="Guess 1")
     m_p, a_p, alpha_p, sigma, _ = emodel.ds_tra["p_psd"][ind[1]]
-    plt.plot(freqs, modelPSD_4params(freqs, m_p, a_p, alpha_p, sigma), "-.", label="Guess 2")
+    plt.plot(
+        freqs, modelPSD_4params(freqs, m_p, a_p, alpha_p, sigma), "-.", label="Guess 2"
+    )
     plt.grid()
     plt.semilogy()
     plt.legend()
@@ -213,7 +217,6 @@ def check_EfieldModelDataset():
 
 
 class EfieldModelDataset:
-
     def __init__(self):
         pass
 

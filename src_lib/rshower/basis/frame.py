@@ -8,7 +8,7 @@ Frame available:
 ================
 
     [W84] for WGS84 is the frame of GPS
-        * Remark : use to define position of DU, 
+        * Remark : use to define position of DU,
                    for shower physic with time measure, position of DU arround 10 cm seems ok
         * Origin : center of earth
         * Cartesian: ECEF
@@ -18,35 +18,35 @@ Frame available:
           * latitide geodetic
           * altitude:
               * above ellipsoide or geoide EGM96
-              
+
 
     [COR] is the frame associated to Core of air shower used by ZHAireS
         * Origin [W84]: XCore position at Sea level
         * Cartesian: NWU ie tangential to the surface of the earth
-          * X: North mag, Y: West mag, Z: normal up to earth 
+          * X: North mag, Y: West mag, Z: normal up to earth
         * Spherical
           * azi_w (phi_n)[0,360] = angle between X and azi_w(West)=90 degree
           * d_zen (theta_n) = angle from zenith , d_zen(horizon)=90 degree
-        * Remark : so in fact it's a familly of frame 
-        * Example: ZHaireS simulation     
-        
+        * Remark : so in fact it's a familly of frame
+        * Example: ZHaireS simulation
+
 
     [NET] is the frame associated to NETwork stations
         * Origin [W84]: TBD, can be center of network or x core
         * Cartesian: NWU ie tangential to the surface of the earth
-          * X: North mag, Y: West mag, Z: normal up to earth 
+          * X: North mag, Y: West mag, Z: normal up to earth
         * Spherical
           * azi_w (phi_n)[0,360] = angle from X, azi_w(West)=90 degree
           * d_zen (theta_n) = angle from zenith , d_zen(horizon)=90 degree
-        * Remark : so in fact it's a familly of frame 
-        * Example: 
-        
-        
-    [SHW] is shower frame associated to Xmax position, primary direction (v) 
+        * Remark : so in fact it's a familly of frame
+        * Example:
+
+
+    [SHW] is shower frame associated to Xmax position, primary direction (v)
           and magnetic field of earth B
-        * Origin : Xmax 
-        * Cartesian: 
-          * X: vxB, Y: vx(vxB), Z: v is direction of move of the primary  
+        * Origin : Xmax
+        * Cartesian:
+          * X: vxB, Y: vx(vxB), Z: v is direction of move of the primary
         * Spherical
           * TBD
         * Remark:
@@ -54,7 +54,7 @@ Frame available:
 
     [DU] is the frame associated to one Detector Unit (DU)
         * Origin [W84]/[N]: antenna position given by GPS position
-        * Remark : normaly we must indicate the id of the DU, like [DUi] but as we don't have 
+        * Remark : normaly we must indicate the id of the DU, like [DUi] but as we don't have
                    computation between DU it's not necessary to specify it
         * Cartesian: NWU ie tangential to the surface of the earth
           * X: North mag, Y: West mag, Z: Up
@@ -63,29 +63,29 @@ Frame available:
           * d_zen (theta_du) = angle from zenith , d_zen(horizon)=90 degree
 
 
-    [TAN] is the frame associated to Tangential ANtenna in direction of E field source (phi_src, theta_src) 
+    [TAN] is the frame associated to Tangential ANtenna in direction of E field source (phi_src, theta_src)
         * Origin [DU]: position associated with unit vector with direction (phi_src, theta_src)
-        * Cartesian: 
+        * Cartesian:
           * X: e_theta, Y: e_phi, Z: normal up to sphere
         * Spherical
            * only angle between e_theta in trigo orientation, 90 deg for e_phi direction in (e_theta, e_phi) plane
            * is vector is p linear polarization, the angle is polar angle
-           
-           
+
+
     [POL] is the frame associated to linear polarization of E field
-         * Origin : center of antenna 
+         * Origin : center of antenna
          * Cartesian: only one dimension is used
            * X: p is linear polarization. p is in plane (e_theta,e_phi) of [TAN]
-         
+
     Remark:
-       In case of small network (20-30km) [NET]/[XC] and [DU] are equivalent for vector orientation 
+       In case of small network (20-30km) [NET]/[XC] and [DU] are equivalent for vector orientation
        because local normal and magnetic field can be considered as constant on this aera.
 
 
     Notation:
        convention xxx_yy variable means position of xxx is in [yy] frame.
        example : efield_tan is E field in tangential frame of antenna
-       
+
     Note:
       all transformation between frame used cartesian coordinate
 
@@ -96,13 +96,12 @@ from logging import getLogger
 import numpy as np
 from scipy.spatial.transform import Rotation as Rot
 
-
 logger = getLogger(__name__)
 
 
 class FrameAFrameB:
     def __init__(self, offset_ab_a, rot_b2a):
-        assert  offset_ab_a.shape == (3, 1)
+        assert offset_ab_a.shape == (3, 1)
         self.offset_ab_a = offset_ab_a
         self.rot_b2a = rot_b2a
         self.offset_ab_b = np.matmul(self.rot_b2a.T, offset_ab_a)
@@ -186,7 +185,7 @@ class FrameDuFrameTan(FrameAFrameB):
         """
         :param vec_dir_du: [RAD] (angle azi, dist zen) direction of source in sky (z>0)
         """
-        offset_ab_a = np.zeros((3,1), dtype=vec_dir_du.dtype)
+        offset_ab_a = np.zeros((3, 1), dtype=vec_dir_du.dtype)
         azi_w = vec_dir_du[0]
         d_zen = vec_dir_du[1]
         # Warning : use intrinsec notation upper case X,Y,Z and not lower case x,y, z !!!!
@@ -211,13 +210,14 @@ class FrameNetFrameShower(FrameAFrameB):
           W(est)           vxvxB
           Up               v
     """
+
     def __init__(self):
         pass
-        
+
     def init_v_inc(self, v_prim, inc_mag, xmax=None):
-        """Init with magnetic angle inclinaision 
-        
-        If you don't know Xmax, vector transformation will be anyway correct 
+        """Init with magnetic angle inclinaision
+
+        If you don't know Xmax, vector transformation will be anyway correct
         but position transformation will be relative.
 
         :param v_prim: unit vector of XC with X Xmax and C core in NET frame,
@@ -228,13 +228,13 @@ class FrameNetFrameShower(FrameAFrameB):
         # B in NWU convention
         vec_b = np.array([np.cos(inc_mag), 0, -np.sin(inc_mag)])
         self.init_v_b(v_prim, vec_b, xmax)
-        
+
     def init_v_b(self, v_prim, vec_b, xmax=None):
         """Generic init for ENU or NWU convention
-                
+
         v_prim, xmax and vec_b must in same orientation convention (ENU, NWU)
 
-        If you don't know Xmax, vector transformation will be anyway correct 
+        If you don't know Xmax, vector transformation will be anyway correct
         but position transformation will be relative.
 
         :param v_prim: unit vector of XC with X Xmax and C core in NET frame
@@ -251,6 +251,6 @@ class FrameNetFrameShower(FrameAFrameB):
         rot_shw2net[:, 1] = vxvxb
         rot_shw2net[:, 2] = v_prim
         if xmax is None:
-            xmax = np.zeros((3,1), dtype=np.float32)
-        super().__init__(xmax.reshape(3,1), rot_shw2net)
+            xmax = np.zeros((3, 1), dtype=np.float32)
+        super().__init__(xmax.reshape(3, 1), rot_shw2net)
         self._d_frame = {"NET": "A", "SHW": "B"}

@@ -2,26 +2,24 @@
 Polar Wiener version with polar angle fit
 """
 
-import sys
 import pprint
+import sys
 from logging import getLogger
 
+import matplotlib.pyplot as plt
 import numpy as np
+import rshower.io.rf_fmt as rfchain
+import rshower.manage_log as mlg
+import rshower.num.signal as rss
 import scipy.fft as sf
 import scipy.optimize as sco
-import matplotlib.pyplot as plt
-
-import rshower.manage_log as mlg
+from rshower.basis import coord
 from rshower.basis.traces_event import Handling3dTraces
-from rshower.num.wiener import WienerDeconvolution
-import rshower.num.signal as rss
 from rshower.io.events.grand_io_fmt import GrandEventsSelectedFmt01
 from rshower.io.leff_fmt import get_leff_default
-import rshower.io.rf_fmt as rfchain
 from rshower.model.ant_resp import DetectorUnitAntenna3Axis
-from rshower.basis import coord
+from rshower.num.wiener import WienerDeconvolution
 from scipy.fft._basic import fft
-
 
 # define a handler for logger : standard only
 logger = mlg.get_logger_for_script(__file__)
@@ -155,7 +153,9 @@ def loss_func_polar_2du(angle_pol, data):
     # best sol
     a_fft = np.array([fft_sig_sn, fft_sig_ew])
     # best_fft_sig = weight_efield_estimation(a_fft, spect_volt)
-    best_fft_sig = np.sum(a_fft * spect_volt[:2], axis=0) / np.sum(spect_volt[:2], axis=0)
+    best_fft_sig = np.sum(a_fft * spect_volt[:2], axis=0) / np.sum(
+        spect_volt[:2], axis=0
+    )
     data[5] = best_fft_sig
     # residu
     # r_sn_w = (fft_volt[0] - leff_pol_sn * best_fft_sig) * spect_volt[0]
@@ -240,8 +240,8 @@ def plot_polar_angle_max(evt, l_cost, idx_cost, type_cost, band=[0, 359], title=
         min_angle = np.argmin(data) + band[0]
         l_min.append(min_angle)
         plt.plot(min_angle, max_val[idx], "*", markersize=15, label=evt.idx2idt[idx])
-    p_med = np.median(l_mvolt-ash_0-24984.asdfin)
-    plt.axvline(x=p_med, label=f"Median {p_med:.1f}")
+    # p_med = np.median(l_mvolt-ash_0-24984.asdfin)
+    # plt.axvline(x=p_med, label=f"Median {p_med:.1f}")
     plt.xlabel("Polar angle estimation, deg")
     plt.ylabel(f"Max value of trace in {evt.unit_trace}")
     # plt.xlim([150,190])
@@ -255,10 +255,20 @@ def polar_wiener_lost_func_all_du_gp13(df_events, ant3d, rf_fft, idx_evt=0):
     l_cost = polar_wiener_lost_func_all_du(evt, pars, ant3d, rf_fft)
     #  evt 1
     plot_polar_angle_max(
-        evt, l_cost, 0, 0, band=[100, 250], title="Polar angle with residu of SN voltage"
+        evt,
+        l_cost,
+        0,
+        0,
+        band=[100, 250],
+        title="Polar angle with residu of SN voltage",
     )
     plot_polar_angle_max(
-        evt, l_cost, 1, 1, band=[100, 250], title="Polar angle with $\delta$Efield (EW-UP) "
+        evt,
+        l_cost,
+        1,
+        1,
+        band=[100, 250],
+        title="Polar angle with $\delta$Efield (EW-UP) ",
     )
     # evt 14
     # plot_polar_angle_max(
@@ -467,7 +477,9 @@ def polar_wiener_lost_func(evt, ant3d, rf_fft, pars, i_du=0):
         evt.plot_footprint_val_max()
         evt.plot_footprint_time_max()
     # Out freq definition
-    size_padd, freqs_out_mhz = rss.get_fastest_size_rfft(evt.get_size_trace(), evt.f_samp_mhz[0])
+    size_padd, freqs_out_mhz = rss.get_fastest_size_rfft(
+        evt.get_size_trace(), evt.f_samp_mhz[0]
+    )
     size_fft = freqs_out_mhz.shape[0]
     logger.debug(f"size_fft: {size_fft}, size_padd: {size_padd}")
     ant3d.set_freq_out_mhz(freqs_out_mhz)
@@ -561,7 +573,9 @@ def polar_wiener_lost_func(evt, ant3d, rf_fft, pars, i_du=0):
             cost_res[angle, i_a] = norm2_cplx(res[wiener.r_freq])
             i_ap = (i_a + 1) % 3
             diff = fft_ef[i_a] - fft_ef[i_ap]
-            dem = 1 + np.max(np.array([np.abs(fft_ef[i_a]), np.abs(fft_ef[i_ap])]), axis=0)
+            dem = 1 + np.max(
+                np.array([np.abs(fft_ef[i_a]), np.abs(fft_ef[i_ap])]), axis=0
+            )
             # diff /= dem
             wd_scal[i_a] = wbf_ef[i_a].sum() ** 2 + wbf_ef[i_ap].sum() ** 2
             # wd_scal[i_a] = np.sum(1/(wbf_ef[i_a] - wbf_ef[i_ap])**2)
@@ -581,7 +595,9 @@ def polar_wiener_lost_func(evt, ant3d, rf_fft, pars, i_du=0):
         print("Estimator residu: ", np.argmin(cost_res[:, 3]) % 180)
 
         plt.figure()
-        plt.title(f"cost function $||residu||^2$, DU index {i_du} ({evt.idx2idt[i_du]})")
+        plt.title(
+            f"cost function $||residu||^2$, DU index {i_du} ({evt.idx2idt[i_du]})"
+        )
         for i_a, axis in enumerate(l_axis):
             plt.semilogy(cost_res[:, i_a], l_col[i_a], label=axis)
         plt.semilogy(cost_res[:, 3], label="Total")
@@ -589,7 +605,9 @@ def polar_wiener_lost_func(evt, ant3d, rf_fft, pars, i_du=0):
         plt.grid()
         plt.xlabel("Deg")
         plt.figure()
-        plt.title(f"cost function $||\delta E||^2$, DU index {i_du} ({evt.idx2idt[i_du]})")
+        plt.title(
+            f"cost function $||\delta E||^2$, DU index {i_du} ({evt.idx2idt[i_du]})"
+        )
         for i_a, axis in enumerate(l_axis):
             m_lab = axis + "-" + l_axis[(i_a + 1) % (len(l_axis))]
             plt.semilogy(cost_dif[:, i_a], l_col[i_a], label=m_lab)
@@ -637,7 +655,11 @@ def deconv_du_polar_wiener(i_du, evt, ant3d, rf_fft, wiener):
 
     logger.info(mlg.chrono_start())
     res = sco.minimize_scalar(
-        loss_func_polar, method="brent", args=data, tol=np.deg2rad(0.5), options={"disp": True}
+        loss_func_polar,
+        method="brent",
+        args=data,
+        tol=np.deg2rad(0.5),
+        options={"disp": True},
     )
     logger.info(mlg.chrono_string_duration())
     logger.info(res.message)

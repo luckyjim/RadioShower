@@ -1,7 +1,7 @@
 #! pylint: disable=line-too-long
 """
 brief:
-  Define output logger (file/stdout) for given level of message and some tools to use 
+  Define output logger (file/stdout) for given level of message and some tools to use
   logger in script.
 
 note:
@@ -13,25 +13,25 @@ Log_mod How used python logger in library module:
 
 The best practice is indicated in
 <a href="https://docs.python.org/3.8/howto/logging.html#advanced-logging-tutorial">
-python documentation</a> 
+python documentation</a>
 In particular this note:
 
 note:
-  It is strongly advised that you do not add any handlers other than NullHandler to 
-  your library’s loggers. This is because the configuration of handlers is the 
-  prerogative of the application developer who uses your library. The application 
-  developer knows their target audience and what handlers are most appropriate for 
-  their application: if you add handlers ‘under the hood’, you might well interfere 
-  with their ability to carry out unit tests and deliver logs which suit their 
+  It is strongly advised that you do not add any handlers other than NullHandler to
+  your library’s loggers. This is because the configuration of handlers is the
+  prerogative of the application developer who uses your library. The application
+  developer knows their target audience and what handlers are most appropriate for
+  their application: if you add handlers ‘under the hood’, you might well interfere
+  with their ability to carry out unit tests and deliver logs which suit their
   requirements.
-  
+
 and this one
 
 note:
-  A good convention to use when naming loggers is to use a module-level logger, 
+  A good convention to use when naming loggers is to use a module-level logger,
   in each module which uses logging, named as follows:
- 
- 
+
+
 from logging import getLogger
 
 logger = getLogger(__name__)
@@ -40,36 +40,36 @@ def foo(var):
   logger.debug('call foo()')
   logger.info(f"var={var}")
   ...
- 
+
 
 :warning:
-  Use always f-string to include current value of variables in message, or create a 
+  Use always f-string to include current value of variables in message, or create a
   string message with ".format" before and give it to logger.
 
 and that's all. Nothing in "__init__.py". Now in a script
 
 Log_script How to define logger in a script and outputs:
 
-So the job of script is to define handler for logger, but script can also write log ans 
-the value of "__name__" is "__main__" so a specific logger definition is 
-provided by this module by the function @link get_logger_for_script 
+So the job of script is to define handler for logger, but script can also write log ans
+the value of "__name__" is "__main__" so a specific logger definition is
+provided by this module by the function @link get_logger_for_script
 get_logger_for_script() @endlink called with "__file__" value.
 
-The function @link create_output_for_logger create_output_for_logger() @endlink alllows to define 
+The function @link create_output_for_logger create_output_for_logger() @endlink alllows to define
 output file/stdout and level of message.
 
 A couple of function  can be useful to:
-  - define message at the beginning and the end of script @link string_begin_script 
+  - define message at the beginning and the end of script @link string_begin_script
     string_xxx_script() @endlink
   - easily have chronometer @link chrono_start chrono_xxx() @endlink
 
 """
 # pylint: enable=line-too-long
 
-import os.path as osp
 import logging
-from datetime import datetime
+import os.path as osp
 import time
+from datetime import datetime
 
 # value to customize for each project
 NAME_PKG_GIT = "RadioShower"
@@ -98,7 +98,9 @@ logger = logging.getLogger(__name__)
 #############################
 
 
-def create_output_for_logger(log_level="info", log_file=None, log_stdout=True, log_root=None):
+def create_output_for_logger(
+    log_level="info", log_file=None, log_stdout=True, log_root=None
+):
     """Create a logger with handler for grand
 
     :param log_level: standard python logger level define in DICT_LOG_LEVELS
@@ -181,7 +183,7 @@ def string_end_script():
     Return string end message with date, time and duration
     """
     ret = f"\n\n===========> End at {_get_string_now()} <===========\n"
-    ret += f"Duration (h:m:s): {datetime.now()-START_BEGIN}"
+    ret += f"Duration (h:m:s): {datetime.now() - START_BEGIN}"
     return ret
 
 
@@ -198,7 +200,7 @@ def chrono_string_duration():
     """
     Return string with duration between call chrono_start()
     """
-    return f"-----> Chrono duration (h:m:s): {datetime.now()-START_CHRONO}"
+    return f"-----> Chrono duration (h:m:s): {datetime.now() - START_CHRONO}"
 
 
 #########################################

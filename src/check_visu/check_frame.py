@@ -2,17 +2,13 @@
 Colley Jean-Marc, CNRS/IN2P3/LPNHE
 """
 
-import matplotlib.pyplot as plt
-
 import grand.dataio.root_files as froot
-
+import matplotlib.pyplot as plt
 import rshower.basis.coord as coord
-from rshower.io.events.grand_io_fmt import convert_3dtrace_grandlib
-from rshower.basis.frame import *
 from rshower.basis.efield_event import HandlingEfield
+from rshower.basis.frame import *
 from rshower.basis.traces_event import Handling3dTraces
-
-
+from rshower.io.events.grand_io_fmt import convert_3dtrace_grandlib
 
 P_dc2 = "/home/jcolley/projet/grand_wk/data/root/dc2/ZHAireS-NJ/sim_Xiaodushan_20221025_220000_RUN0_CD_ZHAireS_0000/"
 F_efield = "efield_29-24992_L0_0000.root"
@@ -32,10 +28,10 @@ def check_dc2(i_e):
     azi = d_simu["azimuth"]
     print(zen, azi)
     dir_x = coord.nwu_sph_to_cart(np.array([np.deg2rad(azi), np.deg2rad(zen), 1.0]))
-    inc  = np.deg2rad(d_simu["magnetic_field"][0])
+    inc = np.deg2rad(d_simu["magnetic_field"][0])
     trshw.init_v_inc(-dir_x, inc, d_simu["FIX_xmax_pos"])
     print(-dir_x)
-    #trshw.init_v_inc(-dir_x, 0)
+    # trshw.init_v_inc(-dir_x, 0)
     print(tref.network.du_pos.shape)
     pos_sh = trshw.pos_to(tref.network.du_pos.T, "SHW")
     print(pos_sh.shape)

@@ -3,23 +3,21 @@ Created on 13 sept. 2024
 
 @author: jcolley
 """
-import pickle
+
 import os.path
+import pickle
 import pprint
 
-import numpy as np
 import grand.dataio.root_files as froot
-
-from rshower.basis.coord import nwu_cart_to_sph_one, nwu_cart_to_dir
+import numpy as np
+from rshower.basis.coord import nwu_cart_to_dir, nwu_cart_to_sph_one
+from rshower.basis.efield_event import HandlingEfield, fit_vec_linear_polar_l2, plt
 from rshower.basis.traces_event import Handling3dTraces
-from rshower.basis.efield_event import HandlingEfield, plt, fit_vec_linear_polar_l2
-from rshower.io.rf_fmt import read_TF3_fmt
-from rshower.io.leff_fmt import get_leff_default
 from rshower.io.events.grand_io_fmt import get_info_shower
+from rshower.io.leff_fmt import get_leff_default
+from rshower.io.rf_fmt import read_TF3_fmt
 from rshower.io.shower.zhaires_master import ZhairesMaster
-
 from rshower.model.ant_resp import DetectorUnitAntenna3Axis
-
 
 # GRAND
 path_dc2 = "/home/jcolley/projet/grand_wk/data/root/dc2/ZHAireS/sim_Xiaodushan_20221025_220000_RUN0_CD_ZHAireS_0000/"
@@ -27,15 +25,9 @@ f_dc2_adc = "adc_29-24992_L0_0000.root"
 f_dc2_ef = "efield_29-24992_L0_0000.root"
 
 # ZHAIRES
-pd_zhaires = (
-    "/home/jcolley/projet/grand_wk/data/zhaires/set500/GP300Outbox/GP300_Proton_2.784_74.8_0.0_1"
-)
-pd_zhaires = (
-    "/home/jcolley/projet/grand_wk/data/zhaires/set500/GP300Outbox/GP300_Proton_0.122_74.8_0.0_1"
-)
-pd_zhaires = (
-    "/home/jcolley/projet/grand_wk/data/zhaires/set500/GP300Outbox/GP300_Proton_3.981_74.8_0.0_1"
-)
+pd_zhaires = "/home/jcolley/projet/grand_wk/data/zhaires/set500/GP300Outbox/GP300_Proton_2.784_74.8_0.0_1"
+pd_zhaires = "/home/jcolley/projet/grand_wk/data/zhaires/set500/GP300Outbox/GP300_Proton_0.122_74.8_0.0_1"
+pd_zhaires = "/home/jcolley/projet/grand_wk/data/zhaires/set500/GP300Outbox/GP300_Proton_3.981_74.8_0.0_1"
 pn_fmodel = "/home/jcolley/projet/grand_wk/recons/du_model"
 
 
@@ -337,7 +329,9 @@ def check_direction_evt_noread(i_e, gef, d_sim, f_plot=False):
     tr_ef.type_trace = gef.type_trace
     tr_ef.network.core_pos = d_sim["shower_core_pos"]
     tr_ef.network.xmax_pos = d_sim["FIX_xmax_pos"]
-    dist_xmax_km = np.linalg.norm(tr_ef.network.core_pos - tr_ef.network.xmax_pos) / 1000
+    dist_xmax_km = (
+        np.linalg.norm(tr_ef.network.core_pos - tr_ef.network.xmax_pos) / 1000
+    )
     # tr_ef.network.core_pos = d_sim["xmax_pos_shc"]
     if f_plot:
         tr_ef.plot_footprint_val_max()
@@ -425,8 +419,10 @@ def check_dc2_xmax():
             plt.figure()
             plt.plot(v_res, "*")
         sph = nwu_cart_to_sph_one(xmax - d_sim["shower_core_pos"])
-        print(f"Core-Xmax dist: {sph[2]/1000:.1f}")
-        print(f"Core-Xmax (azi, zen): ({np.rad2deg(sph[0]):.2f}, {np.rad2deg(sph[1]):.2f})")
+        print(f"Core-Xmax dist: {sph[2] / 1000:.1f}")
+        print(
+            f"Core-Xmax (azi, zen): ({np.rad2deg(sph[0]):.2f}, {np.rad2deg(sph[1]):.2f})"
+        )
         if idx != (nb_rm - 1):
             idx_max = np.argmax(v_res)
             l_ok = list(range(tr_ef.get_nb_trace()))
@@ -445,7 +441,7 @@ def check_dc2_xmax():
     print("True Values:")
     core_xmax = d_sim["FIX_xmax_pos"] - d_sim["shower_core_pos"]
     sph = nwu_cart_to_sph_one(core_xmax)
-    print(f"Core-Xmax dist: {sph[2]/1000:.1f}")
+    print(f"Core-Xmax dist: {sph[2] / 1000:.1f}")
     print(f"Core-Xmax (azi, zen): ({np.rad2deg(sph[0]):.2f}, {np.rad2deg(sph[1]):.2f})")
     pprint.pprint(d_sim)
 

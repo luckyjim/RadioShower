@@ -1,7 +1,7 @@
 """
 Colley Jean-Marc, CNRS/IN2P3/LPNHE
 
-use ASDF 
+use ASDF
 
 https://asdf.readthedocs.io/en/stable/index.html
 
@@ -10,13 +10,9 @@ https://asdf.readthedocs.io/en/stable/index.html
 import os.path
 from logging import getLogger
 
-
-import numpy as np
 import asdf
-
-
+import numpy as np
 from rshower.basis.traces_event import Handling3dTraces
-
 
 logger = getLogger(__name__)
 

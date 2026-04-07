@@ -6,15 +6,14 @@ Handling Detector Unit (DU) network, footprint plots
 
 from logging import getLogger
 
-import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
+import numpy as np
 from matplotlib import colors
-from matplotlib.widgets import Slider
-from matplotlib.offsetbox import AnchoredText
 from matplotlib.backend_bases import MouseButton
+from matplotlib.offsetbox import AnchoredText
+from matplotlib.widgets import Slider
 from scipy.spatial import Delaunay
-
 
 logger = getLogger(__name__)
 
@@ -176,7 +175,9 @@ class DetectorUnitNetwork:
         def on_move(event):
             nonlocal cur_idx_plot
             if event.inaxes:
-                idx = closest_node(np.array([event.xdata, event.ydata]), self.du_pos[:, :2])
+                idx = closest_node(
+                    np.array([event.xdata, event.ydata]), self.du_pos[:, :2]
+                )
                 if idx != cur_idx_plot:
                     cur_idx_plot = idx
                     anch_du.txt.set_text(f"DU={self.idx2idt[idx]}")
@@ -196,7 +197,9 @@ class DetectorUnitNetwork:
                 plt.draw()
 
         fig, ax1 = plt.subplots(1, 1)
-        s_title = f"{title}\n{self.get_nb_du()} DUs; Surface {int(self.get_surface())} km$^2$"
+        s_title = (
+            f"{title}\n{self.get_nb_du()} DUs; Surface {int(self.get_surface())} km$^2$"
+        )
         s_title += f"; Name site: {self.name}"
         ax1.set_title(s_title)
         vmin = np.nanmin(a_values)
@@ -221,13 +224,24 @@ class DetectorUnitNetwork:
         # if self.xmax_pos is not None:
         #     plt.plot(self.xmax_pos[0], self.xmax_pos[1], marker="X", color="blue", markersize=20)
         if self.core_pos is not None:
-            plt.plot(self.core_pos[0], self.core_pos[1], marker="*", color="green", markersize=20)
+            plt.plot(
+                self.core_pos[0],
+                self.core_pos[1],
+                marker="*",
+                color="green",
+                markersize=20,
+            )
             if self.xmax_pos is not None:
                 delta = self.xmax_pos[:2] - self.core_pos[:2]
                 delta /= np.linalg.norm(delta)
                 delta *= 1000
                 plt.arrow(
-                    self.core_pos[0], self.core_pos[1], delta[0], delta[1], color="green", width=50
+                    self.core_pos[0],
+                    self.core_pos[1],
+                    delta[0],
+                    delta[1],
+                    color="green",
+                    width=50,
                 )
         fig.colorbar(scm, label=unit)
         xlabel = self.axis_name[self.axis_key][0]
@@ -237,8 +251,12 @@ class DetectorUnitNetwork:
         plt.xlabel(xlabel)
         plt.ylabel(self.axis_name[self.axis_key][1])
         ax1.grid()
-        anch_du = AnchoredText("DU id", prop=dict(size=10), frameon=False, loc="upper left")
-        anch_val = AnchoredText("Value", prop=dict(size=10), frameon=False, loc="upper right")
+        anch_du = AnchoredText(
+            "DU id", prop=dict(size=10), frameon=False, loc="upper left"
+        )
+        anch_val = AnchoredText(
+            "Value", prop=dict(size=10), frameon=False, loc="upper right"
+        )
         ax1.axis("equal")
         ax1.add_artist(anch_du)
         ax1.add_artist(anch_val)
@@ -306,7 +324,9 @@ class DetectorUnitNetwork:
 
         l_sub = [ax2[1, 0], ax2[0, 1], ax2[1, 1]]
         for idx, axis in enumerate(o_tr.l_axis):
-            ret_scat = subplot(l_sub[idx], v_plot[:, idx], f"{title} {o_tr.l_axis[idx]}", norm_user)
+            ret_scat = subplot(
+                l_sub[idx], v_plot[:, idx], f"{title} {o_tr.l_axis[idx]}", norm_user
+            )
             fig.colorbar(ret_scat, label=unit)
 
     def plot_footprint_time(self, a_time, a3_values, title=""):  # pragma: no cover

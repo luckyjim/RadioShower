@@ -4,18 +4,15 @@ Created on 4 nov. 2025
 @author: jcolley
 """
 
-import rshower.model.galatic_ant as gant
-
 from logging import getLogger
 
-import numpy as np
-import scipy.fft as sf
 import matplotlib.pyplot as plt
-
+import numpy as np
+import rshower.io.rf_fmt as rfchain
+import rshower.model.galatic_ant as gant
+import scipy.fft as sf
 from rshower.basis.traces_event import Handling3dTraces
 from rshower.model.galatic_ant import GalacticAntComponent
-import rshower.io.rf_fmt as rfchain
-
 
 logger = getLogger(__name__)
 

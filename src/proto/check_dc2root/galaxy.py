@@ -1,14 +1,10 @@
-"""
-
-"""
+""" """
 
 from logging import getLogger
 
-import numpy as np
 import matplotlib.pyplot as plt
-
+import numpy as np
 from rshower.num.signal import interpol_at_new_x
-
 
 logger = getLogger(__name__)
 
@@ -46,10 +42,10 @@ class GalaxyModelVolt:
         else:
             # V_out: Voltage with RF chain included, ie V_oc*RFchain
             return "V_{out}"
-    
-    def get_gal(self,f_lst):
+
+    def get_gal(self, f_lst):
         i_lst = int(np.rint(f_lst / self.gala_sid_h[1]))
-        return self.gala_voltage[i_lst]        
+        return self.gala_voltage[i_lst]
 
     def get_volt_all_du(self, f_lst, size_out, freqs_mhz, nb_ant):
         """Return for all DU fft of galaxy signal in voltage

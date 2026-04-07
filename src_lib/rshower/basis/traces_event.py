@@ -4,19 +4,17 @@ Colley Jean-Marc, CNRS/IN2P3/LPNHE
 Handling a set of 3D traces
 """
 
-from logging import getLogger
 import copy
+from logging import getLogger
 
-import numpy as np
-import scipy.signal as ssig
 import matplotlib.pyplot as plt
+import numpy as np
+import rshower.num.signal as rss
+import scipy.signal as ssig
 from matplotlib import colors
 from matplotlib.backend_bases import MouseButton
 from matplotlib.widgets import CheckButtons
-
 from rshower.basis.du_network import DetectorUnitNetwork
-import rshower.num.signal as rss
-
 
 logger = getLogger(__name__)
 
@@ -158,7 +156,9 @@ class Handling3dTraces:
 
     ### INIT/SETTER
 
-    def init_traces(self, traces, du_id=None, t_start_ns=None, f_samp_mhz=2000, f_noise=False):
+    def init_traces(
+        self, traces, du_id=None, t_start_ns=None, f_samp_mhz=2000, f_noise=False
+    ):
         """
 
         :param traces: array traces 3D
@@ -273,16 +273,18 @@ class Handling3dTraces:
         f_hz = self.f_samp_mhz[0] * 1e6
         if causal:
             # second order section format more stable for causal filter
-            sos = ssig.butter(order, [low, high], btype="bandpass", fs=f_hz, output="sos")
+            sos = ssig.butter(
+                order, [low, high], btype="bandpass", fs=f_hz, output="sos"
+            )
             filtered = ssig.sosfilt(sos, self.traces)
         else:
-            #coeff_b, coeff_a = ssig.butter(order, [low, high], btype="bandpass", fs=f_hz)
-            #filtered = ssig.filtfilt(coeff_b, coeff_a, self.traces)
-            print('SOS')
+            # coeff_b, coeff_a = ssig.butter(order, [low, high], btype="bandpass", fs=f_hz)
+            # filtered = ssig.filtfilt(coeff_b, coeff_a, self.traces)
+            print("SOS")
             nyq = 0.5 * f_hz
             low = low / nyq
             high = high / nyq
-            sos = ssig.butter(order, [low, high], btype='bandpass', output='sos')
+            sos = ssig.butter(order, [low, high], btype="bandpass", output="sos")
             filtered = ssig.sosfiltfilt(sos, self.traces)
         self.traces = filtered.real
         self._reset_max()
@@ -296,7 +298,7 @@ class Handling3dTraces:
             nb_sample = self.traces.shape[2]
             t_trace = np.outer(
                 delta_ns * np.ones(self.traces.shape[0]),
-                np.arange(0, nb_sample, dtype=np.float64)
+                np.arange(0, nb_sample, dtype=np.float64),
             )
             self.t_samples = t_trace + self.t_start_ns[:, None]
             logger.info(f"shape t_samples =  {self.t_samples.shape}")
@@ -559,11 +561,15 @@ class Handling3dTraces:
         delta = self.get_delta_t_ns()[0]
         nb_sample_mm = (t_max - t_min) / delta
         nb_sample = int(np.rint(nb_sample_mm) + size_tr)
-        extended_traces = np.zeros((self.get_nb_trace(), 3, nb_sample), dtype=self.traces.dtype)
+        extended_traces = np.zeros(
+            (self.get_nb_trace(), 3, nb_sample), dtype=self.traces.dtype
+        )
         # don't use np.uint64 else int+ int =float ??
         i_beg = np.rint((self.t_start_ns - t_min) / delta).astype(np.uint32)
         for idx in range(self.get_nb_trace()):
-            extended_traces[idx, :, i_beg[idx] : i_beg[idx] + size_tr] = self.traces[idx]
+            extended_traces[idx, :, i_beg[idx] : i_beg[idx] + size_tr] = self.traces[
+                idx
+            ]
         common_time = t_min + np.arange(nb_sample, dtype=np.float64) * delta
         return common_time, extended_traces
 
@@ -574,7 +580,9 @@ class Handling3dTraces:
                 trace = self.traces[idx, idx_axis]
                 i_beg, i_end = get_idx_pulse(trace, self.psd_percent)
                 # print(i_beg, i_end)
-                freq, pxx_den = get_psd(trace[i_beg:i_end], self.f_samp_mhz[idx], i_end - i_beg)
+                freq, pxx_den = get_psd(
+                    trace[i_beg:i_end], self.f_samp_mhz[idx], i_end - i_beg
+                )
                 l_psd.append([freq, pxx_den])
         else:
             for idx_axis, axis in enumerate(self.l_axis):
@@ -707,7 +715,7 @@ class Handling3dTraces:
                 plt.semilogy(freq[2:], pxx_den[2:], self._color[idx_axis], label=axis)
                 # plt.plot(freq[2:] * 1e-6, pxx_den[2:], self._color[idx_axis], label=axis)
         m_title = f"Power spectrum density of {self.type_trace}, DU {self.idx2idt[idx]} (idx={idx})"
-        m_title += f"\nPeriodogram has {(len(freq)-1)*2} samples, delta freq {freq[1]:.2f}MHz"
+        m_title += f"\nPeriodogram has {(len(freq) - 1) * 2} samples, delta freq {freq[1]:.2f}MHz"
         plt.title(m_title)
         plt.ylabel(rf"({self.unit_trace})$^2$/Hz")
         plt.xlabel(f"MHz\n{self.name}")
@@ -780,7 +788,9 @@ class Handling3dTraces:
     def plot_footprint_time_max(self):  # pragma: no cover
         """Plot footprint time associated to max value"""
         tmax, _ = self.get_tmax_vmax(False)
-        self.network.plot_footprint_1d(tmax, "Time of max value", self, scale="lin", unit="ns")
+        self.network.plot_footprint_1d(
+            tmax, "Time of max value", self, scale="lin", unit="ns"
+        )
 
     def plot_footprint_time_slider(self):  # pragma: no cover
         """Plot footprint max value"""

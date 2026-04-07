@@ -9,6 +9,8 @@ jobs:
     steps:
       - name: Checkout 
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false        
 
       - name: Configuration
         uses: actions/setup-python@v5
@@ -30,16 +32,16 @@ jobs:
 
       - name: Format
         env:
-          GITHUB_TOKEN: ${{ secrets.token-classic }}
+          GITHUB_TOKEN: ${{ secrets.TOKEN_CI }}
         run: |
-          ruff check --select I --fix src_lib
-          ruff format --config quality/ruff.toml src_lib
+          ruff check --select I --fix src_lib src
+          ruff format --config quality/ruff.toml src_lib src
           if [ -n "$(git status --porcelain)" ]; then
-            git config --global user.name "GitHub CI"
-            git config --global user.email "github.ci@example.com"
-            git add src_lib
-            git commit -m "GitHub CI format code"
-            git remote set-url origin https://x-access-token:$GITHUB_TOKEN@github.com/${{ github.repository }}
+            git config --global user.name "Ruff formatter"
+            git config --global user.email "formatter@ruff.org"
+            git add src_lib src
+            git commit -m "Ruff format code and import"
+            git remote set-url origin https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}.git
             git push
           else
             echo "No format."

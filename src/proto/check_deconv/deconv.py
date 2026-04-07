@@ -3,20 +3,19 @@ Created on 31 mai 2025
 
 @author: jcolley
 """
-from logging import getLogger
+
 import logging
+from logging import getLogger
 
-import numpy as np
-import scipy.fft as sf
 import matplotlib.pyplot as plt
-
-from rshower.basis.traces_event import Handling3dTraces
+import numpy as np
 import rshower.io.rf_fmt as rfchain
-from rshower.num.wiener import WienerDeconvolution
-from rshower.model.ant_resp import DetectorUnitAntenna3Axis
-from rshower.io.leff_fmt import get_leff_default
-
+import scipy.fft as sf
+from rshower.basis.traces_event import Handling3dTraces
 from rshower.io.events.asdf_traces import AsdfReadTraces
+from rshower.io.leff_fmt import get_leff_default
+from rshower.model.ant_resp import DetectorUnitAntenna3Axis
+from rshower.num.wiener import WienerDeconvolution
 
 PN_fmodel = "/home/jcolley/projet/grand_wk/recons/du_model/"
 PN_vash = "/home/jcolley/projet/lucky/data/v2/volt-ash_0-24984.asdf"
@@ -85,7 +84,7 @@ class DeconvGrand:
         # self.ant3d.set_name_pos(idt_du, pos_du)
         # self.leff_pol = self.ant3d.get_leff_pol(pol_rad)
         # self.tf = self.leff_pol * self.rf_fft
-        #self.idx_ok = np.squeeze(np.argwhere(np.absolute(self.tf[0]) > 0.0001))
+        # self.idx_ok = np.squeeze(np.argwhere(np.absolute(self.tf[0]) > 0.0001))
         fft_tr = sf.rfft(self.evt.traces[i_du])
         deconv = np.zeros_like(fft_tr)
         deconv[:, self.idx_ok] = fft_tr[:, self.idx_ok] / self.tf[:, self.idx_ok]
@@ -185,7 +184,7 @@ def check_deconv_noise_no_weiner(i_e=0, fact_sample=0, size_trace=0):
     if fact_sample != 0:
         evt.downsize_sampling(fact_sample)
     if size_trace != 0:
-        evt.reduce_nb_sample(size_trace)    
+        evt.reduce_nb_sample(size_trace)
     recons = DeconvGrand()
     recons.set_ant3d(DetectorUnitAntenna3Axis(get_leff_default(PN_fmodel)))
     recons.set_rfchain(G_rfc)
@@ -198,12 +197,14 @@ def check_deconv_noise_no_weiner(i_e=0, fact_sample=0, size_trace=0):
     recons.plot_deconv()
 
 
-TPL_FMT_LOGGER = "%(asctime)s.%(msecs)03d %(levelname)5s [%(name)s %(lineno)d] %(message)s"
+TPL_FMT_LOGGER = (
+    "%(asctime)s.%(msecs)03d %(levelname)5s [%(name)s %(lineno)d] %(message)s"
+)
 logging.basicConfig(level=logging.INFO, format=TPL_FMT_LOGGER, datefmt="%d %H:%M:%S")
 
-#check_deconv_nonoise()
-#check_deconv_nonoise(0,4,2048)
+# check_deconv_nonoise()
+# check_deconv_nonoise(0,4,2048)
 check_deconv_noise_no_weiner(20)
-#check_deconv_noise_no_weiner(0,4,2048)
+# check_deconv_noise_no_weiner(0,4,2048)
 # load_event(i_e=0)
 plt.show()

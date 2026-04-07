@@ -11,7 +11,6 @@ import re
 
 from proto.trigger_polar.model_dirvolt import DirectionVoltageParameters
 
-
 out_dir = "/home/jcolley/projet/lucky/data/v2"
 
 pattern = re.compile(r"^volt")
