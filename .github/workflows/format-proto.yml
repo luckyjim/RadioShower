@@ -9,6 +9,8 @@ jobs:
     steps:
       - name: Checkout 
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false        
 
       - name: Configuration
         uses: actions/setup-python@v5
@@ -45,7 +47,7 @@ jobs:
             git status
             git branch -vv
             git remote -v
-            git remote -v set-url origin https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}.git
+            git remote set-url origin https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}.git
             git push
           else
             echo "No format."
