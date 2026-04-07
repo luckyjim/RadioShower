@@ -185,14 +185,14 @@ def estimate_polar_angle(i_e):
     print(l_idt)
     gef.keep_only_trace_with_index(l_idt)
     gef.plot_polar_angle()
-    gadc.keep_only_trace_with_index([0,1,2,3])
+    gadc.keep_only_trace_with_index([0, 1, 2, 3])
     a_pol, d_sim, _ = get_true_polar_angle(i_e)
     evt = convert_3dtrace(gadc)
-    fact = np.float64(0.9) / (2 ** 13)
+    fact = np.float64(0.9) / (2**13)
     evt.traces = fact * evt.traces.astype(np.float64)
     evt.unit_trace = "Volt JMC"
     evt.plot_footprint_val_max()
-    #evt.remove_trace_low_signal(0.05)
+    # evt.remove_trace_low_signal(0.05)
     if evt.get_nb_trace() == 0:
         print("NO TRACE !!!")
         return
@@ -231,6 +231,7 @@ def estimate_polar_angle(i_e):
         title=f"Polar angle with with voltage residu axis UP\nDC2 simu",
     )
 
+
 def simu_trace(i_e, i_du):
     a_pol, d_sim, tr_ef = get_true_polar_angle(i_e)
     gadc = froot.get_handling3dtraces(add_path(f_adc), i_e)
@@ -252,15 +253,15 @@ def demo():
 
 
 if __name__ == "__main__":
-    #i_e = 342 pb signe
-    i_e = 348 # dist 6 km, NOK
-    #i_e = 350 # proche de 90
-    #i_e = 354 # OK 93km demo, pol 121 
-    #i_e = 358 # OK 108km demo,  pol 72
-    #i_e = 360 # proche 90
-    #i_e = 364 # Ok 78km demo, pol 79
-    #i_e = 405
-    #plot_dc2_event(i_e)
+    # i_e = 342 pb signe
+    i_e = 348  # dist 6 km, NOK
+    # i_e = 350 # proche de 90
+    # i_e = 354 # OK 93km demo, pol 121
+    # i_e = 358 # OK 108km demo,  pol 72
+    # i_e = 360 # proche 90
+    # i_e = 364 # Ok 78km demo, pol 79
+    # i_e = 405
+    # plot_dc2_event(i_e)
     # plot_polar(i_e)
     # simu_trace(i_e,i_du)
     estimate_polar_angle(i_e)

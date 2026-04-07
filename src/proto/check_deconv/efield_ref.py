@@ -3,6 +3,7 @@ Created on 29 mai 2025
 
 @author: jcolley
 """
+
 from logging import getLogger
 import logging
 import pprint
@@ -19,7 +20,7 @@ logger = getLogger(__name__)
 
 
 # def get_efield_ref_values(tref):
-#     assert isinstance(tref, HandlingEfield)        
+#     assert isinstance(tref, HandlingEfield)
 #     #tref.remove_trace_low_signal(60)
 #     tref_gd = tref.copy()
 #     assert isinstance(tref_gd, HandlingEfield)
@@ -58,7 +59,9 @@ class EfieldRefValues:
         self.f_ef.load_event_idx(i_e)
         tref_gd = self.f_ef.get_obj_handling3dtraces()
         d_simu = self.f_ef.get_simu_parameters()
-        logger.info(f"Load {i_e} => run/evt : {self.f_ef.run_number}/{self.f_ef.event_number}")
+        logger.info(
+            f"Load {i_e} => run/evt : {self.f_ef.run_number}/{self.f_ef.event_number}"
+        )
         tref = convert_3dtrace_grandlib(tref_gd, True)
         assert isinstance(tref, HandlingEfield)
         tref.set_xmax(d_simu["FIX_xmax_pos"])
@@ -70,61 +73,64 @@ class EfieldRefValues:
         tref2.apply_bandpass(40, 210, causal=False)
         l_ok = tref2.remove_trace_low_signal(75)
         tref.keep_only_trace_with_index(l_ok)
-        t_max, v_max, t_gd_max, v_gd_max, polars, freq, pds_all = get_efield_ref_values(tref)
+        t_max, v_max, t_gd_max, v_gd_max, polars, freq, pds_all = get_efield_ref_values(
+            tref
+        )
         np.rad2deg(polars, out=polars)
         tref.plot_footprint_val_max()
         tref_pol = tref.copy(0)
         assert isinstance(tref_pol, HandlingEfield)
-        tref_pol.name= "Efield polar linear"
-        tref_pol.traces[:,0] = tref.ef_pol
+        tref_pol.name = "Efield polar linear"
+        tref_pol.traces[:, 0] = tref.ef_pol
         tref_pol.apply_bandpass(40, 210, causal=False)
         tref_pol.plot_footprint_val_max()
         return
-        
-        
+
         plt.figure()
-        plt.title('Difference t_max with passband')
-        plt.hist(t_max-t_gd_max)
-        plt.xlabel('ns')
+        plt.title("Difference t_max with passband")
+        plt.hist(t_max - t_gd_max)
+        plt.xlabel("ns")
         plt.grid()
-        
+
         plt.figure()
-        plt.title('E max versus E max GRAND band')
-        plt.plot(v_gd_max,v_max, '.')
+        plt.title("E max versus E max GRAND band")
+        plt.plot(v_gd_max, v_max, ".")
         plt.grid()
-        
+
         plt.figure()
-        plt.title('Difference t_max versus E max')
-        plt.plot(v_max,t_max-t_gd_max, '.')
-        plt.xlabel('v_max')
+        plt.title("Difference t_max versus E max")
+        plt.plot(v_max, t_max - t_gd_max, ".")
+        plt.xlabel("v_max")
         plt.grid()
-        
+
         plt.figure()
-        plt.title('Difference t_max versus E max GRAND band')
-        plt.plot(v_gd_max,t_max-t_gd_max, '.')
-        plt.xlabel('v_gd_max')
+        plt.title("Difference t_max versus E max GRAND band")
+        plt.plot(v_gd_max, t_max - t_gd_max, ".")
+        plt.xlabel("v_gd_max")
         plt.grid()
-       
+
         plt.figure()
-        plt.title('Polar angle distribution')
+        plt.title("Polar angle distribution")
         plt.hist(polars)
-        plt.xlabel('Degree')
+        plt.xlabel("Degree")
         plt.grid()
-        
+
         plt.figure()
-        plt.title('PSD Efied')
-        i_tr = tref.get_nb_trace()//2+2
+        plt.title("PSD Efied")
+        i_tr = tref.get_nb_trace() // 2 + 2
         plt.semilogy(freq[2:], pds_all[i_tr][2:])
         plt.grid()
 
 
 if __name__ == "__main__":
     path_data = "/home/jcolley/projet/grand_wk/data/root/dc2/"
-    path_dc2 = path_data + "ZHAireS/sim_Xiaodushan_20221025_220000_RUN0_CD_ZHAireS_0000/"
+    path_dc2 = (
+        path_data + "ZHAireS/sim_Xiaodushan_20221025_220000_RUN0_CD_ZHAireS_0000/"
+    )
     f_adc = "adc_29-24992_L1_0000.root"
     f_ef = "efield_29-24992_L0_0000.root"
-    
-    eref = EfieldRefValues(path_dc2+f_ef)
+
+    eref = EfieldRefValues(path_dc2 + f_ef)
     # 400 402 405
     eref.get_ref_values(400)
     plt.show()

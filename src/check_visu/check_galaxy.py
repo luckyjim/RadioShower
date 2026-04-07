@@ -1,6 +1,5 @@
-"""
+""" """
 
-"""
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -17,13 +16,14 @@ logger = mlg.get_logger_for_script(__file__)
 # define a handler for logger : standard only
 mlg.create_output_for_logger("debug", log_stdout=True)
 
+
 def check_GalaxyModelVolt_ampl():
     idx2freq, gal, idx2sideral_h = read_grand_galaxy_vout2(G_pn_fmodel)
     gal = GalaxyModelVolt(idx2freq, gal, idx2sideral_h, False)
     gal.plot_gal_psd(18)
     gal.plot_gal_psd(12)
     gal.plot_gal_psd(6)
-    
+
 
 def check_GalaxyModelVolt_signal():
     idx2freq, gal, idx2sideral_h = read_grand_galaxy_vout2(G_pn_fmodel)
@@ -36,5 +36,5 @@ def check_GalaxyModelVolt_signal():
 if __name__ == "__main__":
     logger.info(mlg.string_begin_script())
     check_GalaxyModelVolt_ampl()
-    #check_GalaxyModelVolt_signal()
+    # check_GalaxyModelVolt_signal()
     plt.show()

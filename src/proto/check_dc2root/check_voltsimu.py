@@ -40,7 +40,9 @@ def select_event():
     dfrs = uproot.open(P_dc2 + F_shower)
     d_azi = dfrs["tshower"]["azimuth"].array(library="np")
     d_zen = dfrs["tshower"]["zenith"].array(library="np")
-    a_idx = np.argwhere(np.logical_and.reduce((d_azi % 90 > 40, d_azi % 90 < 50, d_zen < 50)))
+    a_idx = np.argwhere(
+        np.logical_and.reduce((d_azi % 90 > 40, d_azi % 90 < 50, d_zen < 50))
+    )
 
 
 def max_algebra(array_1d):
@@ -222,7 +224,7 @@ def do_simu_in_polar_frame(tref, d_simu, ant3d, rf_fft):
         cor_dir = dir_angle[idx]
         ant3d.set_dir_source(cor_dir)
         print(f"GRAND pos : {tref.network.du_pos[idx]}")
-        print(f"Core pos : {tref.network.du_pos[idx]-tref.network.core_pos}")
+        print(f"Core pos : {tref.network.du_pos[idx] - tref.network.core_pos}")
         print(f"src dir: {np.rad2deg(cor_dir)}\n")
         ant3d.interp_leff.set_angle_polar(polars[idx])
         fft_voc = ant3d.get_resp_1d_efield_pol(sf.rfft(tref.ef_pol[idx]))
@@ -275,7 +277,7 @@ def do_simu_in_tan_frame(tref, d_simu, ant3d, rf_fft):
         fft_ef = sf.rfft(ef_tan[:2], axis=-1)
         fft_voc = ant3d.get_resp_2d_efield_tan(fft_ef)
         tr_out.traces[idx] = sf.irfft(fft_voc * rf_out)
-    #tr_out.plot_footprint_val_max()
+    # tr_out.plot_footprint_val_max()
     # tr_out.plot_trace_idx(165)
     return tr_out
 
@@ -362,7 +364,7 @@ def do_simu_in_du_frame(tref, d_simu, ant3d, rf_fft):
     tref.set_xmax(d_simu["FIX_xmax_pos"])
     tref.network.core_pos = d_simu["shower_core_pos"]
     tref.remove_trace_low_signal(75)
-    #tref.plot_footprint_val_max()
+    # tref.plot_footprint_val_max()
     tr_out = tref.copy(0)
     tr_out.__class__ = tre.Handling3dTraces
     assert isinstance(tr_out, tre.Handling3dTraces)
@@ -426,16 +428,16 @@ def view_effect_polar(i_e):
 if __name__ == "__main__":
     i_e = 774  # 75km, azi 306°
     # i_e = 766  #  6 km
-    #i_e = 764  # 70km, azi=107
+    # i_e = 764  # 70km, azi=107
     # i_e = 762 # 8km
     # i_e = 759 # 234km, azi=11, >40
     i_e = 755  # ok !! pacmac
-    #i_e = 755
+    # i_e = 755
     # plot_input_data(i_e)
     compare_simu_du_tan(i_e)
     compare_simu_du_polar(i_e)
     # compare_simu_polar_dc2(i_e)
     # compare_simu_tan_dc2(i_e)
-    #compare_simu_du_dc2(i_e)
-    #view_effect_polar(i_e)
+    # compare_simu_du_dc2(i_e)
+    # view_effect_polar(i_e)
     plt.show()

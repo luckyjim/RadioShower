@@ -128,12 +128,16 @@ class DeconvGrand:
             freqs, psd_noise_w = get_psd(
                 self.evt.traces[idx, axis], self.evt.f_samp_mhz[0], 128, "median"
             )
-            psd_noise[axis] = interpol_at_new_x(freqs, psd_noise_w, self.ant3d.freq_out_mhz)
+            psd_noise[axis] = interpol_at_new_x(
+                freqs, psd_noise_w, self.ant3d.freq_out_mhz
+            )
         self.psd_noise = psd_noise
-    
+
     def estimate_psd_sig(self, idx, axis):
         self.estimate_psd_noise(idx)
-        freqs, psd_meas = get_psd(self.evt.traces[idx, axis], self.evt.f_samp_mhz[0], 128, "mean")
+        freqs, psd_meas = get_psd(
+            self.evt.traces[idx, axis], self.evt.f_samp_mhz[0], 128, "mean"
+        )
         psd_meas = interpol_at_new_x(freqs, psd_meas, self.ant3d.freq_out_mhz)
         psd_sig = psd_meas - self.psd_noise[axis]
         psd_sig = np.where(psd_sig > 0, psd_sig, 1e-10)
@@ -180,7 +184,7 @@ class DeconvGrand:
             pf_deconv = self.deconv_by_division
         res_all = []
         tr_deconv = np.zeros_like(self.evt.traces)
-        #self.wiener.set_band([40,200])
+        # self.wiener.set_band([40,200])
         for i_du in range(self.evt.get_nb_trace()):
             # update pos DU
             idt_du = self.evt.idx2idt[i_du]
@@ -189,18 +193,20 @@ class DeconvGrand:
             # update PSD signal estimation
             axis = np.argmax(self.snr[i_du]).squeeze()
             self.wiener.set_rfft_kernel(self.tf[axis])
-            self.wiener.set_band([40,200])
+            self.wiener.set_band([40, 200])
             psd_sig = self.estimate_psd_sig(i_du, axis)
             psd_sig /= self.wiener.ker_pow2
             self.wiener.set_psd_sig(psd_sig)
             for axis in range(3):
                 self.wiener.set_psd_noise(self.psd_noise[axis])
-                #self.wiener.plot_psd(f"{idt_du}")
+                # self.wiener.plot_psd(f"{idt_du}")
                 self.wiener.set_rfft_kernel(self.tf[axis])
-                sig, fft_sig = self.wiener.deconv_measure(self.evt.traces[i_du, axis], psd_sig)
-                #res_all.append(res)
-                tr_deconv[i_du,axis ] = sig
-                
+                sig, fft_sig = self.wiener.deconv_measure(
+                    self.evt.traces[i_du, axis], psd_sig
+                )
+                # res_all.append(res)
+                tr_deconv[i_du, axis] = sig
+
             if i_du == 0:
                 plt.figure()
                 plt.title("DECONV ")
@@ -208,7 +214,7 @@ class DeconvGrand:
                 plt.plot(tr_deconv[i_du, 1])
                 plt.plot(tr_deconv[i_du, 2])
                 plt.grid()
-                    # np.clip(sf.irfft(res[0]), -100000, 100000, out=tr_deconv[i_du])
+                # np.clip(sf.irfft(res[0]), -100000, 100000, out=tr_deconv[i_du])
         self.evt_deconv = self.evt.copy(tr_deconv)
         assert isinstance(self.evt_deconv, Handling3dTraces)
         self.evt_deconv.name = "Efield deconv"
@@ -384,7 +390,9 @@ def check_deconv_noise_no_weiner(i_e=0):
     eef.plot_footprint_val_max()
 
 
-TPL_FMT_LOGGER = "%(asctime)s.%(msecs)03d %(levelname)5s [%(name)s %(lineno)d] %(message)s"
+TPL_FMT_LOGGER = (
+    "%(asctime)s.%(msecs)03d %(levelname)5s [%(name)s %(lineno)d] %(message)s"
+)
 logging.basicConfig(level=logging.INFO, format=TPL_FMT_LOGGER, datefmt="%d %H:%M:%S")
 
 # check_deconv_nonoise()

@@ -127,9 +127,13 @@ class SimuBackground:
         n_chk = nb_evt // size_chk
         if nb_evt % size_chk:
             n_chk += 1  # add 1 for the rest
-        parallel_config(n_jobs=4, backend="loky", inner_max_num_threads=1, return_as="list")
+        parallel_config(
+            n_jobs=4, backend="loky", inner_max_num_threads=1, return_as="list"
+        )
         func_process = self.process_event_in_file_chunk
-        results = Parallel()(delayed(func_process)(ie_beg + i * size_chk) for i in range(n_chk))
+        results = Parallel()(
+            delayed(func_process)(ie_beg + i * size_chk) for i in range(n_chk)
+        )
         l_events, cpt_du, cpt_du_all = process_results_chunk(results)
         self.cpt_du = cpt_du
         # name file
@@ -145,8 +149,8 @@ class SimuBackground:
         f_bkg.set_with_efield(f_ef, d_data)
         f_bkg.save_asdf(n_asdf, False)
 
-        logger.info(f"-----> Chrono duration (h:m:s): {datetime.now()-START}")
-        print(f"-----> Chrono duration (h:m:s): {datetime.now()-START}")
+        logger.info(f"-----> Chrono duration (h:m:s): {datetime.now() - START}")
+        print(f"-----> Chrono duration (h:m:s): {datetime.now() - START}")
 
 
 if __name__ == "__main__":
@@ -154,8 +158,12 @@ if __name__ == "__main__":
 
     #
     logger = getLogger(__name__)
-    TPL_FMT_LOGGER = "%(asctime)s.%(msecs)03d %(levelname)5s [%(name)s %(lineno)d] %(message)s"
-    logging.basicConfig(level=logging.INFO, format=TPL_FMT_LOGGER, datefmt="%d %H:%M:%S")
+    TPL_FMT_LOGGER = (
+        "%(asctime)s.%(msecs)03d %(levelname)5s [%(name)s %(lineno)d] %(message)s"
+    )
+    logging.basicConfig(
+        level=logging.INFO, format=TPL_FMT_LOGGER, datefmt="%d %H:%M:%S"
+    )
     #
     path_asdf = "/home/jcolley/projet/lucky/data/"
     f_ef = "efield_39-24951.asdf"

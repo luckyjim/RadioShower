@@ -43,7 +43,7 @@ def check_polar_interpol(f_model):
     pol_est = griddata(pol_par_mod, pol_angle, pol_par[:10, :7], method="nearest")
     logger.info(pol_par[:10, :7])
     print(f"Estimate: {np.rad2deg(pol_est)}")
-    print(f"Measure : {np.rad2deg(pol_par[:10,7])}")
+    print(f"Measure : {np.rad2deg(pol_par[:10, 7])}")
 
 
 def check_polar_interpol_2(f_model):
@@ -64,7 +64,7 @@ def check_polar_interpol_2(f_model):
     pol_est = griddata(pol_par_mod, pol_angle, pol_par[:nb_check, :7], method="nearest")
     logger.info(pol_par[:nb_check, :7])
     print(f"Estimate: {np.rad2deg(pol_est)}")
-    print(f"Measure : {np.rad2deg(pol_par[:nb_check,7])}")
+    print(f"Measure : {np.rad2deg(pol_par[:nb_check, 7])}")
     plt.figure()
     plt.title(
         f"histogram polar angle error model \n model has {nb_point} points, check point {nb_check}"
@@ -85,7 +85,9 @@ def check_polar_interpol_2(f_model):
     plt.xlabel("Degree, nearest grid point method")
     plt.grid()
     plt.figure()
-    plt.title(f"histogram polar angle model over 1000 events\nSampling on {nb_point} DU")
+    plt.title(
+        f"histogram polar angle model over 1000 events\nSampling on {nb_point} DU"
+    )
     plt.hist(np.rad2deg(pol_angle))
     plt.xlabel("Degree,")
     plt.grid()
@@ -123,13 +125,19 @@ def check_polar_interpol_2(f_model):
     fit_res = np.linalg.lstsq(mat, np.rad2deg(pol_par[:, 7]))
     print(fit_res[0])
     coef = fit_res[0]
-    azi = np.linspace(0,2*np.pi,360)
+    azi = np.linspace(0, 2 * np.pi, 360)
     c_inc = np.cos(np.deg2rad(61.6))
-    pol_an = np.rad2deg(np.arccos(c_inc*np.sin(azi)))
-    pol = fit_res[0][0]+fit_res[0][1]*np.sin(azi)
-    plt.plot(np.rad2deg(azi), pol,c="red", label=f"Best fit: {coef[0]:.2f}{coef[1]:.2f}*sin(azi)")
-    plt.plot(np.rad2deg(azi), pol_an,c="b", label=f"Analytic polar angle")
+    pol_an = np.rad2deg(np.arccos(c_inc * np.sin(azi)))
+    pol = fit_res[0][0] + fit_res[0][1] * np.sin(azi)
+    plt.plot(
+        np.rad2deg(azi),
+        pol,
+        c="red",
+        label=f"Best fit: {coef[0]:.2f}{coef[1]:.2f}*sin(azi)",
+    )
+    plt.plot(np.rad2deg(azi), pol_an, c="b", label=f"Analytic polar angle")
     plt.legend()
+
 
 def collect_polar_parameters(tref, d_simu):
     """
@@ -192,13 +200,13 @@ def collect_polar_parameters_cart(tref, d_simu, threshold=30):
     pol_deg = np.rad2deg(polars_r[i_sort])
     logger.info(f"\n{pol_deg}")
     print(f"Min: {pol_deg[0]:.2f} Max:  {pol_deg[-1]:.2f}")
-    print(f"Delta polar : {pol_deg[-1]-pol_deg[0]}, nb du : {tref.get_nb_trace()}")
+    print(f"Delta polar : {pol_deg[-1] - pol_deg[0]}, nb du : {tref.get_nb_trace()}")
     l_iok = [0]
     # take DU each 1 degree of polar angle
     for idx, pol in enumerate(pol_deg[1:]):
         if pol - pol_deg[l_iok[-1]] > 0.9:
             l_iok.append(idx + 1)
-            print(f"add {pol} {pol_deg[idx+1]}")
+            print(f"add {pol} {pol_deg[idx + 1]}")
     logger.info(l_iok)
     # Select DU
     i_sample = i_sort[l_iok]
@@ -253,7 +261,7 @@ def test_polar_parameters():
     logger.info(polar_par[cpt - 1])
     del l_size, l_polar_par
     print(f"Nb point polar: {cpt}")
-    #np.save(f"par_model_cor_{F_efield.split('.')[0]}", polar_par)
+    # np.save(f"par_model_cor_{F_efield.split('.')[0]}", polar_par)
 
 
 # LOGGER
@@ -261,7 +269,7 @@ TPL_FMT_LOGGER = "%(asctime)s %(levelname)5s [%(name)s %(lineno)d] %(message)s"
 logging.basicConfig(level=logging.INFO, format=TPL_FMT_LOGGER)
 
 #
-#test_polar_parameters()
+# test_polar_parameters()
 
 #
 check_polar_interpol_2("par_model_efield_29-24992_L0_0000.npy")
