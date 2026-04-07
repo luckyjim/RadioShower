@@ -1,0 +1,49 @@
+[build-system]
+requires = [
+    "setuptools", "pip"
+]
+
+build-backend = "setuptools.build_meta"
+
+
+[project]
+name = "RadioShower"
+description = "Processing, visualizing electric signal from antenna produces by air shower."
+readme = "README.md"
+
+requires-python = ">=3.9"
+
+dependencies = [
+    "requests",
+    'importlib-metadata; python_version<"3.10"',
+    "astropy",
+    "jax",
+    "healpy",
+    "asdf",
+    "h5py",
+    "matplotlib",
+    "numpy",
+    "scipy"
+]
+
+[project.optional-dependencies]
+testing = [
+    "pytest",
+    "pytest-cov",
+    "coverage",
+    "pytest-docstyle",
+    "pytest-emoji",
+    "pylint",
+    "ruff",
+    "black",
+    "isort",
+    "ciqar",
+    "ty",
+]
+
+[project.urls]
+Repository = "https://github.com/luckyjim/RadioShower.git"
+
+
+[tool.setuptools.packages.find]
+namespaces = false

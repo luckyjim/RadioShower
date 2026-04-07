@@ -32,3 +32,5 @@ jobs:
         run: |
           ruff check --select I --fix src_lib
           ruff format --config quality/ruff.toml src_lib
+          git status
+          
