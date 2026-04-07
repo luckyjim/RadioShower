@@ -32,5 +32,9 @@ jobs:
         run: |
           ruff check --select I --fix src_lib
           ruff format --config quality/ruff.toml src_lib
-          git status
-          
+          git config --global user.name "GitHub CI"
+          git config --global user.email "github.ci@example.com"
+          git add src_lib
+          git commit -m "GitHub CI format code"
+          git push
+
