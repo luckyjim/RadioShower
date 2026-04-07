@@ -30,8 +30,7 @@ jobs:
 
       - name: Format
         env:
-          GITHUB_TOKEN: ${{ secrets.token-ci-rshower }}
-
+          GITHUB_TOKEN: ${{ secrets.MY_TOKEN }}
         run: |
           ruff check --select I --fix src_lib
           ruff format --config quality/ruff.toml src_lib
