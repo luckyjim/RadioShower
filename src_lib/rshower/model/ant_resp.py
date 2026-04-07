@@ -393,6 +393,10 @@ class DetectorUnitAntenna3Axis:
         self.interp_leff.set_dir_source(self.dir_src_du)
 
     def get_leff_pol(self, polar_angle):
+        '''
+        
+        :param polar_angle: RAD
+        '''
         itp = self.interp_leff
         itp.set_angle_polar(polar_angle)
         leff_sn = itp.get_fft_leff_pol(self.sn_leff)

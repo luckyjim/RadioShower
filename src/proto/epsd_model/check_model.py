@@ -10,7 +10,7 @@ from logging import getLogger
 import numpy as np
 from scipy.signal import hilbert
 import matplotlib.pyplot as plt
-
+from matplotlib import colors
 
 def plot_hist_params_old(pn_model):
     dataset = np.load(pn_model)
@@ -34,6 +34,13 @@ def plot_hist_params_old(pn_model):
     axs[1, 0].set_title(r"alpha: $\alpha$")
     axs[1, 1].hist(dataset[:, 6] ** 2, bins=np.logspace(np.log10(1e-13), np.log10(1e-4), 50))
     axs[1, 1].semilogx()
+    plt.plot(f_knee, dataset["d_XC"], ".")
+    plt.xlabel(r"f_knee")
+    plt.ylabel(r"d_XC")
+    plt.semilogx()
+    #plt.semilogy()
+    plt.grid()
+
     axs[1, 1].semilogy()
     axs[1, 1].grid()
     axs[1, 1].set_title(r"variance: $\sigma^2$ ")
@@ -47,6 +54,13 @@ def plot_hist_params_old(pn_model):
     plt.grid()
 
     plt.figure()
+    plt.plot(f_knee, dataset["d_XC"], ".")
+    plt.xlabel(r"f_knee")
+    plt.ylabel(r"d_XC")
+    plt.semilogx()
+    #plt.semilogy()
+    plt.grid()
+
     plt.plot(dataset[:, 4] ** 2, dataset[:, 3] ** 2, ".")
     plt.ylabel(r"Max value: $M$")
     plt.xlabel(r"coef: $a$")
@@ -120,7 +134,7 @@ def plot_hist_params(pn_model):
     plt.ylabel(r"alpha: $\alpha$")
     plt.xlabel(r"coef: $a$")
     plt.semilogx()
-    plt.semilogy()
+    #plt.semilogy()
     plt.grid()
 
     plt.figure()
@@ -132,7 +146,7 @@ def plot_hist_params(pn_model):
     plt.grid()
 
     plt.figure()
-    plt.plot(dataset["p_psd"][:, 1] ** 2, dataset["vmax"] ** 2, ".")
+    plt.plot(dataset["p_psd"][:, 1] ** 2, dataset["vmax"], ".")
     plt.xlabel(r"coef: $a$")
     plt.ylabel(r"Max voltage")
     plt.semilogx()
@@ -140,10 +154,19 @@ def plot_hist_params(pn_model):
     plt.grid()
 
     plt.figure()
-    plt.plot(dataset["p_psd"][:, 2] ** 2, dataset["vmax"] ** 2, ".")
-    plt.xlabel(r"alpha: $\alpha$")
+    plt.plot(dataset["p_psd"][:, 3] ** 2, dataset["vmax"], ".")
+    plt.xlabel(r"coef: $\sigma^2$")
     plt.ylabel(r"Max voltage")
     plt.semilogx()
+    plt.semilogy()
+    plt.grid()
+
+
+    plt.figure()
+    plt.plot(dataset["p_psd"][:, 2] ** 2, dataset["vmax"], ".")
+    plt.xlabel(r"alpha: $\alpha$")
+    plt.ylabel(r"Max voltage")
+    #plt.semilogx()
     plt.semilogy()
     plt.grid()
     alpha = dataset["p_psd"][:, 2] ** 2
@@ -181,6 +204,63 @@ def plot_hist_params(pn_model):
     plt.semilogy()
     plt.xlabel(r"$f_{knee}$ [MHz]")
     plt.grid()
+    
+    
+    plt.figure()
+    plt.title("azimuth histo")
+    plt.hist(dataset["azi"])
+    
+    
+    i_azi = np.argwhere(dataset["azi"]> 80).squeeze()
+    dataset_azi = dataset[i_azi]
+    f_knee_azi = f_knee[i_azi]
+    i_azi = np.argwhere(dataset_azi["azi"]< 110).squeeze()
+    dataset_azi = dataset_azi[i_azi]
+    f_knee_azi = f_knee_azi[i_azi]
+    plt.figure()
+    plt.title('azi 80 a 120 degree')
+    plt.plot(dataset_azi["vmax"],f_knee_azi,  ".")
+    plt.ylabel(r"$f_{knee}$ [MHz]")
+    plt.xlabel(r"Max voltage")
+    plt.semilogx()
+    plt.semilogy()
+    plt.grid()
+
+    i_azi = np.argwhere(dataset["azi"]> 30).squeeze()
+    dataset_azi = dataset[i_azi]
+    f_knee_azi = f_knee[i_azi]
+    i_azi = np.argwhere(dataset_azi["azi"]< 60).squeeze()
+    dataset_azi = dataset_azi[i_azi]
+    f_knee_azi = f_knee_azi[i_azi]
+    
+    fig, ax1 = plt.subplots(1, 1)
+    a_values = dataset_azi["d_XC"]
+    vmin = np.nanmin(a_values)
+    vmax = np.nanmax(a_values)
+    norm_user = colors.Normalize(vmin=vmin, vmax=vmax)
+    scm = ax1.scatter(dataset_azi["vmax"],f_knee_azi,
+            norm=norm_user,
+            s=50,
+            c=a_values,
+            edgecolors="k",
+            cmap="Blues",
+        )
+    fig.colorbar(scm, label="km")
+    ax1.semilogx()
+    ax1.semilogy()
+    # ax1.xlabel(r"Max voltage")
+    # ax1.ylabel(r"$f_{knee}$ [MHz]")
+    ax1.grid()
+    
+    plt.figure()
+    plt.title('azi 170 a 190 degree')
+    plt.plot(dataset_azi["vmax"],f_knee_azi,  ".")
+    plt.ylabel(r"$f_{knee}$ [MHz]")
+    plt.xlabel(r"Max voltage")
+    plt.semilogx()
+    plt.semilogy()
+    plt.grid()
+
 
     plt.figure()
     plt.plot(f_knee, dataset["d_XC"], ".")
@@ -190,14 +270,33 @@ def plot_hist_params(pn_model):
     #plt.semilogy()
     plt.grid()
 
+
     plt.figure()
-    plt.plot(dataset["p_psd"][:, 0] ** 2, dataset["d_XC"], ".")
-    plt.xlabel(r"")
-    plt.ylabel(r"d_XC")
+    plt.plot(f_knee, dataset["p_psd"][:, 2] ** 2, ".")
+    plt.xlabel(r"f_knee")
+    plt.ylabel(r"alpha")
     plt.semilogx()
     #plt.semilogy()
     plt.grid()
+
+    plt.figure()
+    plt.plot(dataset["p_psd"][:, 0] ** 2, dataset["d_XC"], ".")
+    plt.xlabel(r"Max")
+    plt.ylabel(r"d_XC")
+    plt.semilogx()
+    #plt.semilogy()
+    #plt.title("")
+    plt.grid()
     
+    plt.figure()
+    plt.plot(dataset["p_psd"][:, 0] ** 2, dataset["d_XC"], ".")
+    plt.xlabel(r"Max")
+    plt.ylabel(r"d_XC")
+    plt.semilogx()
+    #plt.semilogy()
+    #plt.title("")
+    plt.grid()
+
     plt.figure()
     plt.hist(dataset["p_psd"][:, 4],50)
     plt.semilogy()

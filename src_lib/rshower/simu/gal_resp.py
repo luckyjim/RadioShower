@@ -47,11 +47,9 @@ class GalacticRespDetectorGenerator:
         self.size_out = size_out
         self.fft_rf = rfchain.interpol_RF(self.o_rfchain, self.freqs_mhz)
 
-    def get_galactic_traces(self, nb_du, lst=18, size_out=None):
+    def get_galactic_traces(self, nb_du, lst=18):
         """Return numpy array (nb_du,3,size_out) with galactic noise"""
-        if not size_out:
-            size_out = self.size_out
-        self.gal.set_lst_freq_size_out(lst, self.freqs_mhz, size_out)
+        self.gal.set_lst_freq_size_out(lst, self.freqs_mhz, self.size_out)
         fft_gal = self.gal.get_rfft_gal_ant(nb_du)
         fft_gal *= self.fft_rf[None, ...]
         gal_resp = self.calib * sf.irfft(fft_gal).real
@@ -64,7 +62,7 @@ class GalacticRespDetectorGenerator:
         :param lst:
         """
         assert isinstance(event, Handling3dTraces)
-        gal_resp = self.get_galactic_traces(event.get_nb_trace(), lst, event.get_size_trace())
+        gal_resp = self.get_galactic_traces(event.get_nb_trace(), lst)
         event.traces += gal_resp
 
     def get_galactic_event(self, nb_du, lst=18):

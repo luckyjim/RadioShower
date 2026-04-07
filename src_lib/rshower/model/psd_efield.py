@@ -53,8 +53,9 @@ def init_fit(freq, data):
     else:
         f_k = freq[np.min(idx_noise)]
     # print("F knee:", f_k)
-    r_a = np.log(sig0**2 / r_m1**2) / (f_k)
-    r_a = np.sqrt(np.abs(r_a))
+    #r_a = np.log(sig0**2 / r_m1**2) / (f_k)
+    r_a = np.log(r_m1**2/sig0**2 ) / (f_k)
+    r_a = np.sqrt(r_a)
     return r_m1, r_a, 1, sig0
 
 
@@ -66,7 +67,7 @@ def test_fit():
     alpha = 5.5
     m1 = 1e-7
     psd = psd_efield(freq, sig, f_k, alpha, m1)
-    data = np.random.normal(psd, psd * 0.1)
+    data = np.random.normal(psd, psd * 0.3)
     freq = freq[1:]
     data = data[1:]
     psd = psd[1:]
@@ -226,6 +227,6 @@ class AirShowerEfieldPSDmodel:
 
 
 if __name__ == "__main__":
-    # test_fit()
-    test_AirShowerEfieldPSDmodel_fit()
+    test_fit()
+    #test_AirShowerEfieldPSDmodel_fit()
     plt.show()

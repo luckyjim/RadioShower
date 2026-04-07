@@ -63,7 +63,7 @@ class GalacticAntComponent:
         """Define LST, out frequency, size of trace"""
         if (
             int(lst) == self.lst
-            and np.allclose(freqs_mhz, self.freqs_mhz)
+            and freqs_mhz[1] ==  self.freqs_mhz[1]
             and size_out == self.size_out
         ):
             return

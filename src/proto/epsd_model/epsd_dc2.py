@@ -138,7 +138,6 @@ def model_epsf_test():
 
 
 def model_epsf(pn_efield):
-
     f_ef = f_tr.AsdfReadTraces(pn_efield)
     pnv = pn_efield.replace("efield", "volt-ash")
     f_volt = f_tr.AsdfReadTraces(pnv)
@@ -188,16 +187,16 @@ def check_EfieldModelDataset():
     emodel = EfieldModelDataset()
     emodel.init_collect_dataset("/home/jcolley/projet/lucky/data/v2")
     emodel.partitioning_dataset(0.9)
-    idx = 1000
+    idx = 1010
     evt = emodel.get_traces(idx + emodel.fidx_vld)
     evt.plot_trace_idx(0)
     psdmodel = AirShowerEfieldPSDmodel()
     psdmodel.set_efield(evt)
     psdmodel.fit_idx(0, True)
     print(emodel.ds_vld[idx])
-    print(emodel.ds_vld["p_psd"][idx]**2)
+    print(emodel.ds_vld["p_psd"][idx] ** 2)
     params = np.asarray(emodel.ds_vld[idx].tolist()[:4])
-    ind, dist = emodel.estimate_epsd(params)
+    ind = emodel.estimate_idx_epsd_vec(params)
     print(ind)
     freqs = np.arange(1, 500)
     plt.figure()
@@ -218,7 +217,7 @@ class EfieldModelDataset:
     def __init__(self):
         pass
 
-    def init_collect_dataset(self, ds_dir):
+    def init_collect_dataset(self, ds_dir, exclude_file=""):
         self.ds_dir = ds_dir
         pattern = re.compile(r"^epsd")
         rep = Path(ds_dir)
@@ -228,6 +227,10 @@ class EfieldModelDataset:
         l_name = []
         for m_f in rep.iterdir():
             if m_f.is_file() and pattern.search(m_f.name):
+                if exclude_file:
+                    if exclude_file in m_f.stem:
+                        print(f"Skip {m_f}")
+                        continue
                 print(m_f)
                 f_ds = str(m_f.absolute())
                 m_ds = np.load(f_ds)
@@ -241,6 +244,7 @@ class EfieldModelDataset:
                     l_file2idx.append(l_file2idx[-1] + len(m_ds))
                     ds_epsd = np.hstack((ds_epsd, m_ds))
                 cpt_file += 1
+
         self.true_idx = np.arange(ds_epsd.shape[0])
         # remove fit failed
         print(len(self.true_idx))
@@ -248,7 +252,7 @@ class EfieldModelDataset:
         print(len(i_ok))
         ds_epsd = ds_epsd[i_ok]
         self.true_idx = self.true_idx[i_ok]
-        # remove fit with hight residu
+        # remove fit with hight residuparams
         i_ok = np.argwhere(ds_epsd["p_psd"][:, 4] < 1.6).squeeze()
         print(len(i_ok))
         ds_epsd = ds_epsd[i_ok]
@@ -266,11 +270,36 @@ class EfieldModelDataset:
         self.ds_vld = self.ds_epsd[fidx_vld:]
         self.fidx_vld = fidx_vld
 
-    def estimate_epsd_scalar(self, azi, d_zen, vmax, d_XC):
-        params = np.array([[azi, d_zen, vmax, d_XC]])
-        return self.estimate_epsd(params)
+    def estimate_psd(self, freqs_mhz, azi, d_zen, vmax, d_XC):
+        """
 
-    def estimate_epsd(self, params):
+        :param azi: deg
+        :param d_zen: deg
+        :param vmax:
+        :param d_XC: kma_idx
+        """
+        a_idx = self.estimate_idx_psd(azi, d_zen, vmax, d_XC)
+        print(a_idx.shape)
+        m_p, a_p, alpha_p, sigma, _ = self.ds_tra["p_psd"][a_idx[0]]
+        return modelPSD_4params(freqs_mhz, m_p, a_p, alpha_p, sigma)
+
+    def estimate_idx_psd(self, azi, d_zen, vmax, d_XC):
+        """
+
+        :param azi:
+        :param d_zen:
+        :param vmax:
+        :param d_XC:
+        """
+        params = np.array([azi, d_zen, vmax, d_XC])
+        return self.estimate_idx_epsd_vec(params)
+
+    def estimate_idx_epsd_vec(self, params):
+        """
+        :param params:
+        return: index
+        """
+        print(f"par in epsd : {params}")
         dataset = np.column_stack(
             [
                 self.ds_tra["azi"],
@@ -293,7 +322,7 @@ class EfieldModelDataset:
         dist, ind = tree.query(params[None, :], k=4)
         print(ind)
         print(dataset[ind[0]])
-        return dataset[ind[0]][:, 4].astype(np.int64), None
+        return dataset[ind[0]][:, 4].astype(np.int64)
 
     def get_ref_pulse(self, idx):
         t_idx = self.true_idx[idx]
@@ -302,7 +331,7 @@ class EfieldModelDataset:
             if i_beg > t_idx:
                 idx_infile = t_idx - self.l_file2idx[idx - 1]
                 break
-        return self.nf_efield[idx-1], idx_infile
+        return self.nf_efield[idx - 1], idx_infile
 
     def get_traces(self, idx):
         nf_efield, idx_trace = self.get_ref_pulse(idx)

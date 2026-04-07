@@ -286,8 +286,9 @@ class WienerDeconvolution:
             my_plot = plt.loglog
         else:
             my_plot = plt.semilogy
-        my_plot(freq_hz[1:], self.psd_sig_est[1:], label="PSD estimated signal")
-        my_plot(freq_hz[1:], self.psd_noise[1:], label="PSD estimated noise")
+        my_plot(freq_hz[1:], (self.ker_pow2*self.psd_sig_est)[1:], label="PSD signal guess, normal")
+        my_plot(freq_hz[1:], self.psd_sig_est[1:], label="PSD signal guess")
+        my_plot(freq_hz[1:], self.psd_noise[1:], label="PSD noise guess")
         plt.grid()
         plt.legend()
 

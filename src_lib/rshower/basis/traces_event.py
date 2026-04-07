@@ -232,7 +232,6 @@ class Handling3dTraces:
         :param size: size of periodogram
         """
         assert size > 0
-        raise
         self.nperseg = size
 
     def set_psd_noise(self, nb_period):
@@ -277,8 +276,14 @@ class Handling3dTraces:
             sos = ssig.butter(order, [low, high], btype="bandpass", fs=f_hz, output="sos")
             filtered = ssig.sosfilt(sos, self.traces)
         else:
-            coeff_b, coeff_a = ssig.butter(order, [low, high], btype="bandpass", fs=f_hz)
-            filtered = ssig.filtfilt(coeff_b, coeff_a, self.traces)
+            #coeff_b, coeff_a = ssig.butter(order, [low, high], btype="bandpass", fs=f_hz)
+            #filtered = ssig.filtfilt(coeff_b, coeff_a, self.traces)
+            print('SOS')
+            nyq = 0.5 * f_hz
+            low = low / nyq
+            high = high / nyq
+            sos = ssig.butter(order, [low, high], btype='bandpass', output='sos')
+            filtered = ssig.sosfiltfilt(sos, self.traces)
         self.traces = filtered.real
         self._reset_max()
 
@@ -536,7 +541,7 @@ class Handling3dTraces:
         :return: snr float(nb_trace,), noise(nb_trace,)
         """
         noise_mean = np.mean(self.get_std_noise(), axis=1)
-        t_max, v_max = self.get_tmax_vmax(hilbert=False, interpol="no")
+        t_max, v_max = self.get_tmax_vmax(hilbert=True, interpol="parab")
         snr = v_max / noise_mean
         return snr, noise_mean, t_max, v_max
 

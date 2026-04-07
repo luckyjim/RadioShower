@@ -203,7 +203,7 @@ logging.basicConfig(level=logging.INFO, format=TPL_FMT_LOGGER, datefmt="%d %H:%M
 
 #check_deconv_nonoise()
 #check_deconv_nonoise(0,4,2048)
-check_deconv_noise_no_weiner()
+check_deconv_noise_no_weiner(20)
 #check_deconv_noise_no_weiner(0,4,2048)
 # load_event(i_e=0)
 plt.show()
