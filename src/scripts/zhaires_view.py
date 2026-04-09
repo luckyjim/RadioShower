@@ -5,15 +5,14 @@ Created on 6 avr. 2023
 @author: jcolley
 """
 
-
 import argparse
-import matplotlib.pyplot as plt
-from pathlib import Path
 import pprint
+from pathlib import Path
 
+import matplotlib.pyplot as plt
 import rshower.manage_log as mlg
-from rshower.io.shower.zhaires_master import ZhairesMaster
 from rshower.io.shower.zhaires_base import get_simu_xmax
+from rshower.io.shower.zhaires_master import ZhairesMaster
 
 # specific logger definition for script because __mane__ is "__main__" !
 logger = mlg.get_logger_for_script(__file__)
@@ -24,7 +23,9 @@ mlg.create_output_for_logger("error", log_stdout=True)
 
 def manage_args():
     parser = argparse.ArgumentParser(description="Information and plot event/traces")
-    parser.add_argument("path", help="path of ZHAireS single event simulation ", type=Path)
+    parser.add_argument(
+        "path", help="path of ZHAireS single event simulation ", type=Path
+    )
     parser.add_argument(
         "-f",
         "--footprint",
@@ -45,7 +46,11 @@ def manage_args():
         default="",
     )
     parser.add_argument(
-        "-p", "--polar", help="plot polar angle footprint", action="store_true", required=False
+        "-p",
+        "--polar",
+        help="plot polar angle footprint",
+        action="store_true",
+        required=False,
     )
     parser.add_argument(
         "--trace_image",
@@ -114,7 +119,7 @@ def main():
         tr_du = o_tevent.traces[idx_du]
         t_tr = o_tevent.t_samples[idx_du]
         for idx in range(o_tevent.get_size_trace()):
-            print(f"{t_tr[idx]} {tr_du[0,idx]} {tr_du[1,idx]} {tr_du[2,idx]}")
+            print(f"{t_tr[idx]} {tr_du[0, idx]} {tr_du[1, idx]} {tr_du[2, idx]}")
 
 
 if __name__ == "__main__":

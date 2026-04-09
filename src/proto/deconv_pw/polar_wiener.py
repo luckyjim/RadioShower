@@ -11,27 +11,26 @@ https://github.com/grand-mother/NUTRIG1/blob/deconv_0607/shower_radio/src/proto/
 
 """
 
-from logging import getLogger
-import logging
 import copy
+import logging
+from logging import getLogger
 
+import matplotlib.pyplot as plt
 import numpy as np
+import rshower.io.rf_fmt as rfchain
 import scipy.fft as sf
 import scipy.signal as ssig
-import matplotlib.pyplot as plt
-
+from dask.tests.test_typing import assert_isinstance
 from rshower.basis.traces_event import Handling3dTraces, get_psd
-import rshower.io.rf_fmt as rfchain
-from rshower.num.wiener import WienerDeconvolution
-from rshower.num.signal import interpol_at_new_x
-from rshower.model.ant_resp import DetectorUnitAntenna3Axis
-from rshower.io.leff_fmt import get_leff_default
 from rshower.io.events.asdf_traces import AsdfReadTraces
-from rshower.simu.gal_resp import GalacticRespDetectorGenerator
+from rshower.io.leff_fmt import get_leff_default
+from rshower.model.ant_resp import DetectorUnitAntenna3Axis
 from rshower.model.psd_efield import AirShowerEfieldPSDmodel, modelPSD_4params
+from rshower.num.signal import interpol_at_new_x
+from rshower.num.wiener import WienerDeconvolution
+from rshower.simu.gal_resp import GalacticRespDetectorGenerator
 
 from proto.epsd_model.epsd_dc2 import EfieldModelDataset
-from dask.tests.test_typing import assert_isinstance
 
 logger = getLogger(__name__)
 

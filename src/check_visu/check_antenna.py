@@ -4,13 +4,12 @@ Created on 23 août 2024
 @author: jcolley
 """
 
-import numpy as np
 import matplotlib.pyplot as plt
-from rshower.io.leff_fmt import get_leff_default
-from rshower.model.ant_resp import DetectorUnitAntenna3Axis
+import numpy as np
 import rshower.manage_log as mlg
 import rshower.num.signal as rs_s
-
+from rshower.io.leff_fmt import get_leff_default
+from rshower.model.ant_resp import DetectorUnitAntenna3Axis
 
 # specific logger definition for script because __mane__ is "__main__" !
 logger = mlg.get_logger_for_script(__file__)

@@ -4,7 +4,6 @@
 
 from rshower.basis.efield_event import *
 
-
 #
 # OTHERS METHOD
 #

@@ -1,21 +1,19 @@
-import pprint
 import logging
+import pprint
 from logging import getLogger
 
 logger = getLogger(__name__)
 
-import numpy as np
-from scipy.interpolate import griddata
-import matplotlib.pyplot as plt
-from matplotlib import colors
-
 import grand.dataio.root_files as froot
-
-import rshower.basis.frame as frame
+import matplotlib.pyplot as plt
+import numpy as np
 import rshower.basis.coord as coord
-from rshower.basis.traces_event import Handling3dTraces
+import rshower.basis.frame as frame
+from matplotlib import colors
 from rshower.basis.efield_event import HandlingEfield
+from rshower.basis.traces_event import Handling3dTraces
 from rshower.io.events.grand_io_fmt import convert_3dtrace_grandlib
+from scipy.interpolate import griddata
 
 P_dc2 = "/home/jcolley/projet/grand_wk/data/root/dc2/ZHAireS-NJ/sim_Xiaodushan_20221025_220000_RUN0_CD_ZHAireS_0000/"
 F_efield = "efield_29-24992_L0_0000.root"

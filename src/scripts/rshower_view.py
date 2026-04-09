@@ -5,15 +5,13 @@ Created on 22 August 2024
 @author: jcolley
 """
 
-
 import argparse
-import matplotlib.pyplot as plt
-from pathlib import Path
 import pprint
+from pathlib import Path
 
+import matplotlib.pyplot as plt
 import rshower.manage_log as mlg
 from rshower.io.events.asdf_traces import AsdfReadTraces
-
 
 # specific logger definition for script because __mane__ is "__main__" !
 logger = mlg.get_logger_for_script(__file__)
@@ -23,8 +21,12 @@ mlg.create_output_for_logger("error", log_stdout=True)
 
 
 def manage_args():
-    parser = argparse.ArgumentParser(description="Muliti events viewer from GRAND network GP13")
-    parser.add_argument("file", help="path and name of file GRAND", type=argparse.FileType("r"))
+    parser = argparse.ArgumentParser(
+        description="Muliti events viewer from GRAND network GP13"
+    )
+    parser.add_argument(
+        "file", help="path and name of file GRAND", type=argparse.FileType("r")
+    )
     parser.add_argument(
         "-f",
         "--footprint",
@@ -128,7 +130,7 @@ def main():
         tr_du = o_tevent.traces[idx_du]
         t_tr = o_tevent.t_samples[idx_du]
         for idx in range(o_tevent.get_size_trace()):
-            print(f"{t_tr[idx]} {tr_du[0,idx]} {tr_du[1,idx]} {tr_du[2,idx]}")
+            print(f"{t_tr[idx]} {tr_du[0, idx]} {tr_du[1, idx]} {tr_du[2, idx]}")
 
 
 if __name__ == "__main__":

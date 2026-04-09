@@ -8,8 +8,8 @@ Created on 6 nov. 2025
 #   creating-lowpass-filter-in-scipy-understanding-methods-and-units
 
 import numpy as np
-from scipy.signal import butter, lfilter, freqz, firwin, filtfilt
 from matplotlib import pyplot as plt
+from scipy.signal import butter, filtfilt, firwin, freqz, lfilter
 
 
 def butter_lowpass(cutoff, fs, order=5):

@@ -1,12 +1,12 @@
 """ """
 
-import numpy as np
 import matplotlib.pyplot as plt
-
-from rshower.io.gal_psd_fmt import read_grand_galaxy_vout2
-from proto.check_dc2root.galaxy import GalaxyModelVolt
-import rshower.num.signal as rs_s
+import numpy as np
 import rshower.manage_log as mlg
+import rshower.num.signal as rs_s
+from rshower.io.gal_psd_fmt import read_grand_galaxy_vout2
+
+from proto.check_dc2root.galaxy import GalaxyModelVolt
 
 G_pn_fmodel = "/home/jcolley/projet/grand_wk/recons/du_model"
 

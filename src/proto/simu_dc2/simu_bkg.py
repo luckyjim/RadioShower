@@ -5,17 +5,16 @@ Created on 25 mai 2025
 @author: jcolley
 """
 
-from logging import getLogger
 import logging
 from datetime import datetime
+from logging import getLogger
 
-import numpy as np
 import matplotlib.pyplot as plt
-
-from rshower.basis.traces_event import Handling3dTraces
-from proto.simu_dc2.du_resp import SimuDetectorUnitResponse
+import numpy as np
 import rshower.io.events.asdf_traces as f_tr
+from rshower.basis.traces_event import Handling3dTraces
 
+from proto.simu_dc2.du_resp import SimuDetectorUnitResponse
 
 logger = getLogger(__name__)
 

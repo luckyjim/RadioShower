@@ -7,18 +7,16 @@ Created on 4 avr. 2023
 from logging import getLogger
 
 import numpy as np
+import rshower.io.rf_fmt as rfchain
 import scipy.fft as sf
-
 
 # from galaxy_alone import galactic_noise
 from grand.sim.detector.rf_chain import RFChain
-
 from rshower.basis.traces_event import Handling3dTraces
-from rshower.num.signal import get_fastest_size_rfft
+from rshower.io.leff_fmt import get_leff_default
 from rshower.model.ant_resp import DetectorUnitAntenna3Axis
 from rshower.model.galatic_ant import GalacticAntComponent
-from rshower.io.leff_fmt import get_leff_default
-import rshower.io.rf_fmt as rfchain
+from rshower.num.signal import get_fastest_size_rfft
 
 logger = getLogger(__name__)
 
