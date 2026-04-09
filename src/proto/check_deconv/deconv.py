@@ -3,8 +3,6 @@ Created on 31 mai 2025
 
 @author: jcolley
 """
-from rshower.model.ant_resp import DetectorUnitAntenna3Axis
-from rshower.num.wiener import WienerDeconvolution
 
 import logging
 from logging import getLogger
@@ -16,6 +14,8 @@ import scipy.fft as sf
 from rshower.basis.traces_event import Handling3dTraces
 from rshower.io.events.asdf_traces import AsdfReadTraces
 from rshower.io.leff_fmt import get_leff_default
+from rshower.model.ant_resp import DetectorUnitAntenna3Axis
+from rshower.num.wiener import WienerDeconvolution
 
 PN_fmodel = "/home/jcolley/projet/grand_wk/recons/du_model/"
 PN_vash = "/home/jcolley/projet/lucky/data/v2/volt-ash_0-24984.asdf"
