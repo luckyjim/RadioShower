@@ -17,12 +17,12 @@ AND also
 * Simply check between what content of model galactic noise files and what we used finally
 * Add plot function in same module
 """
-
+from rshower.num.signal import interpol_at_new_x
 import matplotlib.pyplot as plt
 import numpy as np
 import scipy.fft as sf
 import scipy.signal as ss
-from rshower.num.signal import interpol_at_new_x
+
 
 
 class GalacticAntComponent:
