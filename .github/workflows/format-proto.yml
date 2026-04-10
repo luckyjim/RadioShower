@@ -72,7 +72,7 @@ jobs:
             git config --global user.name "Ruff formatter"
             git config --global user.email "formatter@ruff.org"
             git add src_lib src
-            git commit -m "ruff format"
+            git commit -m "ruff format [skip ci]"
             git remote set-url origin https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}.git
             git push
           else
