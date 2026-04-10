@@ -4,6 +4,9 @@ Colley Jean-Marc, CNRS/IN2P3/LPNHE
 Handling a set of 3D traces
 """
 
+import copy
+from logging import getLogger
+
 import matplotlib.pyplot as plt
 import numpy as np
 import rshower.num.signal as rss
@@ -12,10 +15,6 @@ from matplotlib import colors
 from matplotlib.backend_bases import MouseButton
 from matplotlib.widgets import CheckButtons
 from rshower.basis.du_network import DetectorUnitNetwork
-
-import copy
-from logging import getLogger
-
 
 logger = getLogger(__name__)
 
