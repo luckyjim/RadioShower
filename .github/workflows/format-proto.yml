@@ -5,35 +5,8 @@ on:
     branches: ["dev","main"]
     types: [opened, synchronize, reopened]
 
-#concurrency:
-#  group: pr-${{ github.event.pull_request.number }}
-#  cancel-in-progress: true
   
 jobs:
-#  check:
-#    runs-on: ubuntu-latest
-#    outputs:
-#      skip: ${{ steps.check.outputs.skip }}
-#
-#
-#    steps:
-#      - name : checkout
-#        uses: actions/checkout@v4
-#        with:
-#          ref: ${{ github.event.pull_request.head.ref }}
-# 
-#      - id: check
-#        run: |
-#          git status -v
-#          LAST_COMMIT_MSG=$(git log -1 --pretty=%B)
-#
-#          if echo "$LAST_COMMIT_MSG" | grep -q "ruff format"; then
-#            echo "Skip CI"
-#            echo "skip=true" >> $GITHUB_OUTPUT
-#          else
-#            echo "Do CI"
-#            echo "skip=false" >> $GITHUB_OUTPUT
-#          fi
           
   job_format:
     name : ruff format
@@ -72,7 +45,7 @@ jobs:
         run: |
           LAST_COMMIT_MSG=$(git log -1 --pretty=%B)
           if echo "$LAST_COMMIT_MSG" | grep -q "ruff format"; then
-            echo "Skip format"
+            echo "Format already done"
             echo "push_fmt=false" >> $GITHUB_OUTPUT
           else
             echo "Try format"
@@ -88,7 +61,7 @@ jobs:
               echo "push_fmt=true" >> $GITHUB_OUTPUT
             else
               echo "push_fmt=false" >> $GITHUB_OUTPUT
-              echo "No format."
+              echo "No formatting required."
             fi            
           fi
 
