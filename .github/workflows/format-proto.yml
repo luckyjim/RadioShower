@@ -70,7 +70,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.TOKEN_CI }}
         run: |
           LAST_COMMIT_MSG=$(git log -1 --pretty=%B)
-
           if echo "$LAST_COMMIT_MSG" | grep -q "ruff format"; then
             echo "Skip format"
             echo "push_fmt=false" >> $GITHUB_OUTPUT
