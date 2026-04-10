@@ -3,6 +3,8 @@ Colley Jean-Marc, CNRS/IN2P3/LPNHE
 
 Handling a set of 3D traces
 """
+from rshower.basis.frame import FrameDuFrameTan
+from rshower.basis.traces_event import Handling3dTraces
 
 from logging import getLogger
 
@@ -12,8 +14,6 @@ import rshower.basis.coord as coord
 import rshower.num.signal as sns
 import scipy.linalg as splg
 from matplotlib import colors
-from rshower.basis.frame import FrameDuFrameTan
-from rshower.basis.traces_event import Handling3dTraces
 
 logger = getLogger(__name__)
 
