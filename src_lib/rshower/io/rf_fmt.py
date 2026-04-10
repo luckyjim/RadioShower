@@ -1,12 +1,12 @@
 """
 Global RF chain transfer function
 """
-
+import rshower.num.signal as rss
 import os.path
 
 import matplotlib.pyplot as plt
 import numpy as np
-import rshower.num.signal as rss
+
 
 
 def read_one_column(pn_file, f_0_mhz, step_mhz):
