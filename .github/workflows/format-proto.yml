@@ -13,7 +13,8 @@ jobs:
       skip: ${{ steps.check.outputs.skip }}
 
     steps:
-      - uses: actions/checkout@v4
+      - name : checkout
+        uses: actions/checkout@v4
    	    with:
           ref: ${{ github.event.pull_request.head.ref }}
  
