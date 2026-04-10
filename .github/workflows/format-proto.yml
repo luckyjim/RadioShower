@@ -35,11 +35,11 @@ jobs:
     if: needs.check.outputs.skip != 'true'
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout 
+      - name: Checkout
         uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.pull_request.head.ref }}
-          persist-credentials: false
+	        with:
+	          ref: ${{ github.event.pull_request.head.ref }}
+	          persist-credentials: false
           
       - name: Configuration
         uses: actions/setup-python@v5
