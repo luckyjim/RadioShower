@@ -1,17 +1,46 @@
 name: CI for pull request, notify test regression
 
 on:
-  push:
+#  push:
+#    branches: ["test-ci"]
+
+  pull_request:
+    branches: ["dev","main"]
+    types: [opened, synchronize, reopened]
 
 jobs:
-  install:
+  check:
+    runs-on: ubuntu-latest
+    outputs:
+      skip: ${{ steps.check.outputs.skip }}
+
+    steps:
+      - uses: actions/checkout@v4
+   	    with:
+          ref: ${{ github.event.pull_request.head.ref }}
+ 
+      - id: check
+        run: |
+          LAST_COMMIT_MSG=$(git log -1 --pretty=%B)
+
+          if echo "$LAST_COMMIT_MSG" | grep -q "Ruff formatter"; then
+            echo "skip=true" >> $GITHUB_OUTPUT
+          else
+            echo "skip=false" >> $GITHUB_OUTPUT
+          fi
+          
+  job_format:
+    name : ruff format
+    needs : check
+    if: needs.check.outputs.skip != 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout 
         uses: actions/checkout@v4
         with:
-          persist-credentials: false        
-
+          ref: ${{ github.event.pull_request.head.ref }}
+          persist-credentials: false
+          
       - name: Configuration
         uses: actions/setup-python@v5
         with:
@@ -47,3 +76,15 @@ jobs:
             echo "No format."
           fi
 
+  job_pytest:
+    name : pytest
+    needs: [check, job_format]
+    if: needs.check.outputs.skip != 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout 
+        uses: actions/checkout@v4
+        
+      - name: process
+        run: |
+          echo "Process pytest"
