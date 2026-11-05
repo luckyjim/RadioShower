@@ -230,27 +230,52 @@ class FrameNetFrameShower(FrameAFrameB):
         self.init_v_b(v_prim, vec_b, xmax)
 
     def init_v_b(self, v_prim, vec_b, xmax=None):
-        """Generic init for ENU or NWU convention
+        """Initialise an orthonormal transformation between NET and SHW.
 
-        v_prim, xmax and vec_b must in same orientation convention (ENU, NWU)
+        Parameters
+        ----------
+        v_prim : array_like, shape (3,)
+            Primary propagation direction in NET.
+        vec_b : array_like, shape (3,)
+            Magnetic field in the same convention (ENU or NWU) as v_prim.
+            Only its direction is used.
+        xmax : array_like, shape (3,), optional
+            SHW origin in NET, in metres. Defaults to the NET origin.
 
-        If you don't know Xmax, vector transformation will be anyway correct
-        but position transformation will be relative.
-
-        :param v_prim: unit vector of XC with X Xmax and C core in NET frame
-        :param vec_b: unit vector magnetic field of earth in NET frame
-        :param xmax: Xmax position in NET frame
+        Raises
+        ------
+        ValueError
+            If inputs have invalid shapes or non-finite values, either direction
+            is zero, or the directions are nearly collinear (|sin(angle)| < 1e-12).
         """
-        assert v_prim.shape == (3,)
-        assert vec_b.shape == (3,)
-        v_prim = v_prim / np.linalg.norm(v_prim)
-        vxb = np.cross(v_prim, vec_b)
-        vxvxb = np.cross(v_prim, vxb)
-        rot_shw2net = np.zeros((3, 3), dtype=np.float32)
-        rot_shw2net[:, 0] = vxb
-        rot_shw2net[:, 1] = vxvxb
-        rot_shw2net[:, 2] = v_prim
-        if xmax is None:
-            xmax = np.zeros((3, 1), dtype=np.float32)
-        super().__init__(xmax.reshape(3, 1), rot_shw2net)
+        v = np.asarray(v_prim, dtype=np.float64)
+        b = np.asarray(vec_b, dtype=np.float64)
+        for name, vec in (("v_prim", v), ("vec_b", b)):
+            if vec.shape != (3,) or not np.all(np.isfinite(vec)):
+                raise ValueError(f"{name} must contain three finite values.")
+
+        norm_v = np.linalg.norm(v)
+        norm_b = np.linalg.norm(b)
+        if norm_v == 0 or norm_b == 0:
+            raise ValueError("v_prim and vec_b must be nonzero.")
+        v = v / norm_v
+        b = b / norm_b
+
+        e_x = np.cross(v, b)
+        norm_x = np.linalg.norm(e_x)
+        if norm_x < 1e-12:
+            raise ValueError("SHW frame is undefined for nearly collinear v_prim and vec_b.")
+        e_x /= norm_x
+        e_y = np.cross(v, e_x)
+        e_y /= np.linalg.norm(e_y)
+        rot_shw2net = np.column_stack((e_x, e_y, v))
+
+        origin = (
+            np.zeros(3, dtype=np.float64)
+            if xmax is None
+            else np.asarray(xmax, dtype=np.float64)
+        )
+        if origin.shape != (3,) or not np.all(np.isfinite(origin)):
+            raise ValueError("xmax must contain three finite values.")
+        super().__init__(origin.reshape(3, 1), rot_shw2net)
         self._d_frame = {"NET": "A", "SHW": "B"}

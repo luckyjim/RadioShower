@@ -8,6 +8,75 @@ from rshower.basis.frame import *
 from rshower.basis import coord
 
 
+def test_shower_frame_preserves_geometry():
+    frame = FrameNetFrameShower()
+    origin = np.array([100., 200., 300.])
+    frame.init_v_b(
+        np.array([0., 0., -1.]),
+        np.array([0.6, 0., 0.8]),
+        origin,
+    )
+
+    rotation = frame.rot_b2a
+    assert np.allclose(rotation.T @ rotation, np.eye(3))
+    assert np.isclose(np.linalg.det(rotation), 1.0)
+    assert np.allclose(rotation[:, 0], [0., -1., 0.])
+    assert np.allclose(rotation[:, 1], [-1., 0., 0.])
+    assert np.allclose(rotation[:, 2], [0., 0., -1.])
+
+    # Columns represent several vectors/positions, as well as single inputs.
+    for vec_net in (np.array([1., 2., 3.]), np.arange(12.).reshape(3, 4)):
+        vec_shw = frame.vec_to(vec_net, "SHW")
+        expected = vec_net.reshape(3, -1)
+        assert np.allclose(np.linalg.norm(vec_shw, axis=0), np.linalg.norm(expected, axis=0))
+        assert np.allclose(frame.vec_to(vec_shw, "NET"), expected)
+
+    pos_net = np.array([150., 270., 380.])
+    pos_shw = frame.pos_to(pos_net, "SHW")
+    assert np.allclose(frame.pos_to(pos_shw, "NET").ravel(), pos_net)
+    assert np.allclose(frame.pos_to(origin, "SHW"), 0)
+
+
+def test_shower_frame_ignores_direction_magnitudes():
+    frame = FrameNetFrameShower()
+    reference = FrameNetFrameShower()
+    v = np.array([1., 2., -3.])
+    b = np.array([0.6, 0., 0.8])
+    reference.init_v_b(v, b)
+    frame.init_v_b((7 * v).tolist(), (5 * b).tolist())
+    assert np.allclose(frame.rot_b2a, reference.rot_b2a)
+    assert np.allclose(frame.rot_b2a.T @ frame.rot_b2a, np.eye(3))
+    assert np.allclose(frame.offset_ab_a, 0)
+    assert np.array_equal(v, [1., 2., -3.])
+    assert np.array_equal(b, [0.6, 0., 0.8])
+
+
+def test_shower_frame_rejects_degenerate_directions():
+    frame = FrameNetFrameShower()
+    for v, b in (
+        ([0., 0., 0.], [1., 0., 0.]),
+        ([1., 0., 0.], [0., 0., 0.]),
+        ([1., 0., 0.], [2., 0., 0.]),
+        ([1., 0., 0.], [-2., 0., 0.]),
+        ([1., 0., 0.], [1., 1e-14, 0.]),
+    ):
+        with np.testing.assert_raises(ValueError):
+            frame.init_v_b(v, b)
+
+
+def test_shower_frame_rejects_invalid_inputs():
+    frame = FrameNetFrameShower()
+    v = [0., 0., -1.]
+    b = [1., 0., 0.]
+    for invalid in ([1., 2.], [[1.], [2.], [3.]], [np.nan, 0., 1.], [0., np.inf, 1.]):
+        with np.testing.assert_raises(ValueError):
+            frame.init_v_b(invalid, b)
+        with np.testing.assert_raises(ValueError):
+            frame.init_v_b(v, invalid)
+        with np.testing.assert_raises(ValueError):
+            frame.init_v_b(v, b, invalid)
+
+
 def test_du_tan():
     """
     Test the FrameDuFrameTan class for coordinate transformations between DU (Down-Up)
