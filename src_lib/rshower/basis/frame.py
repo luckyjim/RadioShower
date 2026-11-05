@@ -264,7 +264,9 @@ class FrameNetFrameShower(FrameAFrameB):
         e_x = np.cross(v, b)
         norm_x = np.linalg.norm(e_x)
         if norm_x < 1e-12:
-            raise ValueError("SHW frame is undefined for nearly collinear v_prim and vec_b.")
+            raise ValueError(
+                "SHW frame is undefined for nearly collinear v_prim and vec_b."
+            )
         e_x /= norm_x
         e_y = np.cross(v, e_x)
         e_y /= np.linalg.norm(e_y)
